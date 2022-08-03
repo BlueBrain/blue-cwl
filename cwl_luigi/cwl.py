@@ -1,8 +1,9 @@
 import collections
 import copy
-import yaml
-from typing import Dict, List, Union
 from dataclasses import dataclass
+from typing import Dict, List, Union
+
+import yaml
 
 
 def load_yaml(filepath):
@@ -141,6 +142,7 @@ class WorkflowStep:
     def from_cwl(cls, data):
         rename_dict_inplace(data, 'id', 'id_')
         rename_dict_inplace(data, 'in', 'in_')
+        data['run'] = CommandLineTool.from_cwl(data['run'])
         return cls(**data)
 
 
