@@ -117,7 +117,7 @@ def build_workflow(workflow, nodes, edges, base_dir):
                 input_name = f'{src.id_}/{step_output}'
                 path = src.run.outputs[step_output].outputBinding["glob"]
                 path = f'{src.id_}/{path}'
-                mapping[edge.to][dst.get_input_name_by_target()] = path
+                mapping[edge.to][dst.get_input_name_by_target(input_name)] = path
             else:
                 assert dst_node.type == "output", "step not leading to output"
 
