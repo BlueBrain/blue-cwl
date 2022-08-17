@@ -19,9 +19,10 @@ STDOUT = "STDOUT"
 def build_luigi_task(
     step: cwl.WorkflowStep, dependencies: List, mapping: Dict[str, str], base_dir: Path
 ):
+
     # { generic tasks functions
     def requires(self):
-        return [r(msg0=self.msg0) for r in self.requires_]
+        return [r(**mapping[r.__name__]) for r in self.requires_]
 
     def output(self):
         return self.outputs_
@@ -55,8 +56,7 @@ def build_luigi_task(
     # XXX(mgevaert): need to wire up parameters: these are the 'inputs' to the workflow
     # We probably want to keep them as luig.Parameters, so the caching and nexus
     # mechanisms work correctly (as I understand them)
-    parameters = {}
-    parameters["msg0"] = luigi.Parameter()
+    parameters = {name: luigi.Parameter() for name in step.in_}
 
     outputs = {}
     for k, v in step.run.outputs.items():
@@ -129,4 +129,4 @@ def build_workflow(workflow, nodes, edges, base_dir):
         step = workflow.get_step_by_name(name)
         tasks[name] = build_luigi_task(step, deps, mapping, base_dir)
 
-    return tasks["c0"]
+    return tasks, mapping
