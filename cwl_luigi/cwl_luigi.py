@@ -2,6 +2,7 @@
 import collections
 import subprocess
 import time
+from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Set
 
@@ -18,35 +19,20 @@ INPUT_MAP = {
 STDOUT = "STDOUT"
 
 
-def build_luigi_task(
-    step: cwl.WorkflowStep, dependencies: List, mapping: Dict[str, str], base_dir: Path
-):
+def build_luigi_task(step: cwl.WorkflowStep, dependencies: List, base_dir: Path):
     """Generate a luigi task class from a cwl workflow step."""
     # { generic tasks functions
     def requires(self):
-        return [r(**mapping[r.__name__]) for r in self.requires_]
+        return [r(mapping=self.mapping) for r in self.requires_]
 
     def output(self):
         return self.outputs_
 
     def run(self):
-        cwd = self.BASE_DIR / type(self).__name__
+        cwd = Path(self.BASE_DIR) / type(self).__name__
         cwd.mkdir(parents=True, exist_ok=True)
 
-        fmt = {}
-        for k, v in self.mapping_.items():
-
-            if isinstance(v, str):
-                if hasattr(self, v):
-                    fmt[k] = getattr(self, v)
-                else:
-                    fmt[k] = Path("..") / v
-            else:
-                if v["class"] == cwl.CWLType.FILE:
-                    fmt[k] = Path(v["path"])
-                else:
-                    raise NotImplementedError
-
+        fmt = self.mapping[type(self).__name__]
         cmd = [atom.format(**fmt) for atom in self.cmd_]
 
         # so we can see the command, and pretend it took a while
@@ -61,12 +47,13 @@ def build_luigi_task(
 
     # }
 
-    parameters = {name: luigi.Parameter() for name in step.inputs}
-
     outputs = {}
     for k, v in step.run.outputs.items():
         if v.type == CWLType.FILE:
-            outputs[k] = luigi.LocalTarget(str(base_dir / step.id / v.outputBinding["glob"]))
+            path = base_dir / step.id / v.outputBinding["glob"]
+            outputs[k] = luigi.LocalTarget(str(path.resolve()))
+        elif v.type == CWLType.DIRECTORY:
+            raise NotImplementedError
 
     if step.run.stdout:
         assert STDOUT not in outputs
@@ -81,10 +68,9 @@ def build_luigi_task(
             "output": output,
             "cmd_": step.run.cmd(),
             "requires_": dependencies,
+            "mapping": luigi.DictParameter(),
             "outputs_": outputs,
-            "mapping_": mapping[step.id],
-            "BASE_DIR": base_dir,
-            **parameters,
+            "BASE_DIR": str(base_dir),
         },
     )
     return class_
@@ -141,7 +127,7 @@ def _build_step_inputs(nodes, edges):
     return needed_steps
 
 
-def _build_inputs_mapping(workflow, nodes, edges):
+def _build_inputs_mapping(workflow, nodes, edges, base_dir):
 
     mapping = collections.defaultdict(dict)
     for edge in edges:
@@ -162,7 +148,7 @@ def _build_inputs_mapping(workflow, nodes, edges):
 
                 input_name = f"{src.id}/{step_output}"
                 path = src.run.outputs[step_output].outputBinding["glob"]
-                path = f"{src.id}/{path}"
+                path = str(Path(base_dir, f"{src.id}/{path}").resolve())
                 mapping[edge.target][dst.get_input_name_by_target(input_name)] = path
             else:
                 assert dst_node.type == CWLWorkflowType.OUTPUT, "step not leading to output"
@@ -176,13 +162,31 @@ def build_workflow(
     """TBD."""
     needed_steps = _build_step_inputs(nodes, edges)
 
-    mapping = _build_inputs_mapping(workflow, nodes, edges)
+    mapping = _build_inputs_mapping(workflow, nodes, edges, base_dir)
 
     tasks = {}
     for name, depency_names in reversed(needed_steps):
 
         deps = [tasks[d] for d in depency_names]
         step = workflow.get_step_by_name(name)
-        tasks[name] = build_luigi_task(step, deps, mapping, base_dir)
+        tasks[name] = build_luigi_task(step, deps, base_dir)
 
     return tasks, mapping
+
+
+def resolve_mapping_with_config(mapping, config: cwl.Config):
+    """Return a copy of mapping, with its values resolved from config.
+
+    Args:
+        mapping: Dictionary with task to inputs mapping.
+        config: The config with the inputs for instantiating the tasks.
+    """
+    mapping = deepcopy(mapping)
+    inputs = config.inputs
+
+    for dependencies in mapping.values():
+        for dep_name, dep_value in dependencies.items():
+            if dep_value in inputs:
+                dependencies[dep_name] = inputs[dep_value].value
+
+    return mapping

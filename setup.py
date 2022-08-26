@@ -34,7 +34,7 @@ setup(
         "Source": "ssh://bbpcode.epfl.ch/nse/cwl-luigi",
     },
     license="BBP-internal-confidential",
-    install_requires=["pyyaml", "luigi"],
+    install_requires=["pyyaml", "luigi", "click"],
     packages=find_packages(),
     python_requires=">=3.6",
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},

@@ -7,9 +7,10 @@ import pytest
 from cwl_luigi import cwl as tested
 from cwl_luigi.cwl import CWLType
 
-import utils
+from cwl_luigi import utils
 
 DATA_DIR = Path(__file__).parent / "data"
+WORKFLOW_CAT_ECHO_DIR = DATA_DIR / "cat-echo"
 
 
 def _test_dataclass_instance(obj, expected_attributes):
@@ -44,7 +45,7 @@ def test_CommandLineToolOutput():
 
 def test_CommandLineTool():
 
-    filepath = DATA_DIR / "cat.cwl"
+    filepath = WORKFLOW_CAT_ECHO_DIR / "cat.cwl"
 
     obj = tested.CommandLineTool.from_cwl(filepath)
 
@@ -96,7 +97,7 @@ def test_workflowStep():
             "i2": "input2",
         },
         "out": ["o1", "o2"],
-        "run": str(DATA_DIR / "cat.cwl"),
+        "run": str(WORKFLOW_CAT_ECHO_DIR / "cat.cwl"),
     }
 
     obj = tested.WorkflowStep.from_cwl(data)
@@ -154,7 +155,7 @@ def test_parse_io_parameters__outputs_as_dict():
 
 
 def workflow_cat_echo():
-    workflow_file = DATA_DIR / "workflow-cat-echo.cwl"
+    workflow_file = WORKFLOW_CAT_ECHO_DIR / "workflow-cat-echo.cwl"
 
     with utils.cwd(workflow_file.parent):
         return tested.Workflow.from_cwl(workflow_file)
@@ -246,7 +247,7 @@ def test_workflow__steps():
                 "cwlVersion": "v1.2",
                 "id": "./echo.cwl",
                 "label": "",
-                "baseCommand": "./echo-and-write.py",
+                "baseCommand": str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py"),
                 "inputs": {
                     "message": {
                         "id": "message",
@@ -279,7 +280,7 @@ def test_workflow__steps():
                 "cwlVersion": "v1.2",
                 "id": "./echo.cwl",
                 "label": "",
-                "baseCommand": "./echo-and-write.py",
+                "baseCommand": str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py"),
                 "inputs": {
                     "message": {
                         "id": "message",
@@ -312,7 +313,7 @@ def test_workflow__steps():
                 "cwlVersion": "v1.2",
                 "id": "./echo.cwl",
                 "label": "",
-                "baseCommand": "./echo-and-write.py",
+                "baseCommand": str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py"),
                 "inputs": {
                     "message": {
                         "id": "message",
@@ -469,8 +470,10 @@ def test_get_graph__cat_echo():
 
 def test_get_graph__raises_wrong_input_source():
 
-    with utils.cwd(DATA_DIR):
-        workflow = tested.Workflow.from_cwl(DATA_DIR / "workflow-cat-echo-wrong-input.cwl")
+    with utils.cwd(WORKFLOW_CAT_ECHO_DIR):
+        workflow = tested.Workflow.from_cwl(
+            WORKFLOW_CAT_ECHO_DIR / "workflow-cat-echo-wrong-input.cwl"
+        )
 
     with pytest.raises(tested.CWLError):
         nodes, edges = tested.get_graph(workflow)

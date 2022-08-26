@@ -3,15 +3,13 @@ import copy
 import enum
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
-from cwl_luigi.utils import load_yaml, rename_dict_inplace
+from cwl_luigi.exceptions import CWLError
+from cwl_luigi.utils import load_json, load_yaml, rename_dict_inplace
 
 L = logging.getLogger(__name__)
-
-
-class CWLError(Exception):
-    """Generic cwl building error."""
 
 
 class CWLType(enum.Enum):
@@ -51,6 +49,38 @@ class CWLType(enum.Enum):
                 f"Unknown type {string_value}. " f"Expected on of {list(string_to_enum.keys())}."
             )
         return string_to_enum[string_value]
+
+
+@dataclass(frozen=True)
+class ConfigInput:
+    """Dataclass for config's input entries."""
+
+    type: CWLType
+    value: str
+
+    @classmethod
+    def from_cwl(cls, data):
+        """Generate a config input from cwl config data."""
+        if isinstance(data, str):
+            return cls(type=CWLType.STRING, value=data)
+
+        return cls(type=CWLType.from_string(data["class"]), value=data["path"])
+
+
+@dataclass(frozen=True)
+class Config:
+    """Dataclass for cwl config."""
+
+    inputs: Dict[str, ConfigInput]
+
+    @classmethod
+    def from_cwl(cls, cwl_file: Path):
+        """Generate a config instance from a cwl config file."""
+        data = load_json(cwl_file)
+
+        inputs = {name: ConfigInput.from_cwl(data) for name, data in data["inputs"].items()}
+
+        return cls(inputs=inputs)
 
 
 def _parse_io_parameters(cwl_data: dict, io_type: str) -> dict:
@@ -144,7 +174,7 @@ class CommandLineTool:
     cwlVersion: str  # v1.2
     id: str
     label: str
-    baseCommand: List[str]
+    baseCommand: str
     inputs: Dict[str, CommandLineToolInput]
     outputs: Dict[str, CommandLineToolOutput]
     stdout: str
@@ -167,6 +197,9 @@ class CommandLineTool:
             k: CommandLineToolOutput.from_cwl(k, v, stdout)
             for k, v in _parse_io_parameters(data, "outputs").items()
         }
+        # resolve local executables wrt cwl_path directory
+        if data["baseCommand"].startswith("./"):
+            data["baseCommand"] = str((Path(cwl_path).parent / data["baseCommand"]).resolve())
 
         return cls(id=str(cwl_path), label=data.get("label", ""), **data)
 
