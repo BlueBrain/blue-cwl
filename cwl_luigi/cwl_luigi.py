@@ -1,5 +1,6 @@
 """CWL luigi tasks building module."""
 import collections
+import logging
 import subprocess
 import time
 from copy import deepcopy
@@ -11,12 +12,16 @@ import luigi
 
 from cwl_luigi import cwl
 from cwl_luigi.cwl import CWLType, CWLWorkflowType
+from cwl_luigi.exceptions import CWLError
 
 INPUT_MAP = {
     "string": luigi.Parameter,
 }
 
 STDOUT = "STDOUT"
+
+
+L = logging.getLogger(__name__)
 
 
 def build_luigi_task(step: cwl.WorkflowStep, dependencies: List, base_dir: Path):
@@ -32,18 +37,39 @@ def build_luigi_task(step: cwl.WorkflowStep, dependencies: List, base_dir: Path)
         cwd = Path(self.BASE_DIR) / type(self).__name__
         cwd.mkdir(parents=True, exist_ok=True)
 
-        fmt = self.mapping[type(self).__name__]
+        cls_name = type(self).__name__
+
+        fmt = self.mapping[cls_name]
         cmd = [atom.format(**fmt) for atom in self.cmd_]
 
         # so we can see the command, and pretend it took a while
-        click.secho(f"[{cwd}]: {cmd}", fg="red")
+        click.secho(f"[{cwd}]: {' '.join(cmd)}", fg="red")
         time.sleep(0.5)
 
-        res = subprocess.run(cmd, capture_output=True, cwd=cwd, check=True)
+        res = subprocess.run(cmd, capture_output=True, cwd=cwd, encoding="utf-8", check=False)
+
+        if res.returncode != 0:
+            raise CWLError(
+                f"Command {cmd} failed to run.\n" f"stdout: {res.stdout}\n" f"stderr: {res.stderr}"
+            )
+
+        if res.stderr:
+            L.warning("Found nonempty stderr in subprocess:\n %s", res.stderr)
+
+        output = res.stdout
+        L.debug("Subprocess output:\n\n%s\n\n", output)
 
         if STDOUT in self.outputs_:
-            with open(self.outputs_[STDOUT].path, "wb") as fd:
-                fd.write(res.stdout)
+            with open(self.outputs_[STDOUT].path, "w", encoding="utf-8") as fd:
+                fd.write(output)
+
+        not_created_files = {
+            name: target.path
+            for name, target in self.outputs_.items()
+            if not Path(target.path).exists()
+        }
+        if not_created_files:
+            raise Exception(f"Task {cls_name} failed to generate: {not_created_files}")
 
     # }
 
