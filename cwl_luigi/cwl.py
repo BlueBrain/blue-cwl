@@ -2,9 +2,10 @@
 import copy
 import enum
 import logging
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 from cwl_luigi.exceptions import CWLError
 from cwl_luigi.utils import load_json, load_yaml, rename_dict_inplace
@@ -156,6 +157,26 @@ class CommandLineToolOutput:
         return cls(id=name, **data)
 
 
+def _parse_baseCommand(raw: Union[str, List[str]], base_dir: Path):
+
+    base_command = raw
+
+    if isinstance(base_command, str):
+        base_command = base_command.split()
+
+    if not isinstance(base_command, list):
+        raise CWLError(
+            f"Unknown format type {type(base_command)} for baseCommand. "
+            "Expected either str or list."
+        )
+
+    # resolve local executables wrt cwl_path directory
+    if base_command[0].startswith("./"):
+        base_command[0] = str((base_dir / base_command[0]).resolve())
+
+    return base_command
+
+
 @dataclass(frozen=True)
 class CommandLineTool:
     """Dataclass for a command line tool's output.
@@ -174,7 +195,7 @@ class CommandLineTool:
     cwlVersion: str  # v1.2
     id: str
     label: str
-    baseCommand: str
+    baseCommand: List[str]
     inputs: Dict[str, CommandLineToolInput]
     outputs: Dict[str, CommandLineToolOutput]
     stdout: str
@@ -197,11 +218,16 @@ class CommandLineTool:
             k: CommandLineToolOutput.from_cwl(k, v, stdout)
             for k, v in _parse_io_parameters(data, "outputs").items()
         }
-        # resolve local executables wrt cwl_path directory
-        if data["baseCommand"].startswith("./"):
-            data["baseCommand"] = str((Path(cwl_path).parent / data["baseCommand"]).resolve())
+        data["baseCommand"] = _parse_baseCommand(
+            raw=data["baseCommand"], base_dir=Path(cwl_path).parent
+        )
+        if "label" not in data:
+            data["label"] = ""
 
-        return cls(id=str(cwl_path), label=data.get("label", ""), **data)
+        if "id" not in data:
+            data["id"] = str(cwl_path)
+
+        return cls(**data)
 
     def cmd(self):
         """Return the command for executing the command line tool."""
@@ -226,9 +252,7 @@ class CommandLineTool:
                 L.warning("Unknown type: %s", inputBinding)
                 assert False
 
-        ret = [
-            self.baseCommand,
-        ]
+        ret = deepcopy(self.baseCommand)
 
         for k, v in prefix.items():
             ret.append(k)
@@ -355,6 +379,12 @@ class Workflow:
         data = load_yaml(cwl_path)
         assert "cwlVersion" in data
         assert data["cwlVersion"] == "v1.2"
+
+        class_type = data["class"]
+
+        if class_type != "Workflow":
+            raise CWLError(f"Expected class of type 'Workflow' but got '{class_type}'")
+
         assert data["class"] == "Workflow"
 
         inputs = {
@@ -364,6 +394,17 @@ class Workflow:
             k: WorkflowOutput.from_cwl(k, v)
             for k, v in _parse_io_parameters(data, "outputs").items()
         }
+
+        for step_data in data["steps"]:
+
+            path = Path(step_data["run"])
+
+            # resolve relative paths wrt workflow directory
+            if not path.is_absolute():
+                path = (Path(cwl_path).parent / path).resolve()
+
+            step_data["run"] = str(path)
+
         steps = [WorkflowStep.from_cwl(s) for s in data["steps"]]
 
         return cls(

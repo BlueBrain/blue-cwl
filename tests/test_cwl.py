@@ -43,6 +43,34 @@ def test_CommandLineToolOutput():
     _test_dataclass_instance(obj, data)
 
 
+@pytest.mark.parametrize(
+    "cmd, expected",
+    [
+        ("executable", ["executable"]),
+        ("/absolute-executable", ["/absolute-executable"]),
+        ("./relative-executable", ["/myabspath/relative-executable"]),
+        ("executable with-subcommand", ["executable", "with-subcommand"]),
+        ("/absolute-executable with-subcommand", ["/absolute-executable", "with-subcommand"]),
+        (
+            "./relative-executable with-subcommand",
+            ["/myabspath/relative-executable", "with-subcommand"],
+        ),
+        (["executable"], ["executable"]),
+        (["/absolute-executable"], ["/absolute-executable"]),
+        (["./relative-executable"], ["/myabspath/relative-executable"]),
+        (["executable", "with-subcommand"], ["executable", "with-subcommand"]),
+        (["/absolute-executable", "with-subcommand"], ["/absolute-executable", "with-subcommand"]),
+        (
+            ["./relative-executable", "with-subcommand"],
+            ["/myabspath/relative-executable", "with-subcommand"],
+        ),
+    ],
+)
+def test_parse_baseCommand(cmd, expected):
+    res = tested._parse_baseCommand(cmd, base_dir=Path("/myabspath"))
+    assert res == expected
+
+
 def test_CommandLineTool():
 
     filepath = WORKFLOW_CAT_ECHO_DIR / "cat.cwl"
@@ -52,7 +80,7 @@ def test_CommandLineTool():
     assert obj.cwlVersion == "v1.2"
     assert obj.id == str(filepath)
     assert obj.label == ""
-    assert obj.baseCommand == "cat"
+    assert obj.baseCommand == ["cat"]
 
     assert obj.inputs == {
         "f0": tested.CommandLineToolInput(id="f0", type=CWLType.FILE, inputBinding={"position": 1}),
@@ -110,7 +138,7 @@ def test_workflowStep():
     assert obj.outputs == ["o1", "o2"]
 
     assert obj.run.cwlVersion == "v1.2"
-    assert obj.run.baseCommand == "cat"
+    assert obj.run.baseCommand == ["cat"]
 
     assert obj.get_input_name_by_target("input1") == "i1"
 
@@ -245,9 +273,9 @@ def test_workflow__steps():
             "outputs": ["example_stdout"],
             "run": {
                 "cwlVersion": "v1.2",
-                "id": "./echo.cwl",
+                "id": str(WORKFLOW_CAT_ECHO_DIR / "echo.cwl"),
                 "label": "",
-                "baseCommand": str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py"),
+                "baseCommand": [str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py")],
                 "inputs": {
                     "message": {
                         "id": "message",
@@ -278,9 +306,9 @@ def test_workflow__steps():
             "outputs": ["example_stdout"],
             "run": {
                 "cwlVersion": "v1.2",
-                "id": "./echo.cwl",
+                "id": str(WORKFLOW_CAT_ECHO_DIR / "echo.cwl"),
                 "label": "",
-                "baseCommand": str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py"),
+                "baseCommand": [str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py")],
                 "inputs": {
                     "message": {
                         "id": "message",
@@ -311,9 +339,9 @@ def test_workflow__steps():
             "outputs": ["example_stdout"],
             "run": {
                 "cwlVersion": "v1.2",
-                "id": "./echo.cwl",
+                "id": str(WORKFLOW_CAT_ECHO_DIR / "echo.cwl"),
                 "label": "",
-                "baseCommand": str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py"),
+                "baseCommand": [str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py")],
                 "inputs": {
                     "message": {
                         "id": "message",
@@ -344,9 +372,9 @@ def test_workflow__steps():
             "outputs": ["cat_out"],
             "run": {
                 "cwlVersion": "v1.2",
-                "id": "./cat.cwl",
+                "id": str(WORKFLOW_CAT_ECHO_DIR / "cat.cwl"),
                 "label": "",
-                "baseCommand": "cat",
+                "baseCommand": ["cat"],
                 "inputs": {
                     "f0": {"id": "f0", "type": CWLType.FILE, "inputBinding": {"position": 1}},
                     "f1": {"id": "f1", "type": CWLType.FILE, "inputBinding": {"position": 2}},
@@ -368,9 +396,9 @@ def test_workflow__steps():
             "outputs": ["cat_out"],
             "run": {
                 "cwlVersion": "v1.2",
-                "id": "./cat.cwl",
+                "id": str(WORKFLOW_CAT_ECHO_DIR / "cat.cwl"),
                 "label": "",
-                "baseCommand": "cat",
+                "baseCommand": ["cat"],
                 "inputs": {
                     "f0": {"id": "f0", "type": CWLType.FILE, "inputBinding": {"position": 1}},
                     "f1": {"id": "f1", "type": CWLType.FILE, "inputBinding": {"position": 2}},
@@ -392,9 +420,9 @@ def test_workflow__steps():
             "outputs": ["cat_out"],
             "run": {
                 "cwlVersion": "v1.2",
-                "id": "./cat.cwl",
+                "id": str(WORKFLOW_CAT_ECHO_DIR / "cat.cwl"),
                 "label": "",
-                "baseCommand": "cat",
+                "baseCommand": ["cat"],
                 "inputs": {
                     "f0": {"id": "f0", "type": CWLType.FILE, "inputBinding": {"position": 1}},
                     "f1": {"id": "f1", "type": CWLType.FILE, "inputBinding": {"position": 2}},
