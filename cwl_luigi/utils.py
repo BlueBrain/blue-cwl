@@ -3,7 +3,7 @@ import json
 import os
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import yaml
 
@@ -31,7 +31,9 @@ def load_json(filepath: Union[str, Path]) -> Dict[Any, Any]:
         return json.load(f)
 
 
-def rename_dict_inplace(data: Dict[str, str], old: str, new: str):
-    """Rename a key in data in-place."""
-    data[new] = data[old]
-    del data[old]
+def resolve_path(path: Path, base_dir: Optional[Path] = None):
+    """Resolve path if it's relative wrt base_dir if given."""
+    if base_dir is not None:
+        return Path(base_dir, path).resolve()
+
+    return path.resolve()

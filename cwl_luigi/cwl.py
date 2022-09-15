@@ -5,10 +5,12 @@ import logging
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
+from cwl_luigi.command import build_command
+from cwl_luigi.environment import Environment
 from cwl_luigi.exceptions import CWLError
-from cwl_luigi.utils import load_json, load_yaml, rename_dict_inplace
+from cwl_luigi.utils import load_json, load_yaml, resolve_path
 
 L = logging.getLogger(__name__)
 
@@ -31,7 +33,7 @@ class CWLType(enum.Enum):
     STDOUT = enum.auto()
 
     @staticmethod
-    def from_string(string_value: str):
+    def from_string(string_value: str) -> "CWLType":
         """Convert a string to its respective CWLType."""
         string_to_enum = {
             "null": CWLType.NULL,
@@ -59,14 +61,6 @@ class ConfigInput:
     type: CWLType
     value: str
 
-    @classmethod
-    def from_cwl(cls, data):
-        """Generate a config input from cwl config data."""
-        if isinstance(data, str):
-            return cls(type=CWLType.STRING, value=data)
-
-        return cls(type=CWLType.from_string(data["class"]), value=data["path"])
-
 
 @dataclass(frozen=True)
 class Config:
@@ -75,12 +69,22 @@ class Config:
     inputs: Dict[str, ConfigInput]
 
     @classmethod
-    def from_cwl(cls, cwl_file: Path):
+    def from_cwl(cls, cwl_file: Path) -> "Config":
         """Generate a config instance from a cwl config file."""
         data = load_json(cwl_file)
 
-        inputs = {name: ConfigInput.from_cwl(data) for name, data in data["inputs"].items()}
+        inputs = {}
+        for name, data_input in data["inputs"].items():
 
+            if isinstance(data_input, str):
+                inputs[name] = ConfigInput(type=CWLType.STRING, value=data_input)
+            else:
+                input_type = CWLType.from_string(data_input["class"])
+                if input_type in {CWLType.FILE, CWLType.DIRECTORY}:
+                    path = str(resolve_path(data_input["path"], Path(cwl_file).parent))
+                    inputs[name] = ConfigInput(type=input_type, value=path)
+                else:
+                    raise NotImplementedError
         return cls(inputs=inputs)
 
 
@@ -112,7 +116,7 @@ class CommandLineToolInput:
     inputBinding: Dict[str, Any]
 
     @classmethod
-    def from_cwl(cls, name: str, data: Dict[str, str]):
+    def from_cwl(cls, name: str, data: Dict[str, Any]) -> "CommandLineToolInput":
         """Construct a CommandLineToolInput from cwl data."""
         return cls(
             id=name,
@@ -140,7 +144,7 @@ class CommandLineToolOutput:
     outputBinding: Dict[str, Any]  # glob: "bmo/me-type-property/nodes.h5"
 
     @classmethod
-    def from_cwl(cls, name, data, stdout=None):
+    def from_cwl(cls, name, data, stdout=None) -> "CommandLineToolOutput":
         """Construct a CommandLineToolOutput from cwl data."""
         data = copy.deepcopy(data)
 
@@ -157,9 +161,9 @@ class CommandLineToolOutput:
         return cls(id=name, **data)
 
 
-def _parse_baseCommand(raw: Union[str, List[str]], base_dir: Path):
+def _parse_base_command(raw: Union[str, List[str]], base_dir: Path) -> List[str]:
 
-    base_command = raw
+    base_command = deepcopy(raw)
 
     if isinstance(base_command, str):
         base_command = base_command.split()
@@ -199,9 +203,10 @@ class CommandLineTool:
     inputs: Dict[str, CommandLineToolInput]
     outputs: Dict[str, CommandLineToolOutput]
     stdout: str
+    environment: Optional[Environment]
 
     @classmethod
-    def from_cwl(cls, cwl_path):
+    def from_cwl(cls, cwl_path: Path) -> "CommandLineTool":
         """Construct a CommandLineTool from cwl data."""
         data = load_yaml(cwl_path)
         assert "cwlVersion" in data
@@ -218,18 +223,28 @@ class CommandLineTool:
             k: CommandLineToolOutput.from_cwl(k, v, stdout)
             for k, v in _parse_io_parameters(data, "outputs").items()
         }
-        data["baseCommand"] = _parse_baseCommand(
+
+        data["baseCommand"] = _parse_base_command(
             raw=data["baseCommand"], base_dir=Path(cwl_path).parent
         )
+
         if "label" not in data:
             data["label"] = ""
 
         if "id" not in data:
             data["id"] = str(cwl_path)
 
+        if "environment" not in data:
+            data["environment"] = None
+        else:
+            env = data["environment"]
+            if env["env_type"] == "VENV":
+                env["path"] = str(resolve_path(env["path"], Path(cwl_path).parent))
+            data["environment"] = Environment(config=env)
+
         return cls(**data)
 
-    def cmd(self):
+    def cmd(self) -> str:
         """Return the command for executing the command line tool."""
         prefix = {}
         positional = []
@@ -254,6 +269,8 @@ class CommandLineTool:
 
         ret = deepcopy(self.baseCommand)
 
+        assert isinstance(ret, list)
+
         for k, v in prefix.items():
             ret.append(k)
             ret.append(f"{{{v}}}")
@@ -261,7 +278,10 @@ class CommandLineTool:
         for _, v in sorted(positional):
             ret.append(f"{{{v}}}")
 
-        return ret
+        return build_command(
+            base_command=" ".join(map(str, ret)),
+            environment=self.environment,
+        )
 
 
 @dataclass(frozen=True)
@@ -279,7 +299,7 @@ class WorkflowInput:
     label: Optional[str]
 
     @classmethod
-    def from_cwl(cls, name: str, data: Dict[str, str]):
+    def from_cwl(cls, name: str, data: Dict[str, str]) -> "WorkflowInput":
         """Construct a WorkflowInput from cwl data."""
         return cls(
             id=name,
@@ -302,7 +322,7 @@ class WorkflowOutput:
     outputSource: str
 
     @classmethod
-    def from_cwl(cls, name: str, data: Dict[str, str]):
+    def from_cwl(cls, name: str, data: Dict[str, str]) -> "WorkflowOutput":
         """Construct a WorkflowOutput from cwl data."""
         return cls(
             id=name,
@@ -332,13 +352,14 @@ class WorkflowStep:
     run: CommandLineTool
 
     @classmethod
-    def from_cwl(cls, data: Dict[str, str]):
+    def from_cwl(cls, data: Dict[str, Any]) -> "WorkflowStep":
         """Construct a WorkflowStep from cwl data."""
-        data = copy.deepcopy(data)
-        rename_dict_inplace(data, "in", "inputs")
-        rename_dict_inplace(data, "out", "outputs")
-        data["run"] = CommandLineTool.from_cwl(data["run"])
-        return cls(**data)
+        return cls(
+            id=data["id"],
+            inputs=data["in"],
+            outputs=data["out"],
+            run=CommandLineTool.from_cwl(data["run"]),
+        )
 
     def get_input_name_by_target(self, target: str) -> str:
         """Return the input name, given its target value."""
@@ -374,7 +395,7 @@ class Workflow:
         return {s.id for s in self.steps}
 
     @classmethod
-    def from_cwl(cls, cwl_path):
+    def from_cwl(cls, cwl_path: Path) -> "Workflow":
         """Construct a Workflow from cwl data."""
         data = load_yaml(cwl_path)
         assert "cwlVersion" in data
@@ -447,7 +468,7 @@ class Edge:
     target: str
 
 
-def get_graph(workflow: Workflow):
+def get_graph(workflow: Workflow) -> Tuple[Dict[str, Node], Set[Edge]]:
     """Return the nodes and edges of the workflow."""
     nodes = {}
     edges = set()

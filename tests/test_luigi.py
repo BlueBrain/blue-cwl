@@ -42,32 +42,32 @@ def test_build_workflow__cat_echo__task_classes():
         m0 = tasks["m0"]
         assert m0.requires_ == []
         assert m0.outputs_.keys() == {"example_file", "STDOUT"}
-        assert m0.cmd_ == [str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py"), "{message}"]
+        assert m0.cmd_ == str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py {message}")
 
         m1 = tasks["m1"]
         assert m1.requires_ == []
         assert m1.outputs_.keys() == {"example_file", "STDOUT"}
-        assert m1.cmd_ == [str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py"), "{message}"]
+        assert m1.cmd_ == str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py {message}")
 
         m2 = tasks["m2"]
         assert m2.requires_ == []
         assert m2.outputs_.keys() == {"example_file", "STDOUT"}
-        assert m2.cmd_ == [str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py"), "{message}"]
+        assert m2.cmd_ == str(WORKFLOW_CAT_ECHO_DIR / "echo-and-write.py {message}")
 
         c0 = tasks["c0"]
         assert set(c0.requires_) == {m1, m0}
         assert c0.outputs_.keys() == {"STDOUT"}
-        assert c0.cmd_ == ["cat", "{f0}", "{f1}"]
+        assert c0.cmd_ == "cat {f0} {f1}"
 
         c1 = tasks["c1"]
         assert set(c1.requires_) == {m2, m1}
         assert c1.outputs_.keys() == {"STDOUT"}
-        assert c1.cmd_ == ["cat", "{f0}", "{f1}"]
+        assert c1.cmd_ == "cat {f0} {f1}"
 
         d0 = tasks["d0"]
         assert set(d0.requires_) == {c0, c1}
         assert d0.outputs_.keys() == {"STDOUT"}
-        assert d0.cmd_ == ["cat", "{f0}", "{f1}"]
+        assert d0.cmd_ == "cat {f0} {f1}"
 
         assert mapping == {
             "m0": {"message": "msg0"},

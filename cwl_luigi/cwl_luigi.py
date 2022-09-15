@@ -5,7 +5,7 @@ import subprocess
 import time
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Any, Dict, List, Set
 
 import click
 import luigi
@@ -39,14 +39,15 @@ def build_luigi_task(step: cwl.WorkflowStep, dependencies: List, base_dir: Path)
 
         cls_name = type(self).__name__
 
-        fmt = self.mapping[cls_name]
-        cmd = [atom.format(**fmt) for atom in self.cmd_]
+        cmd = self.cmd_.format(**self.mapping[cls_name])
 
         # so we can see the command, and pretend it took a while
-        click.secho(f"[{cwd}]: {' '.join(cmd)}", fg="red")
+        click.secho(f"[{cwd}]: {cmd}", fg="red")
         time.sleep(0.5)
 
-        res = subprocess.run(cmd, capture_output=True, cwd=cwd, encoding="utf-8", check=False)
+        res = subprocess.run(
+            cmd, capture_output=True, cwd=cwd, encoding="utf-8", check=False, shell=True
+        )
 
         if res.returncode != 0:
             raise CWLError(
@@ -190,7 +191,7 @@ def build_workflow(
 
     mapping = _build_inputs_mapping(workflow, nodes, edges, base_dir)
 
-    tasks = {}
+    tasks: Dict[str, Any] = {}
     for name, depency_names in reversed(needed_steps):
 
         deps = [tasks[d] for d in depency_names]

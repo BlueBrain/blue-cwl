@@ -66,8 +66,8 @@ def test_CommandLineToolOutput():
         ),
     ],
 )
-def test_parse_baseCommand(cmd, expected):
-    res = tested._parse_baseCommand(cmd, base_dir=Path("/myabspath"))
+def test_parse_base_command(cmd, expected):
+    res = tested._parse_base_command(cmd, base_dir=Path("/myabspath"))
     assert res == expected
 
 
@@ -93,7 +93,7 @@ def test_CommandLineTool():
     }
     assert obj.stdout == "output.txt"
 
-    assert obj.cmd() == ["cat", "{f0}", "{f1}"]
+    assert obj.cmd() == "cat {f0} {f1}"
 
 
 def test_WorkflowInput():

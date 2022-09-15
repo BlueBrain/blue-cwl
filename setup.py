@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 
 import importlib.util
-import sys
 
 from setuptools import setup, find_packages
-
-if sys.version_info < (3, 6):
-    sys.exit("Sorry, Python < 3.6 is not supported")
 
 # read the contents of the README file
 with open("README.rst", encoding="utf-8") as f:
@@ -31,12 +27,16 @@ setup(
     url="https://bbpteam.epfl.ch/documentation/projects/cwl-luigi",
     project_urls={
         "Tracker": "https://bbpteam.epfl.ch/project/issues/projects/NSETM/issues",
-        "Source": "ssh://bbpcode.epfl.ch/nse/cwl-luigi",
+        "Source": "git@bbpgitlab.epfl.ch:nse/cwl-luigi.git",
     },
     license="BBP-internal-confidential",
-    install_requires=["pyyaml", "luigi", "click"],
+    install_requires=[
+        "pyyaml>=6.0",
+        "luigi>=3.0",
+        "click>=8.0",
+    ],
+    python_requires=">=3.9",
     packages=find_packages(),
-    python_requires=">=3.6",
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
@@ -44,9 +44,7 @@ setup(
         "Intended Audience :: Science/Research",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
 )
