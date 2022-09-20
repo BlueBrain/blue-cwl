@@ -28,7 +28,7 @@ def test_build_workflow__cat_echo__task_classes():
 
     with tempfile.TemporaryDirectory() as tdir:
 
-        tdir = Path(tdir)
+        tdir = Path(tdir).resolve()
 
         tasks, mapping = _build_workflow(WORKFLOW_CAT_ECHO_DIR / "workflow-cat-echo.cwl", tdir)
 
@@ -87,7 +87,7 @@ def test_build_workflow__cat_echo__task_instances():
 
     with tempfile.TemporaryDirectory() as tdir:
 
-        tdir = Path(tdir)
+        tdir = Path(tdir).resolve()
 
         tasks, mapping = _build_workflow(WORKFLOW_CAT_ECHO_DIR / "workflow-cat-echo.cwl", tdir)
 

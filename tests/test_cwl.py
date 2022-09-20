@@ -5,7 +5,8 @@ from pathlib import Path
 
 import pytest
 from cwl_luigi import cwl as tested
-from cwl_luigi.cwl import CWLType
+from cwl_luigi.cwl_types import CWLType
+from cwl_luigi.exceptions import CWLError
 
 from cwl_luigi import utils
 
@@ -19,14 +20,59 @@ def _test_dataclass_instance(obj, expected_attributes):
     )
 
 
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        (
+            "bar",
+            {"type": CWLType.STRING, "value": "bar"},
+        ),
+        (
+            {"class": "File", "path": "path1"},
+            {"type": CWLType.FILE, "value": "path1"},
+        ),
+        (
+            {"class": "Directory", "path": "path2"},
+            {"type": CWLType.DIRECTORY, "value": "path2"},
+        ),
+    ],
+)
+def test_ConfigInput(data, expected):
+
+    obj = tested.ConfigInput.from_cwl(data)
+    _test_dataclass_instance(obj, expected)
+
+
+def test_Config():
+
+    config_file = DATA_DIR / "config.json"
+
+    obj = tested.Config.from_cwl(config_file)
+
+    _test_dataclass_instance(
+        obj,
+        {
+            "inputs": {
+                "spam": {"type": CWLType.FILE, "value": "/foo"},
+                "ham": {"type": CWLType.DIRECTORY, "value": "/bar"},
+                "eggs": {"type": CWLType.STRING, "value": "foo"},
+            }
+        },
+    )
+
+
 def test_CommandLineToolInput():
 
-    data = {"type": "File", "inputBinding": "--region"}
+    data = {"type": "File", "inputBinding": {"prefix": "--region"}}
     obj = tested.CommandLineToolInput.from_cwl(name="John", data=data)
 
-    data["id"] = "John"
-    data["type"] = CWLType.FILE
-    _test_dataclass_instance(obj, data)
+    expected = {
+        "id": "John",
+        "type": CWLType.FILE,
+        "inputBinding": {"position": 0, "prefix": "--region"},
+    }
+
+    _test_dataclass_instance(obj, expected)
 
 
 def test_CommandLineToolOutput():
@@ -34,66 +80,108 @@ def test_CommandLineToolOutput():
     data = {
         "type": "Directory",
         "outputBinding": {"glob": "some/path"},
-        "doc": None,
+        "doc": "",
     }
+
     obj = tested.CommandLineToolOutput.from_cwl(name="John", data=data)
 
-    data["id"] = "John"
-    data["type"] = CWLType.DIRECTORY
-    _test_dataclass_instance(obj, data)
+    expected = {
+        "id": "John",
+        "type": CWLType.DIRECTORY,
+        "outputBinding": {"glob": "some/path"},
+        "doc": "",
+    }
+
+    _test_dataclass_instance(obj, expected)
+
+
+@pytest.fixture
+def tool_cat():
+    filepath = WORKFLOW_CAT_ECHO_DIR / "cat.cwl"
+    return tested.CommandLineTool.from_cwl(filepath)
 
 
 @pytest.mark.parametrize(
-    "cmd, expected",
+    "attribute, expected_value",
     [
-        ("executable", ["executable"]),
-        ("/absolute-executable", ["/absolute-executable"]),
-        ("./relative-executable", ["/myabspath/relative-executable"]),
-        ("executable with-subcommand", ["executable", "with-subcommand"]),
-        ("/absolute-executable with-subcommand", ["/absolute-executable", "with-subcommand"]),
+        ("cwlVersion", "v1.2"),
+        ("id", str(WORKFLOW_CAT_ECHO_DIR / "cat.cwl")),
+        ("label", ""),
+        ("baseCommand", ["cat"]),
         (
-            "./relative-executable with-subcommand",
-            ["/myabspath/relative-executable", "with-subcommand"],
+            "inputs",
+            {
+                "f0": tested.CommandLineToolInput(
+                    id="f0",
+                    type=CWLType.FILE,
+                    inputBinding=tested.CommandLineBinding(position=1, prefix=None),
+                ),
+                "f1": tested.CommandLineToolInput(
+                    id="f1",
+                    type=CWLType.FILE,
+                    inputBinding=tested.CommandLineBinding(position=2, prefix=None),
+                ),
+            },
         ),
-        (["executable"], ["executable"]),
-        (["/absolute-executable"], ["/absolute-executable"]),
-        (["./relative-executable"], ["/myabspath/relative-executable"]),
-        (["executable", "with-subcommand"], ["executable", "with-subcommand"]),
-        (["/absolute-executable", "with-subcommand"], ["/absolute-executable", "with-subcommand"]),
         (
-            ["./relative-executable", "with-subcommand"],
-            ["/myabspath/relative-executable", "with-subcommand"],
+            "outputs",
+            {
+                "cat_out": tested.CommandLineToolOutput(
+                    id="cat_out", type=CWLType.STDOUT, doc="", outputBinding={"glob": "output.txt"}
+                )
+            },
         ),
+        ("stdout", "output.txt"),
     ],
 )
-def test_parse_base_command(cmd, expected):
-    res = tested._parse_base_command(cmd, base_dir=Path("/myabspath"))
-    assert res == expected
+def test_CommandLineTool__attributes(tool_cat, attribute, expected_value):
+    value = getattr(tool_cat, attribute)
+    assert value == expected_value
 
 
-def test_CommandLineTool():
+def test_CommandLineTool__cmd(tool_cat):
+    assert tool_cat.cmd() == "cat {f0} {f1}"
 
-    filepath = WORKFLOW_CAT_ECHO_DIR / "cat.cwl"
 
-    obj = tested.CommandLineTool.from_cwl(filepath)
+def test_CommandLineTool__assort_inputs():
 
-    assert obj.cwlVersion == "v1.2"
-    assert obj.id == str(filepath)
-    assert obj.label == ""
-    assert obj.baseCommand == ["cat"]
+    tool = tested.CommandLineTool(
+        cwlVersion=None,
+        id=None,
+        label=None,
+        baseCommand=None,
+        inputs={
+            "f0": tested.CommandLineToolInput(
+                id="f0",
+                type=CWLType.FILE,
+                inputBinding=tested.CommandLineBinding(position=1, prefix="--f0"),
+            ),
+            "f1": tested.CommandLineToolInput(
+                id="f1",
+                type=CWLType.FILE,
+                inputBinding=tested.CommandLineBinding(position=3, prefix=None),
+            ),
+            "f2": tested.CommandLineToolInput(
+                id="f2",
+                type=CWLType.FILE,
+                inputBinding=tested.CommandLineBinding(position=2, prefix=None),
+            ),
+            "f4": tested.CommandLineToolInput(
+                id="f4",
+                type=CWLType.FILE,
+                inputBinding=tested.CommandLineBinding(position=1, prefix="--f4"),
+            ),
+        },
+        outputs={},
+        stdout=None,
+        environment=None,
+    )
 
-    assert obj.inputs == {
-        "f0": tested.CommandLineToolInput(id="f0", type=CWLType.FILE, inputBinding={"position": 1}),
-        "f1": tested.CommandLineToolInput(id="f1", type=CWLType.FILE, inputBinding={"position": 2}),
-    }
-    assert obj.outputs == {
-        "cat_out": tested.CommandLineToolOutput(
-            id="cat_out", type=CWLType.STDOUT, doc=None, outputBinding={"glob": "output.txt"}
-        )
-    }
-    assert obj.stdout == "output.txt"
+    positional, named = tool._assort_inputs()
 
-    assert obj.cmd() == "cat {f0} {f1}"
+    assert positional == [(3, "f1"), (2, "f2")]
+
+    assert named == {"--f0": "f0", "--f4": "f4"}
 
 
 def test_WorkflowInput():
@@ -142,44 +230,8 @@ def test_workflowStep():
 
     assert obj.get_input_name_by_target("input1") == "i1"
 
-
-def test_parse_io_parameters__no_outputs():
-    cwl_data = {"inputs": {}}
-    outputs = tested._parse_io_parameters(cwl_data, "outputs")
-    assert outputs == {}
-
-
-def test_parse_io_parameters__outputs_as_list():
-    cwl_data = {
-        "inputs": {},
-        "outputs": [
-            {
-                "id": "entry1",
-                "type": "type1",
-            },
-            {
-                "id": "entry2",
-                "type": "type2",
-            },
-        ],
-    }
-    outputs = tested._parse_io_parameters(cwl_data, "outputs")
-    assert outputs == {
-        "entry1": {"type": "type1"},
-        "entry2": {"type": "type2"},
-    }
-
-
-def test_parse_io_parameters__outputs_as_dict():
-    cwl_data = {
-        "inputs": {},
-        "outputs": {
-            "entry1": {"type": "type1"},
-            "entry2": {"type": "type2"},
-        },
-    }
-    outputs = tested._parse_io_parameters(cwl_data, "outputs")
-    assert outputs == cwl_data["outputs"]
+    with pytest.raises(ValueError, match="Target does not exist in inputs."):
+        assert obj.get_input_name_by_target("asdf")
 
 
 def workflow_cat_echo():
@@ -196,6 +248,17 @@ def test_workflow__attributes():
     assert workflow.cwlVersion == "v1.2"
     assert workflow.id == "cat-echo"
     assert workflow.label == "make-some-files"
+
+
+def test_workflow__methods():
+    workflow = workflow_cat_echo()
+    assert workflow.step_names() == ["m0", "m1", "m2", "c0", "c1", "d0"]
+
+    step = workflow.get_step_by_name("m2")
+    assert step.id == "m2"
+
+    with pytest.raises(ValueError, match="Not found: asdf"):
+        workflow.get_step_by_name("asdf")
 
 
 def test_workflow__inputs():
@@ -280,20 +343,20 @@ def test_workflow__steps():
                     "message": {
                         "id": "message",
                         "type": CWLType.STRING,
-                        "inputBinding": {"position": 1},
+                        "inputBinding": {"position": 1, "prefix": None},
                     },
                 },
                 "outputs": {
                     "example_stdout": {
                         "id": "example_stdout",
                         "type": CWLType.STDOUT,
-                        "doc": None,
+                        "doc": "",
                         "outputBinding": {"glob": "output.txt"},
                     },
                     "example_file": {
                         "id": "example_file",
                         "type": CWLType.FILE,
-                        "doc": None,
+                        "doc": "",
                         "outputBinding": {"glob": "file-output.txt"},
                     },
                     "stdout": "output.txt",
@@ -313,20 +376,20 @@ def test_workflow__steps():
                     "message": {
                         "id": "message",
                         "type": CWLType.STRING,
-                        "inputBinding": {"position": 1},
+                        "inputBinding": {"position": 1, "prefix": None},
                     },
                 },
                 "outputs": {
                     "example_stdout": {
                         "id": "example_stdout",
                         "type": CWLType.STDOUT,
-                        "doc": None,
+                        "doc": "",
                         "outputBinding": {"glob": "output.txt"},
                     },
                     "example_file": {
                         "id": "example_file",
                         "type": CWLType.FILE,
-                        "doc": None,
+                        "doc": "",
                         "outputBinding": {"glob": "file-output.txt"},
                     },
                     "stdout": "output.txt",
@@ -346,20 +409,20 @@ def test_workflow__steps():
                     "message": {
                         "id": "message",
                         "type": CWLType.STRING,
-                        "inputBinding": {"position": 1},
+                        "inputBinding": {"position": 1, "prefix": None},
                     },
                 },
                 "outputs": {
                     "example_stdout": {
                         "id": "example_stdout",
                         "type": CWLType.STDOUT,
-                        "doc": None,
+                        "doc": "",
                         "outputBinding": {"glob": "output.txt"},
                     },
                     "example_file": {
                         "id": "example_file",
                         "type": CWLType.FILE,
-                        "doc": None,
+                        "doc": "",
                         "outputBinding": {"glob": "file-output.txt"},
                     },
                     "stdout": "output.txt",
@@ -376,14 +439,22 @@ def test_workflow__steps():
                 "label": "",
                 "baseCommand": ["cat"],
                 "inputs": {
-                    "f0": {"id": "f0", "type": CWLType.FILE, "inputBinding": {"position": 1}},
-                    "f1": {"id": "f1", "type": CWLType.FILE, "inputBinding": {"position": 2}},
+                    "f0": {
+                        "id": "f0",
+                        "type": CWLType.FILE,
+                        "inputBinding": {"position": 1, "prefix": None},
+                    },
+                    "f1": {
+                        "id": "f1",
+                        "type": CWLType.FILE,
+                        "inputBinding": {"position": 2, "prefix": None},
+                    },
                 },
                 "outputs": {
                     "cat_out": {
                         "id": "cat_out",
                         "type": CWLType.STDOUT,
-                        "doc": None,
+                        "doc": "",
                         "outputBinding": {"glob": "output.txt"},
                     },
                     "stdout": "output.txt",
@@ -400,14 +471,22 @@ def test_workflow__steps():
                 "label": "",
                 "baseCommand": ["cat"],
                 "inputs": {
-                    "f0": {"id": "f0", "type": CWLType.FILE, "inputBinding": {"position": 1}},
-                    "f1": {"id": "f1", "type": CWLType.FILE, "inputBinding": {"position": 2}},
+                    "f0": {
+                        "id": "f0",
+                        "type": CWLType.FILE,
+                        "inputBinding": {"position": 1, "prefix": None},
+                    },
+                    "f1": {
+                        "id": "f1",
+                        "type": CWLType.FILE,
+                        "inputBinding": {"position": 2, "prefix": None},
+                    },
                 },
                 "outputs": {
                     "cat_out": {
                         "id": "cat_out",
                         "type": CWLType.STDOUT,
-                        "doc": None,
+                        "doc": "",
                         "outputBinding": {"glob": "output.txt"},
                     },
                     "stdout": "output.txt",
@@ -424,14 +503,22 @@ def test_workflow__steps():
                 "label": "",
                 "baseCommand": ["cat"],
                 "inputs": {
-                    "f0": {"id": "f0", "type": CWLType.FILE, "inputBinding": {"position": 1}},
-                    "f1": {"id": "f1", "type": CWLType.FILE, "inputBinding": {"position": 2}},
+                    "f0": {
+                        "id": "f0",
+                        "type": CWLType.FILE,
+                        "inputBinding": {"position": 1, "prefix": None},
+                    },
+                    "f1": {
+                        "id": "f1",
+                        "type": CWLType.FILE,
+                        "inputBinding": {"position": 2, "prefix": None},
+                    },
                 },
                 "outputs": {
                     "cat_out": {
                         "id": "cat_out",
                         "type": CWLType.STDOUT,
-                        "doc": None,
+                        "doc": "",
                         "outputBinding": {"glob": "output.txt"},
                     },
                     "stdout": "output.txt",

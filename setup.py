@@ -34,9 +34,14 @@ setup(
         "pyyaml>=6.0",
         "luigi>=3.0",
         "click>=8.0",
+        "jsonschema>=3.0",
     ],
     python_requires=">=3.9",
     packages=find_packages(),
+    include_package_data=True,
+    package_data={
+        "cwl_luigi": ["cwl_luigi/schemas/*"],
+    },
     extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",

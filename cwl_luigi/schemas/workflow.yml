@@ -1,0 +1,129 @@
+%YAML 1.1
+---
+"$schema": https://json-schema.org/draft/2020-12/schema
+title: Common Workflow Language Workflow schema
+type: object
+required:
+- cwlVersion
+- class
+- steps
+- outputs
+"$defs":
+  input_type:
+    type: string
+    enum:
+    - string
+    - File
+    - Directory
+  input_binding:
+    additionalProperties: false
+    parameters:
+      position:
+        additionalProperties: false
+        type: integer
+        minimum: 1
+      prefix:
+        additionalProperties: false
+        type: string
+      oneOf:
+      - required:
+        - position
+      - required:
+        - prefix
+  output_type:
+    type: string
+    enum:
+    - string
+    - File
+    - Directory
+properties:
+  cwlVersion:
+    const: v1.2
+    type: string
+  class:
+    const: Workflow
+    type: string
+  id:
+    type: string
+  label:
+    type: string
+  inputs:
+    uniqueItems: true
+    oneOf:
+    - type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          type:
+            "$ref": "#/$defs/input_type"
+          inputBinding:
+            "$ref": "#/$defs/input_binding"
+        required:
+        - id
+        - type
+    - type: object
+      patternProperties:
+        "^.*$":
+          properties:
+            type:
+              "$ref": "#/$defs/input_type"
+            inputBinding:
+              "$ref": "#/$defs/input_binding"
+          required:
+          - type
+  outputs:
+    uniqueItems: true
+    oneOf:
+    - type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          type:
+            "$ref": "#/$defs/output_type"
+          outputSource:
+            type: string
+        required:
+        - id
+        - type
+        - outputSource
+    - type: object
+      patternProperties:
+        "^.*$":
+          type: object
+          properties:
+            type:
+              "$ref": "#/$defs/output_type"
+            outputSource:
+              type: string
+          required:
+          - type
+          - outputSource
+      minProperties: 1
+  steps:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        run:
+          type: string
+        in:
+          type: object
+          patternProperties:
+            "^.*$":
+              type: string
+          additionalProperties: false
+        out:
+          type: array
+          items:
+            type: string
+      required:
+      - id
+      - run
+      - out

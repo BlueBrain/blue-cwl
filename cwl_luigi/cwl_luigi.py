@@ -11,7 +11,7 @@ import click
 import luigi
 
 from cwl_luigi import cwl
-from cwl_luigi.cwl import CWLType, CWLWorkflowType
+from cwl_luigi.cwl_types import CWLType, CWLWorkflowType
 from cwl_luigi.exceptions import CWLError
 
 INPUT_MAP = {

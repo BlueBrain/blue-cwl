@@ -1,0 +1,13 @@
+{
+  "inputs": {
+    "spam": {
+      "path": "/foo",
+      "class": "File"
+    },
+    "ham": {
+      "path": "/bar",
+      "class": "Directory"
+    },
+    "eggs": "foo"
+  }
+}

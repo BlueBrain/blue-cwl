@@ -1,57 +1,16 @@
 """CWL workflow construction module."""
-import copy
-import enum
 import logging
-from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple
 
+from cwl_luigi import cwl_parser
 from cwl_luigi.command import build_command
+from cwl_luigi.cwl_types import CWLType, CWLWorkflowType
 from cwl_luigi.environment import Environment
 from cwl_luigi.exceptions import CWLError
-from cwl_luigi.utils import load_json, load_yaml, resolve_path
 
 L = logging.getLogger(__name__)
-
-
-class CWLType(enum.Enum):
-    """Common Workflow Language types.
-
-    See https://www.commonwl.org/v1.2/Workflow.html#CWLType
-    """
-
-    NULL = enum.auto()
-    BOOLEAN = enum.auto()
-    INT = enum.auto()
-    LONG = enum.auto()
-    FLOAT = enum.auto()
-    DOUBLE = enum.auto()
-    STRING = enum.auto()
-    FILE = enum.auto()
-    DIRECTORY = enum.auto()
-    STDOUT = enum.auto()
-
-    @staticmethod
-    def from_string(string_value: str) -> "CWLType":
-        """Convert a string to its respective CWLType."""
-        string_to_enum = {
-            "null": CWLType.NULL,
-            "boolean": CWLType.BOOLEAN,
-            "int": CWLType.INT,
-            "long": CWLType.LONG,
-            "float": CWLType.FLOAT,
-            "double": CWLType.DOUBLE,
-            "string": CWLType.STRING,
-            "File": CWLType.FILE,
-            "Directory": CWLType.DIRECTORY,
-            "stdout": CWLType.STDOUT,
-        }
-        if string_value not in string_to_enum:
-            raise CWLError(
-                f"Unknown type {string_value}. " f"Expected on of {list(string_to_enum.keys())}."
-            )
-        return string_to_enum[string_value]
 
 
 @dataclass(frozen=True)
@@ -60,6 +19,18 @@ class ConfigInput:
 
     type: CWLType
     value: str
+
+    @classmethod
+    def from_cwl(cls, data: Dict[str, Any]) -> "ConfigInput":
+        """Generate ConfigInput instance from cwl data."""
+        if isinstance(data, str):
+            input_type = CWLType.STRING
+            input_value = data
+        else:
+            input_type = CWLType.from_string(data["class"])
+            input_value = data["path"]
+
+        return cls(type=input_type, value=input_value)
 
 
 @dataclass(frozen=True)
@@ -71,34 +42,32 @@ class Config:
     @classmethod
     def from_cwl(cls, cwl_file: Path) -> "Config":
         """Generate a config instance from a cwl config file."""
-        data = load_json(cwl_file)
+        data = cwl_parser.parse_config_file(cwl_file)
 
-        inputs = {}
-        for name, data_input in data["inputs"].items():
+        inputs = {name: ConfigInput.from_cwl(inp) for name, inp in data["inputs"].items()}
 
-            if isinstance(data_input, str):
-                inputs[name] = ConfigInput(type=CWLType.STRING, value=data_input)
-            else:
-                input_type = CWLType.from_string(data_input["class"])
-                if input_type in {CWLType.FILE, CWLType.DIRECTORY}:
-                    path = str(resolve_path(data_input["path"], Path(cwl_file).parent))
-                    inputs[name] = ConfigInput(type=input_type, value=path)
-                else:
-                    raise NotImplementedError
         return cls(inputs=inputs)
 
 
-def _parse_io_parameters(cwl_data: dict, io_type: str) -> dict:
-    """Return inputs or outputs in dictionary format."""
-    if io_type not in cwl_data:
-        return {}
+@dataclass(frozen=True)
+class CommandLineBinding:
+    """Dataclass for a command line's tool input binding.
 
-    data = cwl_data[io_type]
+    Attributes:
+        position: Integer signifying the position in the command line. Default 0.
+        prefix: Optional prefix for named argument.
+    """
 
-    if isinstance(data, list):
-        return {entry["id"]: {k: v for k, v in entry.items() if k != "id"} for entry in data}
+    position: int
+    prefix: Optional[str]
 
-    return data
+    @classmethod
+    def from_cwl(cls, data: Dict[str, Any]) -> "CommandLineBinding":
+        """Generate a CommandLineBinding from cwl data."""
+        return cls(
+            position=int(data.get("position", 0)),
+            prefix=data.get("prefix", None),
+        )
 
 
 @dataclass(frozen=True)
@@ -113,7 +82,7 @@ class CommandLineToolInput:
 
     id: str
     type: CWLType
-    inputBinding: Dict[str, Any]
+    inputBinding: CommandLineBinding
 
     @classmethod
     def from_cwl(cls, name: str, data: Dict[str, Any]) -> "CommandLineToolInput":
@@ -121,7 +90,7 @@ class CommandLineToolInput:
         return cls(
             id=name,
             type=CWLType.from_string(data["type"]),
-            inputBinding=data["inputBinding"],
+            inputBinding=CommandLineBinding.from_cwl(data=data["inputBinding"]),
         )
 
 
@@ -140,45 +109,25 @@ class CommandLineToolOutput:
 
     id: str
     type: CWLType
-    doc: Optional[str]
+    doc: str
     outputBinding: Dict[str, Any]  # glob: "bmo/me-type-property/nodes.h5"
 
     @classmethod
-    def from_cwl(cls, name, data, stdout=None) -> "CommandLineToolOutput":
+    def from_cwl(cls, name: str, data: Dict[str, Any], stdout=None) -> "CommandLineToolOutput":
         """Construct a CommandLineToolOutput from cwl data."""
-        data = copy.deepcopy(data)
-
-        if "doc" not in data:
-            data["doc"] = None
-
         # make stdout behave like a normal file
         if "outputBinding" not in data:
             assert stdout is not None
-            data["outputBinding"] = {"glob": stdout}
+            output_binding = {"glob": stdout}
+        else:
+            output_binding = data["outputBinding"]
 
-        data["type"] = CWLType.from_string(data["type"])
-
-        return cls(id=name, **data)
-
-
-def _parse_base_command(raw: Union[str, List[str]], base_dir: Path) -> List[str]:
-
-    base_command = deepcopy(raw)
-
-    if isinstance(base_command, str):
-        base_command = base_command.split()
-
-    if not isinstance(base_command, list):
-        raise CWLError(
-            f"Unknown format type {type(base_command)} for baseCommand. "
-            "Expected either str or list."
+        return cls(
+            id=name,
+            type=CWLType.from_string(data["type"]),
+            doc=data.get("doc", ""),
+            outputBinding=output_binding,
         )
-
-    # resolve local executables wrt cwl_path directory
-    if base_command[0].startswith("./"):
-        base_command[0] = str((base_dir / base_command[0]).resolve())
-
-    return base_command
 
 
 @dataclass(frozen=True)
@@ -208,80 +157,56 @@ class CommandLineTool:
     @classmethod
     def from_cwl(cls, cwl_path: Path) -> "CommandLineTool":
         """Construct a CommandLineTool from cwl data."""
-        data = load_yaml(cwl_path)
-        assert "cwlVersion" in data
-        assert data["cwlVersion"] == "v1.2"
-        assert data["class"] == "CommandLineTool"
-        del data["class"]
+        data = cwl_parser.parse_command_line_tool_file(cwl_path)
 
-        stdout = data.get("stdout")
-        data["inputs"] = {
-            k: CommandLineToolInput.from_cwl(k, v)
-            for k, v in _parse_io_parameters(data, "inputs").items()
+        inputs = {
+            input_name: CommandLineToolInput.from_cwl(input_name, input_data)
+            for input_name, input_data in data["inputs"].items()
         }
-        data["outputs"] = {
-            k: CommandLineToolOutput.from_cwl(k, v, stdout)
-            for k, v in _parse_io_parameters(data, "outputs").items()
+        outputs = {
+            output_name: CommandLineToolOutput.from_cwl(output_name, output_data, data["stdout"])
+            for output_name, output_data in data["outputs"].items()
         }
+        environment = Environment(config=data["environment"]) if data["environment"] else None
 
-        data["baseCommand"] = _parse_base_command(
-            raw=data["baseCommand"], base_dir=Path(cwl_path).parent
+        return cls(
+            cwlVersion=data["cwlVersion"],
+            id=data.get("id", str(cwl_path)),
+            label=data.get("label", ""),
+            baseCommand=data["baseCommand"],
+            inputs=inputs,
+            outputs=outputs,
+            stdout=data.get("stdout", "stdout.txt"),
+            environment=environment,
         )
-
-        if "label" not in data:
-            data["label"] = ""
-
-        if "id" not in data:
-            data["id"] = str(cwl_path)
-
-        if "environment" not in data:
-            data["environment"] = None
-        else:
-            env = data["environment"]
-            if env["env_type"] == "VENV":
-                env["path"] = str(resolve_path(env["path"], Path(cwl_path).parent))
-            data["environment"] = Environment(config=env)
-
-        return cls(**data)
 
     def cmd(self) -> str:
         """Return the command for executing the command line tool."""
-        prefix = {}
-        positional = []
-        for id_, i in self.inputs.items():
-            if i.inputBinding is None:
-                L.warning("No inputBinding: %s", i)
-
-            inputBinding = i.inputBinding
-
-            if "position" in inputBinding:
-                positional.append(
-                    (
-                        int(inputBinding["position"]),
-                        id_,
-                    )
-                )
-            elif "prefix" in inputBinding:
-                prefix[inputBinding["prefix"]] = id_
-            else:
-                L.warning("Unknown type: %s", inputBinding)
-                assert False
-
-        ret = deepcopy(self.baseCommand)
-
-        assert isinstance(ret, list)
-
-        for k, v in prefix.items():
-            ret.append(k)
-            ret.append(f"{{{v}}}")
-
-        for _, v in sorted(positional):
-            ret.append(f"{{{v}}}")
+        positional_arguments, named_arguments = self._assort_inputs()
 
         return build_command(
-            base_command=" ".join(map(str, ret)),
+            base_command=self.baseCommand,
+            named_arguments=named_arguments,
+            positional_arguments=positional_arguments,
             environment=self.environment,
         )
+
+    def _assort_inputs(self) -> Tuple[List[Tuple[int, str]], Dict[str, str]]:
+        """Categorize inputs into positional and named arguments."""
+        named_arguments: Dict[str, str] = {}
+        positional_arguments: List[Tuple[int, str]] = []
+
+        for cmd_input in self.inputs.values():
+
+            name = cmd_input.id
+            binding = cmd_input.inputBinding
+
+            if binding.prefix:
+                named_arguments[binding.prefix] = name
+            else:
+                positional_arguments.append((binding.position, name))
+
+        return positional_arguments, named_arguments
 
 
 @dataclass(frozen=True)
@@ -356,9 +281,9 @@ class WorkflowStep:
         """Construct a WorkflowStep from cwl data."""
         return cls(
             id=data["id"],
-            inputs=data["in"],
+            inputs=data.get("in", {}),
             outputs=data["out"],
-            run=CommandLineTool.from_cwl(data["run"]),
+            run=CommandLineTool.from_cwl(Path(data["run"])),
         )
 
     def get_input_name_by_target(self, target: str) -> str:
@@ -369,7 +294,7 @@ class WorkflowStep:
         raise ValueError("Target does not exist in inputs.")
 
 
-@dataclass
+@dataclass(frozen=True)
 class Workflow:
     """Dataclass for an entire workflow.
 
@@ -382,56 +307,25 @@ class Workflow:
     cwlVersion: str
     id: str
     label: str
-
-    # requirements:
-    #  SubworkflowFeatureRequirement: {}
-
     inputs: Dict[str, WorkflowInput]
     outputs: Dict[str, WorkflowOutput]
     steps: List[WorkflowStep]
 
-    def step_names(self) -> Set[str]:
+    def step_names(self) -> List[str]:
         """Return the names of the workflow steps."""
-        return {s.id for s in self.steps}
+        return [s.id for s in self.steps]
 
     @classmethod
     def from_cwl(cls, cwl_path: Path) -> "Workflow":
         """Construct a Workflow from cwl data."""
-        data = load_yaml(cwl_path)
-        assert "cwlVersion" in data
-        assert data["cwlVersion"] == "v1.2"
-
-        class_type = data["class"]
-
-        if class_type != "Workflow":
-            raise CWLError(f"Expected class of type 'Workflow' but got '{class_type}'")
-
-        assert data["class"] == "Workflow"
-
-        inputs = {
-            k: WorkflowInput.from_cwl(k, v) for k, v in _parse_io_parameters(data, "inputs").items()
-        }
-        outputs = {
-            k: WorkflowOutput.from_cwl(k, v)
-            for k, v in _parse_io_parameters(data, "outputs").items()
-        }
-
-        for step_data in data["steps"]:
-
-            path = Path(step_data["run"])
-
-            # resolve relative paths wrt workflow directory
-            if not path.is_absolute():
-                path = (Path(cwl_path).parent / path).resolve()
-
-            step_data["run"] = str(path)
-
-        steps = [WorkflowStep.from_cwl(s) for s in data["steps"]]
-
+        data = cwl_parser.parse_workflow_file(cwl_path)
+        inputs = {k: WorkflowInput.from_cwl(k, v) for k, v in data["inputs"].items()}
+        outputs = {k: WorkflowOutput.from_cwl(k, v) for k, v in data["outputs"].items()}
+        steps = list(map(WorkflowStep.from_cwl, data["steps"]))
         return cls(
             cwlVersion=data["cwlVersion"],
-            id=data["id"],
-            label=data["label"] if "label" in data else "",
+            id=data.get("id", str(cwl_path)),
+            label=data.get("label", ""),
             inputs=inputs,
             outputs=outputs,
             steps=steps,
@@ -443,14 +337,6 @@ class Workflow:
             if s.id == name:
                 return s
         raise ValueError(f"Not found: {name}")
-
-
-class CWLWorkflowType(enum.Enum):
-    """Workflow node types."""
-
-    INPUT = enum.auto()
-    OUTPUT = enum.auto()
-    STEP = enum.auto()
 
 
 @dataclass(frozen=True)
