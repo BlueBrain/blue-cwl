@@ -35,6 +35,8 @@ setup(
         "luigi>=3.0",
         "click>=8.0",
         "jsonschema>=3.0",
+        "bluepyentity",
+        "cwl-registry @ git+ssh://git@bbpgitlab.epfl.ch/nse/cwl-registry.git@me-type-property#egg=cwl-registry",
     ],
     python_requires=">=3.9",
     packages=find_packages(),

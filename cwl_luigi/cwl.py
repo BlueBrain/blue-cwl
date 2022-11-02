@@ -2,13 +2,12 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from cwl_luigi import cwl_parser
 from cwl_luigi.command import build_command
-from cwl_luigi.cwl_types import CWLType, CWLWorkflowType
+from cwl_luigi.cwl_types import CWLType
 from cwl_luigi.environment import Environment
-from cwl_luigi.exceptions import CWLError
 
 L = logging.getLogger(__name__)
 
@@ -21,14 +20,17 @@ class ConfigInput:
     value: str
 
     @classmethod
-    def from_cwl(cls, data: Dict[str, Any]) -> "ConfigInput":
+    def from_cwl(cls, data: Union[str, Dict[str, Any]]) -> "ConfigInput":
         """Generate ConfigInput instance from cwl data."""
         if isinstance(data, str):
             input_type = CWLType.STRING
             input_value = data
         else:
             input_type = CWLType.from_string(data["class"])
-            input_value = data["path"]
+            if input_type == CWLType.NEXUS_TYPE:
+                input_value = data["resource-id"]
+            else:
+                input_value = data["path"]
 
         return cls(type=input_type, value=input_value)
 
@@ -111,6 +113,11 @@ class CommandLineToolOutput:
     type: CWLType
     doc: str
     outputBinding: Dict[str, Any]  # glob: "bmo/me-type-property/nodes.h5"
+
+    @property
+    def path(self):
+        """Return output binding's relative path."""
+        return Path(self.outputBinding["glob"])
 
     @classmethod
     def from_cwl(cls, name: str, data: Dict[str, Any], stdout=None) -> "CommandLineToolOutput":
@@ -279,11 +286,17 @@ class WorkflowStep:
     @classmethod
     def from_cwl(cls, data: Dict[str, Any]) -> "WorkflowStep":
         """Construct a WorkflowStep from cwl data."""
+        run_entry = data["run"]
+        if isinstance(run_entry, CommandLineTool):
+            run_obj = run_entry
+        else:
+            run_obj = CommandLineTool.from_cwl(Path(data["run"]))
+
         return cls(
             id=data["id"],
             inputs=data.get("in", {}),
             outputs=data["out"],
-            run=CommandLineTool.from_cwl(Path(data["run"])),
+            run=run_obj,
         )
 
     def get_input_name_by_target(self, target: str) -> str:
@@ -337,49 +350,3 @@ class Workflow:
             if s.id == name:
                 return s
         raise ValueError(f"Not found: {name}")
-
-
-@dataclass(frozen=True)
-class Node:
-    """CWL graph node dataclass."""
-
-    type: CWLWorkflowType
-
-
-@dataclass(frozen=True)
-class Edge:
-    """CWL graph edge dataclass."""
-
-    source: str
-    target: str
-
-
-def get_graph(workflow: Workflow) -> Tuple[Dict[str, Node], Set[Edge]]:
-    """Return the nodes and edges of the workflow."""
-    nodes = {}
-    edges = set()
-
-    for name in workflow.inputs:
-        assert name not in nodes, "duplicate name, input"
-        nodes[name] = Node(type=CWLWorkflowType.INPUT)
-
-    for s in workflow.steps:
-        assert s.id not in nodes, "duplicate name, step"
-        nodes[s.id] = Node(type=CWLWorkflowType.STEP)
-        for v in s.inputs.values():
-            edges.add(Edge(source=v.split("/", 1)[0], target=s.id))
-
-    for name, output in workflow.outputs.items():
-
-        if name in nodes:
-            raise CWLError(f"Duplicate name '{name}' in outputs")
-
-        nodes[name] = Node(type=CWLWorkflowType.OUTPUT)
-
-        source = output.source_step()
-        if source not in nodes:
-            raise CWLError(f"'{source}' is not a workflow step.")
-
-        edges.add(Edge(source=source, target=name))
-
-    return nodes, edges

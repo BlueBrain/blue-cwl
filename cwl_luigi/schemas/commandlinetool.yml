@@ -10,12 +10,14 @@ type: object
     - string
     - File
     - Directory
+    - NexusType
   output_type:
     type: string
     enum:
     - File
     - Directory
     - stdout
+    - NexusType
   input_binding:
     additionalProperties: false
     properties:

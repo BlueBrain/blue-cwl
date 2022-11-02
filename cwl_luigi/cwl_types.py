@@ -20,6 +20,7 @@ class CWLType(enum.Enum):
     FILE = enum.auto()
     DIRECTORY = enum.auto()
     STDOUT = enum.auto()
+    NEXUS_TYPE = enum.auto()
 
     @staticmethod
     def from_string(string_value: str):
@@ -34,6 +35,7 @@ class CWLType(enum.Enum):
             "string": CWLType.STRING,
             "File": CWLType.FILE,
             "Directory": CWLType.DIRECTORY,
+            "NexusType": CWLType.NEXUS_TYPE,
             "stdout": CWLType.STDOUT,
         }
         if string_value not in string_to_enum:

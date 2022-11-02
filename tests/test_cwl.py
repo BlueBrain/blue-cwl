@@ -45,7 +45,7 @@ def test_ConfigInput(data, expected):
 
 def test_Config():
 
-    config_file = DATA_DIR / "config.json"
+    config_file = DATA_DIR / "config.yml"
 
     obj = tested.Config.from_cwl(config_file)
 
@@ -536,59 +536,3 @@ def test_workflow__steps():
         assert step.outputs == expected["outputs"]
 
         _test_CommandLineTool(step, expected["run"])
-
-
-def test_get_graph__cat_echo():
-
-    workflow = workflow_cat_echo()
-
-    nodes, edges = tested.get_graph(workflow)
-
-    expected_nodes = {
-        "msg0": tested.Node(type=tested.CWLWorkflowType.INPUT),
-        "msg1": tested.Node(type=tested.CWLWorkflowType.INPUT),
-        "msg2": tested.Node(type=tested.CWLWorkflowType.INPUT),
-        "m0": tested.Node(type=tested.CWLWorkflowType.STEP),
-        "m1": tested.Node(type=tested.CWLWorkflowType.STEP),
-        "m2": tested.Node(type=tested.CWLWorkflowType.STEP),
-        "c0": tested.Node(type=tested.CWLWorkflowType.STEP),
-        "c1": tested.Node(type=tested.CWLWorkflowType.STEP),
-        "d0": tested.Node(type=tested.CWLWorkflowType.STEP),
-        "output1": tested.Node(type=tested.CWLWorkflowType.OUTPUT),
-        "output2": tested.Node(type=tested.CWLWorkflowType.OUTPUT),
-        "output3": tested.Node(type=tested.CWLWorkflowType.OUTPUT),
-    }
-    assert nodes == expected_nodes
-
-    expected_edges = {
-        tested.Edge(source="msg0", target="m0"),
-        tested.Edge(source="msg2", target="m2"),
-        tested.Edge(source="msg1", target="m1"),
-        tested.Edge(source="m0", target="c0"),
-        tested.Edge(source="m1", target="c0"),
-        tested.Edge(source="c0", target="output1"),
-        tested.Edge(source="m1", target="c1"),
-        tested.Edge(source="m2", target="c1"),
-        tested.Edge(source="c1", target="output2"),
-        tested.Edge(source="c1", target="d0"),
-        tested.Edge(source="c0", target="d0"),
-        tested.Edge(source="d0", target="output3"),
-    }
-    assert edges == expected_edges, (
-        "\n\nActual  : \n"
-        + "\n".join(repr(e) for e in edges)
-        + "\n\nExpected: \n"
-        + "\n".join(repr(e) for e in expected_edges)
-        + "\n"
-    )
-
-
-def test_get_graph__raises_wrong_input_source():
-
-    with utils.cwd(WORKFLOW_CAT_ECHO_DIR):
-        workflow = tested.Workflow.from_cwl(
-            WORKFLOW_CAT_ECHO_DIR / "workflow-cat-echo-wrong-input.cwl"
-        )
-
-    with pytest.raises(tested.CWLError):
-        nodes, edges = tested.get_graph(workflow)

@@ -15,6 +15,7 @@ required:
     - string
     - File
     - Directory
+    - NexusType
   input_binding:
     additionalProperties: false
     parameters:
@@ -36,6 +37,7 @@ required:
     - string
     - File
     - Directory
+    - NexusType
 properties:
   cwlVersion:
     const: v1.2

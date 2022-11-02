@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Union
 
 from cwl_luigi.exceptions import CWLError
 from cwl_luigi.types import PathLike
-from cwl_luigi.utils import load_json, load_yaml, resolve_path, validate_schema
+from cwl_luigi.utils import load_yaml, resolve_path, validate_schema
 
 
 def parse_config_file(cwl_file: PathLike) -> Dict[str, Any]:
@@ -16,7 +16,7 @@ def parse_config_file(cwl_file: PathLike) -> Dict[str, Any]:
     """
     filepath = Path(cwl_file).resolve()
 
-    raw = load_json(cwl_file)
+    raw = load_yaml(cwl_file)
 
     return _resolve_paths(raw=raw, base_dir=filepath.parent)
 
