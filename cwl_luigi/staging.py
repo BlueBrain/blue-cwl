@@ -29,7 +29,7 @@ def _distribution_as_list(distribution: Union[Resource, List[Resource]]) -> List
     return distribution if isinstance(distribution, list) else [distribution]
 
 
-def _create_target_file(source_file: Path, output_dir: Path, basename: str = None):
+def _create_target_file(source_file: Path, output_dir: Path, basename: Optional[str] = None):
     if basename is None:
         return output_dir / source_file.name
     return output_dir / basename
@@ -188,7 +188,7 @@ def stage_dataset_groups(forge, dataset_resource_id, staging_function):
     resource = get_resource(forge=forge, resource_id=dataset_resource_id)
     dataset = read_json_file_from_resource(resource)
 
-    existing: Dict[str, Any] = {}
+    existing: Dict[str, str] = {}
 
     for identifier, group in dataset.items():
 
@@ -334,6 +334,8 @@ def stage_file(source: Path, target: Path, symbolic: bool = True) -> None:
     if not target.parent.exists():
         target.parent.mkdir(parents=True)
         L.debug("Parent dir of %s doesn't exist. Created.", target.parent)
+
+    target.unlink(missing_ok=True)
 
     if symbolic:
         os.symlink(source, target)

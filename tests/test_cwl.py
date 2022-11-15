@@ -139,10 +139,6 @@ def test_CommandLineTool__attributes(tool_cat, attribute, expected_value):
     assert value == expected_value
 
 
-def test_CommandLineTool__cmd(tool_cat):
-    assert tool_cat.cmd() == "cat {f0} {f1}"
-
-
 def test_CommandLineTool__assort_inputs():
 
     tool = tested.CommandLineTool(
@@ -177,7 +173,7 @@ def test_CommandLineTool__assort_inputs():
         environment=None,
     )
 
-    positional, named = tool._assort_inputs()
+    positional, named = tool.assort_inputs()
 
     assert positional == [(3, "f1"), (2, "f2")]
 

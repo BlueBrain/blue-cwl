@@ -28,10 +28,10 @@ class NexusTarget(luigi.Target):
         target_hexdigest = hashing.get_target_hexdigest(self.task.get_task_hexdigest(), self.name)
 
         forge = get_kg_forge(
-            nexus_base=self.task.nexus_base,
-            nexus_org=self.task.nexus_org,
-            nexus_project=self.task.nexus_project,
-            nexus_token=self.task.nexus_token,
+            nexus_base=self.task.kg_config["kg_base"],
+            nexus_org=self.task.kg_config["kg_org"],
+            nexus_project=self.task.kg_config["kg_proj"],
+            nexus_token=self.task.kg_config["nexus_token"],
         )
 
         resources = forge.search(

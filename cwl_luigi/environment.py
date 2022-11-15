@@ -1,9 +1,8 @@
 """Environment related utilities."""
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, ClassVar, Dict, Optional
+from typing import Any, ClassVar, Dict
 
-from cwl_luigi.allocation import Allocation
 from cwl_luigi.constants import (
     APPTAINER_EXECUTABLE,
     APPTAINER_IMAGEPATH,
@@ -15,7 +14,7 @@ from cwl_luigi.constants import (
 )
 
 
-def _build_module_cmd(cmd: str, config: Dict[str, Any], allocation: Optional[Allocation]) -> str:
+def _build_module_cmd(cmd: str, config: Dict[str, Any], allocation) -> str:
     """Wrap the command with modules."""
     modulepath = config.get("modulepath", SPACK_MODULEPATH)
     modules = config["modules"]
@@ -36,7 +35,7 @@ def _build_module_cmd(cmd: str, config: Dict[str, Any], allocation: Optional[All
     )
 
 
-def _build_apptainer_cmd(cmd: str, config: Dict[str, Any], allocation: Optional[Allocation]) -> str:
+def _build_apptainer_cmd(cmd: str, config: Dict[str, Any], allocation) -> str:
     """Wrap the command with apptainer/singularity."""
     modulepath = config.get("modulepath", APPTAINER_MODULEPATH)
     modules = config.get("modules", APPTAINER_MODULES)
@@ -62,7 +61,7 @@ def _build_apptainer_cmd(cmd: str, config: Dict[str, Any], allocation: Optional[
     return cmd
 
 
-def _build_venv_cmd(cmd: str, config: Dict[str, Any], allocation: Optional[Allocation]):
+def _build_venv_cmd(cmd: str, config: Dict[str, Any], allocation):
     """Wrap the command with an existing virtual environment."""
     path = config["path"]
 
@@ -83,7 +82,7 @@ class Environment:
         "VENV": _build_venv_cmd,
     }
 
-    def shell_command(self, cmd, allocation: Optional[Allocation] = None) -> str:
+    def shell_command(self, cmd, allocation=None) -> str:
         """Get shell command combining the chosen environment and the current cmd."""
         build_function = self._mapping[self.config["env_type"]]
         return build_function(cmd=cmd, config=self.config, allocation=allocation)

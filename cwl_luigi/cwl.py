@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from cwl_luigi import cwl_parser
-from cwl_luigi.command import build_command
 from cwl_luigi.cwl_types import CWLType
 from cwl_luigi.environment import Environment
 
@@ -174,7 +173,7 @@ class CommandLineTool:
             output_name: CommandLineToolOutput.from_cwl(output_name, output_data, data["stdout"])
             for output_name, output_data in data["outputs"].items()
         }
-        environment = Environment(config=data["environment"]) if data["environment"] else None
+        environment = Environment(config=data["environment"]) if "environment" in data else None
 
         return cls(
             cwlVersion=data["cwlVersion"],
@@ -187,18 +186,7 @@ class CommandLineTool:
             environment=environment,
         )
 
-    def cmd(self) -> str:
-        """Return the command for executing the command line tool."""
-        positional_arguments, named_arguments = self._assort_inputs()
-
-        return build_command(
-            base_command=self.baseCommand,
-            named_arguments=named_arguments,
-            positional_arguments=positional_arguments,
-            environment=self.environment,
-        )
-
-    def _assort_inputs(self) -> Tuple[List[Tuple[int, str]], Dict[str, str]]:
+    def assort_inputs(self) -> Tuple[List[Tuple[int, str]], Dict[str, str]]:
         """Categorize inputs into positional and named arguments."""
         named_arguments: Dict[str, str] = {}
         positional_arguments: List[Tuple[int, str]] = []
