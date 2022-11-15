@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+import importlib.util
+from pathlib import Path
+
+from setuptools import setup, find_packages
+
+spec = importlib.util.spec_from_file_location(
+    "cwl_registry.version",
+    "cwl_registry/version.py",
+)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+VERSION = module.__version__
+
+setup(
+    name="cwl-registry",
+    author="bbp-ou-nse",
+    author_email="bbp-ou-nse@groupes.epfl.ch",
+    version=VERSION,
+    description="Common Workflow Language tool definitions",
+    long_description=Path("README.rst").read_text(encoding="utf-8"),
+    long_description_content_type="text/x-rst",
+    url="https://bbpteam.epfl.ch/documentation/projects/cwl-registry",
+    project_urls={
+        "Tracker": "https://bbpteam.epfl.ch/project/issues/projects/NSETM/issues",
+        "Source": "git@bbpgitlab.epfl.ch:nse/cwl-registry.git",
+    },
+    license="BBP-internal-confidential",
+    install_requires=["nexusforge"],
+    packages=find_packages(),
+    include_package_data=True,
+    python_requires=">=3.7",
+    extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
+    classifiers=[
+        "Development Status :: 2 - Pre-Alpha",
+        "Intended Audience :: Education",
+        "Intended Audience :: Science/Research",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+    ],
+)
