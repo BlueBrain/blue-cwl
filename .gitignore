@@ -3,11 +3,13 @@
 coverage.xml
 *.egg-info
 .coverage
+tmptestdir
 doc/build
 doc/source/generated
 .tox
 build
 dist
 venv
+__pycache__
 .eggs
 .idea

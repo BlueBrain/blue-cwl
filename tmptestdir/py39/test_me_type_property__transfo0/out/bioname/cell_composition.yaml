@@ -1,0 +1,21 @@
+version: v2
+
+neurons:
+- density: L23_BP-DSTUT_densities_v3.nrrd
+  region: root
+  traits:
+    mtype: L23_BP
+    etype: dSTUT
+    layer: 1
+- density: L23_BP-BIR_densities_v3.nrrd
+  region: root
+  traits:
+    mtype: L23_BP
+    etype: bIR
+    layer: 1
+- density: L23_DBC-BIR_densities_v3.nrrd
+  region: root
+  traits:
+    mtype: L23_DBC
+    etype: bIR
+    layer: 1

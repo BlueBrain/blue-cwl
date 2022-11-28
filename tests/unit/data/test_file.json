@@ -1,0 +1,28 @@
+{
+  "version": "v2.0",
+  "neurons": [
+    {
+      "density": 100000,
+      "region": "@3$",
+      "traits": {
+        "layer": 3,
+        "mtype": "L23_MC",
+        "etype": {
+          "bAC": 0.7,
+          "bNAC": 0.3
+        }
+      }
+    },
+    {
+      "density": 100000,
+      "region": "@5$",
+      "traits": {
+        "layer": 5,
+        "mtype": "L5_TPC:A",
+        "etype": {
+          "cADpyr": 1.0
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "http://uri.interlex.org/base/ilx_0381369": {
+    "label": "L5_MC",
+    "name": "L5_MC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/a/2/9/3/0/6/c/9/L5_MC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383200": {
+    "label": "L23_ChC",
+    "name": "L23_CHC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/8/1/0/6/0/b/c/4/L23_CHC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383215": {
+    "label": "L4_NBC",
+    "name": "L4_NBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/1/2/a/6/c/3/4/7/L4_NBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383235": {
+    "label": "L6_NGC",
+    "name": "L6_NGC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/e/9/0/0/4/7/e/d/L6_NGC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383221": {
+    "label": "L5_BP",
+    "name": "L5_BP_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/8/d/b/2/0/c/e/6/L5_BP_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383202": {
+    "label": "L23_LBC",
+    "name": "L23_LBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/0/2/d/4/e/b/f/f/L23_LBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383209": {
+    "label": "L4_BP",
+    "name": "L4_BP_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/5/d/e/5/7/0/d/3/L4_BP_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383233": {
+    "label": "L6_LBC",
+    "name": "L6_LBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/5/0/7/f/9/6/a/5/L6_LBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383206": {
+    "label": "L23_SBC",
+    "name": "L23_SBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/f/7/a/9/3/5/9/0/L23_SBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383205": {
+    "label": "L23_NGC",
+    "name": "L23_NGC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/0/5/6/9/e/b/7/c/L23_NGC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383195": {
+    "label": "L1_NGC-DA",
+    "name": "L1_NGC-DA_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/4/7/8/1/6/c/a/c/L1_NGC-DA_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383193": {
+    "label": "L1_HAC",
+    "name": "L1_HAC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/e/d/8/b/e/1/3/4/L1_HAC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383212": {
+    "label": "L4_DBC",
+    "name": "L4_DBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/a/3/5/c/6/2/e/b/L4_DBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383210": {
+    "label": "L4_BTC",
+    "name": "L4_BTC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/3/6/c/3/2/5/d/0/L4_BTC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383211": {
+    "label": "L4_ChC",
+    "name": "L4_CHC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/d/1/d/3/e/6/b/5/L4_CHC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383198": {
+    "label": "L23_BP",
+    "name": "L23_BP_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/5/d/c/f/f/0/7/8/L23_BP_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383236": {
+    "label": "L6_SBC",
+    "name": "L6_SBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/9/6/6/a/0/9/c/3/L6_SBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383229": {
+    "label": "L6_BTC",
+    "name": "L6_BTC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/b/1/a/8/b/4/a/6/L6_BTC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383227": {
+    "label": "L5_SBC",
+    "name": "L5_SBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/2/8/a/2/d/0/c/e/L5_SBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383225": {
+    "label": "L5_LBC",
+    "name": "L5_LBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/5/7/f/c/7/f/c/8/L5_LBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383194": {
+    "label": "L1_LAC",
+    "name": "L1_LAC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/d/3/6/4/3/f/c/6/L1_LAC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383197": {
+    "label": "L1_SAC",
+    "name": "L1_SAC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/1/6/a/1/d/6/9/2/L1_SAC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383213": {
+    "label": "L4_LBC",
+    "name": "L4_LBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/c/2/7/e/0/1/3/6/L4_LBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0381374": {
+    "label": "L6_MC",
+    "name": "L6_MC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/f/9/3/3/f/d/a/0/L6_MC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383230": {
+    "label": "L6_ChC",
+    "name": "L6_CHC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/5/2/b/6/9/c/6/7/L6_CHC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383196": {
+    "label": "L1_NGC-SA",
+    "name": "L1_NGC-SA_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/5/b/8/0/8/a/6/5/L1_NGC-SA_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383217": {
+    "label": "L4_SBC",
+    "name": "L4_SBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/b/0/9/4/e/5/8/c/L4_SBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383223": {
+    "label": "L5_ChC",
+    "name": "L5_CHC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/7/7/2/8/f/3/3/1/L5_CHC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383203": {
+    "label": "L23_MC",
+    "name": "L23_MC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/7/1/1/a/f/a/f/6/L23_MC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383204": {
+    "label": "L23_NBC",
+    "name": "L23_NBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/5/4/9/2/f/4/b/2/L23_NBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383192": {
+    "label": "L1_DAC",
+    "name": "L1_DAC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/c/1/d/c/8/2/b/8/L1_DAC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383224": {
+    "label": "L5_DBC",
+    "name": "L5_DBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/e/4/f/1/c/9/c/c/L5_DBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383234": {
+    "label": "L6_NBC",
+    "name": "L6_NBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/b/6/7/0/3/4/4/0/L6_NBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383201": {
+    "label": "L23_DBC",
+    "name": "L23_DBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/c/f/c/0/c/3/3/9/L23_DBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383226": {
+    "label": "L5_NBC",
+    "name": "L5_NBC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/6/f/8/1/e/e/4/b/L5_NBC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383222": {
+    "label": "L5_BTC",
+    "name": "L5_BTC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/1/7/7/b/d/7/0/4/L5_BTC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383214": {
+    "label": "L4_MC",
+    "name": "L4_MC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/b/a/a/3/3/a/1/e/L4_MC_densities_v3.nrrd"
+  },
+  "http://uri.interlex.org/base/ilx_0383199": {
+    "label": "L23_BTC",
+    "name": "L23_BTC_densities_v3.nrrd",
+    "path": "/gpfs/bbp.cscs.ch/data/project/proj39/nexus/bbp/atlas/4/9/9/8/f/6/1/6/L23_BTC_densities_v3.nrrd"
+  }
+}

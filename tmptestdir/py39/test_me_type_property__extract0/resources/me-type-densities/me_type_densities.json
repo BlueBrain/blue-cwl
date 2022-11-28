@@ -1,0 +1,79 @@
+{
+  "hasPart": [
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383198",
+      "label": "L23_BP",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738202",
+          "label": "dSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "L23_BP-dSTUT-id",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "L23_BP-bIR-id",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383201",
+      "label": "L23_DBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "L23_DBC-bIR-id",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

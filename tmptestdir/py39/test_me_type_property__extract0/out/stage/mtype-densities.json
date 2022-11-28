@@ -1,0 +1,24 @@
+{
+  "http://uri.interlex.org/base/ilx_0383198": {
+    "label": "L23_BP",
+    "etypes": {
+      "http://uri.interlex.org/base/ilx_0738202": {
+        "label": "dSTUT",
+        "path": "/gpfs/bbp.cscs.ch/project/proj30/tickets/NSETM-1760-wrap-snakemake-with-luigi/workflow-example/cwl-registry/tmptestdir/py39/test_me_type_property__extract0/resources/me-type-densities/L23_BP-dSTUT-id.nrrd"
+      },
+      "http://uri.interlex.org/base/ilx_0738206": {
+        "label": "bIR",
+        "path": "/gpfs/bbp.cscs.ch/project/proj30/tickets/NSETM-1760-wrap-snakemake-with-luigi/workflow-example/cwl-registry/tmptestdir/py39/test_me_type_property__extract0/resources/me-type-densities/L23_BP-bIR-id.nrrd"
+      }
+    }
+  },
+  "http://uri.interlex.org/base/ilx_0383201": {
+    "label": "L23_DBC",
+    "etypes": {
+      "http://uri.interlex.org/base/ilx_0738206": {
+        "label": "bIR",
+        "path": "/gpfs/bbp.cscs.ch/project/proj30/tickets/NSETM-1760-wrap-snakemake-with-luigi/workflow-example/cwl-registry/tmptestdir/py39/test_me_type_property__extract0/resources/me-type-densities/L23_DBC-bIR-id.nrrd"
+      }
+    }
+  }
+}

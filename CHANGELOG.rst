@@ -1,12 +1,12 @@
 Changelog
 =========
 
-Version 0.1
------------
+Version 0.2.0
+-------------
 
 New Features
 ~~~~~~~~~~~~
-- Example code in Python
+- Merge cwl-workflow into cwl-registry
 
 
 Bug Fixes

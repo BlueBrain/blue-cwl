@@ -1,0 +1,19 @@
+common:
+  atlas: /gpfs/bbp.cscs.ch/project/proj30/tickets/NSETM-1760-wrap-snakemake-with-luigi/workflow-example/cwl-workflow/tests/functional/neurons-me-type-property/out/stage/atlas
+  region: Isocortex
+  node_population_name: Isocortex_neurons
+  edge_population_name: Isocortex_neurons__chemical_synapse
+  morph_release: ''
+  synthesis: false
+  partition:
+  - left
+  - right
+
+place_cells:
+  soma_placement: basic
+  density_factor: 0.01
+  sort_by:
+  - region
+  - mtype
+  seed: 0
+  mini_frequencies: false

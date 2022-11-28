@@ -6,11 +6,12 @@ from setuptools import setup, find_packages
 
 spec = importlib.util.spec_from_file_location(
     "cwl_registry.version",
-    "cwl_registry/version.py",
+    "src/cwl_registry/version.py",
 )
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 VERSION = module.__version__
+
 
 setup(
     name="cwl-registry",
@@ -26,11 +27,22 @@ setup(
         "Source": "git@bbpgitlab.epfl.ch:nse/cwl-registry.git",
     },
     license="BBP-internal-confidential",
-    install_requires=["nexusforge"],
-    packages=find_packages(),
+    install_requires=[
+        "nexusforge",
+        "click>=8.0",
+        "libsonata",
+        "voxcell",
+        "numpy",
+        "pandas",
+        "click",
+    ],
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     include_package_data=True,
     python_requires=">=3.7",
-    extras_require={"docs": ["sphinx", "sphinx-bluebrain-theme"]},
+    extras_require={
+        "docs": ["sphinx", "sphinx-bluebrain-theme"],
+    },
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Education",
