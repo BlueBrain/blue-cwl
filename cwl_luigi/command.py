@@ -1,5 +1,4 @@
 """Shell command building for luigi workflow."""
-import copy
 import logging
 import re
 import subprocess
@@ -15,7 +14,7 @@ from cwl_luigi.environment import Environment
 L = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=True)
 class Command:
     """Executable command dataclass.
 
@@ -47,7 +46,7 @@ class Command:
 
         Returns: The command as a string.
         """
-        command = copy.deepcopy(self.base_command)
+        command = list(self.base_command)
         hack_map = {"nexus_base": "kg_base", "nexus_project": "kg_proj", "nexus_org": "kg_org"}
 
         for prefix, argument in self.named_arguments.items():

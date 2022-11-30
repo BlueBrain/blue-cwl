@@ -1,7 +1,7 @@
 """Environment related utilities."""
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, ClassVar, Dict
+from typing import Any, Dict
 
 from cwl_luigi.constants import (
     APPTAINER_EXECUTABLE,
@@ -71,18 +71,20 @@ def _build_venv_cmd(cmd: str, config: Dict[str, Any], allocation):
     return f". {path}/bin/activate && {cmd}"
 
 
-@dataclass(frozen=True)
+ENV_MAPPING: Dict[str, Any] = {
+    "MODULE": _build_module_cmd,
+    "APPTAINER": _build_apptainer_cmd,
+    "VENV": _build_venv_cmd,
+}
+
+
+@dataclass(frozen=True, eq=True)
 class Environment:
     """Runtime environment setup."""
 
     config: Dict[str, Any]
-    _mapping: ClassVar[Dict[str, Any]] = {
-        "MODULE": _build_module_cmd,
-        "APPTAINER": _build_apptainer_cmd,
-        "VENV": _build_venv_cmd,
-    }
 
     def shell_command(self, cmd, allocation=None) -> str:
         """Get shell command combining the chosen environment and the current cmd."""
-        build_function = self._mapping[self.config["env_type"]]
+        build_function = ENV_MAPPING[self.config["env_type"]]
         return build_function(cmd=cmd, config=self.config, allocation=allocation)

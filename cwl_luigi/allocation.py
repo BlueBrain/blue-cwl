@@ -7,7 +7,7 @@ from typing import Any, Dict
 from cwl_luigi.utils import load_yaml
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=True)
 class Allocation:
     """Allocation configuration."""
 
@@ -35,7 +35,7 @@ class Allocation:
         return cmd
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=True)
 class AllocationBuilder:
     """Allocation builder class."""
 
