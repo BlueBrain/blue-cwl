@@ -13,8 +13,10 @@ def _mock_variant(variant_dir):
     config_path = variant_dir / "parameters.yml"
     write_yaml(
         data={
-            "step1": {"a": 1},
-            "step2": {"b": 2},
+            "place_cells": {
+                "step1": {"a": 1},
+                "step2": {"b": 2},
+            }
         },
         filepath=config_path,
     )
@@ -211,7 +213,7 @@ def test_me_type_property__extract(tmp_path):
     resources_dir = create_dir(tdir / "resources")
 
     mocked_resources = {
-        "brain-region-id": Mock(label="root"),
+        "brain-region-id": Mock(notation="root"),
         "variant-config-id": None,
         **_mock_atlas_resource(create_dir(resources_dir / "atlas")),
         **_mock_me_type_densities_resource(resources_dir),
@@ -269,64 +271,36 @@ def test_me_type_property__transform(tmp_path):
     }
     res = tested._transform(staged_data, output_dir=out)
 
-    assert res.keys() == {"bioname-dir", "manifest", "cluster-config"}
-
-    expected_bioname_dir = out / "bioname"
-
-    assert res["bioname-dir"] == expected_bioname_dir
-
-    expected_manifest = {
-        "common": {
-            "atlas": "atlas-dir",
-            "region": "root",
-            "node_population_name": "root_neurons",
-            "edge_population_name": "root_neurons__chemical_synapse",
-            "morph_release": "",
-            "synthesis": False,
-            "partition": ["left", "right"],
-        },
-        "step1": {"a": 1},
-        "step2": {"b": 2},
-    }
-    assert res["manifest"] == expected_manifest
-    assert res["cluster-config"] == "cluster-config-path"
-
     # check files have been generated in bioname
-    assert set(expected_bioname_dir.iterdir()) == {
-        expected_bioname_dir / "MANIFEST.yaml",
-        expected_bioname_dir / "cell_composition.yaml",
-        expected_bioname_dir / "mtype_taxonomy.tsv",
+    assert set(out.iterdir()) == {
+        out / "cell_composition.yaml",
+        out / "mtype_taxonomy.tsv",
     }
-
-    # should match the returned manifest
-    assert load_yaml(expected_bioname_dir / "MANIFEST.yaml") == expected_manifest
 
     # check cell composition
-    assert load_yaml(expected_bioname_dir / "cell_composition.yaml") == {
+    assert load_yaml(out / "cell_composition.yaml") == {
         "version": "v2",
         "neurons": [
             {
                 "density": "L23_BP-DSTUT_densities_v3.nrrd",
                 "region": "root",
-                "traits": {"mtype": "L23_BP", "etype": "dSTUT", "layer": 1},
+                "traits": {"mtype": "L23_BP", "etype": "dSTUT"},
             },
             {
                 "density": "L23_BP-BIR_densities_v3.nrrd",
                 "region": "root",
-                "traits": {"mtype": "L23_BP", "etype": "bIR", "layer": 1},
+                "traits": {"mtype": "L23_BP", "etype": "bIR"},
             },
             {
                 "density": "L23_DBC-BIR_densities_v3.nrrd",
                 "region": "root",
-                "traits": {"mtype": "L23_DBC", "etype": "bIR", "layer": 1},
+                "traits": {"mtype": "L23_DBC", "etype": "bIR"},
             },
         ],
     }
 
     # check taxonomy
-    taxonomy = pd.read_csv(
-        expected_bioname_dir / "mtype_taxonomy.tsv", sep=r"\s+", index_col="mtype"
-    )
+    taxonomy = pd.read_csv(out / "mtype_taxonomy.tsv", sep=r"\s+", index_col="mtype")
 
     assert taxonomy.index.tolist() == ["L23_BP", "L23_DBC"]
     assert taxonomy["mClass"].tolist() == ["INT", "INT"]
@@ -339,9 +313,16 @@ def test_me_type_property__generate(tmp_path):
     out = tdir / "out"
 
     transformed_data = {
-        "bioname-dir": tdir / "bioname",
-        "cluster-config": tdir / "bioname/cluster_config.yaml",
-        "manifest": {"common": {"node_population_name": "root__neurons"}},
+        "region": "root",
+        "parameters": {
+            "soma_placement": "basic",
+            "sort_by": ["region", "mtype"],
+            "density_factor": 1.0,
+            "seed": 0,
+        },
+        "mtype-taxonomy-file": "None",
+        "composition-file": "None",
+        "atlas-dir": "None",
     }
 
     with patch("subprocess.run"):
@@ -356,7 +337,7 @@ def test_me_type_property__generate(tmp_path):
         "networks": {
             "nodes": [
                 {
-                    "nodes_file": str(out / "build/auxiliary/circuit.somata.h5"),
+                    "nodes_file": str(out / "build/nodes.h5"),
                     "populations": {
                         "root__neurons": {"type": "biophysical", "partial": ["cell-properties"]}
                     },

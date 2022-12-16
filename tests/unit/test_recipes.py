@@ -39,17 +39,17 @@ def test_build_cell_composition_from_me_densities():
             {
                 "density": "L23_BP-DSTUT_densities_v3.nrrd",
                 "region": "my-region",
-                "traits": {"mtype": "L23_BP", "etype": "dSTUT", "layer": 1},
+                "traits": {"mtype": "L23_BP", "etype": "dSTUT"},
             },
             {
                 "density": "L23_BP-BIR_densities_v3.nrrd",
                 "region": "my-region",
-                "traits": {"mtype": "L23_BP", "etype": "bIR", "layer": 1},
+                "traits": {"mtype": "L23_BP", "etype": "bIR"},
             },
             {
                 "density": "L23_DBC-BIR_densities_v3.nrrd",
                 "region": "my-region",
-                "traits": {"mtype": "L23_DBC", "etype": "bIR", "layer": 1},
+                "traits": {"mtype": "L23_DBC", "etype": "bIR"},
             },
         ],
     }

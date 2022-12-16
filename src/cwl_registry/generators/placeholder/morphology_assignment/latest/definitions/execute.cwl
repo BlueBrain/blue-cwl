@@ -5,12 +5,12 @@ id: placeholder_morphology_assignment
 label: Morphology Assignment
 stdout: stdout.txt
 
-baseCommand: ['cwl-workflow', 'placeholder-morphology-assignment']
+baseCommand: ['cwl-registry', 'execute', 'placeholder-morphology-assignment']
 
 
 environment:
   env_type: VENV
-  path: /gpfs/bbp.cscs.ch/project/proj30/tickets/NSETM-1760-wrap-snakemake-with-luigi/workflow-example/venv
+  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-densities
 
 
 inputs:

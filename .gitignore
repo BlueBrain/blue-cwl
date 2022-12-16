@@ -13,3 +13,4 @@ venv
 __pycache__
 .eggs
 .idea
+out

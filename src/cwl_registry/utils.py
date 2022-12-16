@@ -56,7 +56,7 @@ def log(function, logger=L):
 
         str_v = "  " + "\n  ".join([f"{k} = {v!r}" for k, v in arg_pairs])
 
-        str_function_repr = f" Name: {function.__name__}\n" f" Args: \n\n{str_v}\n\n"
+        str_function_repr = f" Name: {function.__name__}\n" f" Args: \n{str_v}\n"
         logger.debug("Executed function:\n%s\n", str_function_repr)
 
         return function(*args, **kwargs)

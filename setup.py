@@ -27,6 +27,7 @@ setup(
         "Source": "git@bbpgitlab.epfl.ch:nse/cwl-registry.git",
     },
     license="BBP-internal-confidential",
+    entry_points={"console_scripts": ["cwl-registry=cwl_registry.app.__main__:main"]},
     install_requires=[
         "nexusforge",
         "click>=8.0",

@@ -24,7 +24,6 @@ def build_cell_composition_from_me_densities(region: str, me_type_densities: Dic
                     "traits": {
                         "mtype": mtype_name,
                         "etype": etype_name,
-                        "layer": 1,
                     },
                 }
             )

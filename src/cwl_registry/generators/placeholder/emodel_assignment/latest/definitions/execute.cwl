@@ -5,12 +5,12 @@ id: placeholder_emodel_assignment
 label: EModel assignment
 stdout: stdout.txt
 
-baseCommand: ['cwl-workflow', 'placeholder-emodel-assignment']
+baseCommand: ['cwl-registry', 'execute', 'placeholder-emodel-assignment']
 
 
 environment:
   env_type: VENV
-  path: /gpfs/bbp.cscs.ch/project/proj30/tickets/NSETM-1760-wrap-snakemake-with-luigi/workflow-example/venv
+  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-densities
 
 
 inputs:

@@ -27,7 +27,7 @@ def get_forge(
     """Get KG forge."""
     nexus_base = nexus_base or os.getenv("NEXUS_BASE")
     nexus_org = nexus_org or os.getenv("NEXUS_ORG")
-    nexus_project = nexus_org or os.getenv("NEXUS_PROJ")
+    nexus_project = nexus_project or os.getenv("NEXUS_PROJ")
     nexus_token = nexus_token or os.getenv("NEXUS_TOKEN")
 
     return KnowledgeGraphForge(
@@ -137,10 +137,16 @@ def retrieve_variant_data(
 ):
     """Retrieve variant data from KG resource."""
     variant_resource = forge.retrieve(resource_id, cross_bucket=True)
+    L.debug("Variant resource: %s", variant_resource)
 
     configs_resource = forge.retrieve(variant_resource.configs.id, cross_bucket=True)
+    L.debug("Variant configs resource: %s", configs_resource)
+
     resources_resource = forge.retrieve(variant_resource.allocation_resources.id, cross_bucket=True)
+    L.debug("Variant allocation resource: %s", resources_resource)
+
     definitions_resource = forge.retrieve(variant_resource.definitions.id, cross_bucket=True)
+    L.debug("Variant definitions resource: %s", definitions_resource)
 
     configs = _get_files(configs_resource)
     resources = _get_files(resources_resource)

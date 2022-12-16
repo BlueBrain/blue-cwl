@@ -5,12 +5,12 @@ id: me_type_property
 label: Morph-Electric type property generator
 stdout: stdout.txt
 
-baseCommand: ['cwl-workflow', 'me-type-property']
+baseCommand: ['cwl-registry', 'execute', 'neurons-me-type-property']
 
 
 environment:
   env_type: VENV
-  path: /gpfs/bbp.cscs.ch/project/proj30/tickets/NSETM-1760-wrap-snakemake-with-luigi/workflow-example/venv
+  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-densities
 
 
 inputs:
