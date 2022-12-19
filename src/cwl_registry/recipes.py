@@ -8,7 +8,7 @@ def build_cell_composition_from_me_densities(region: str, me_type_densities: Dic
     """Create cell composition file from KG me densities."""
     composition = {"version": "v2", "neurons": []}
 
-    for _, mtype in me_type_densities.items():
+    for _, mtype in me_type_densities["mtypes"].items():
 
         mtype_name = mtype["label"]
 

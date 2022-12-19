@@ -63,10 +63,12 @@ def app(
         task_digest,
         "circuit_morphologies_bundle",
     )
+    partial_circuit = forge.retrieve(partial_circuit, cross_bucket=True)
     registering.register_partial_circuit(
         forge,
         name="Cell properties | Morphologies  partial circuit",
-        brain_region=region,
+        brain_region_id=region,
+        atlas_release_id=partial_circuit.atlasRelease.id,
         description="Partial circuit built with cell properties, and morphologies.",
         sonata_config_path=sonata_config_file,
         target_digest=target_digest,

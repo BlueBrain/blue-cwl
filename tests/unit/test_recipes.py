@@ -6,25 +6,27 @@ from cwl_registry import recipes as tested
 
 def test_build_cell_composition_from_me_densities():
     dataset = {
-        "http://uri.interlex.org/base/ilx_0383198": {
-            "label": "L23_BP",
-            "etypes": {
-                "http://uri.interlex.org/base/ilx_0738202": {
-                    "label": "dSTUT",
-                    "path": "L23_BP-DSTUT_densities_v3.nrrd",
-                },
-                "http://uri.interlex.org/base/ilx_0738206": {
-                    "label": "bIR",
-                    "path": "L23_BP-BIR_densities_v3.nrrd",
+        "mtypes": {
+            "http://uri.interlex.org/base/ilx_0383198": {
+                "label": "L23_BP",
+                "etypes": {
+                    "http://uri.interlex.org/base/ilx_0738202": {
+                        "label": "dSTUT",
+                        "path": "L23_BP-DSTUT_densities_v3.nrrd",
+                    },
+                    "http://uri.interlex.org/base/ilx_0738206": {
+                        "label": "bIR",
+                        "path": "L23_BP-BIR_densities_v3.nrrd",
+                    },
                 },
             },
-        },
-        "http://uri.interlex.org/base/ilx_0383201": {
-            "label": "L23_DBC",
-            "etypes": {
-                "http://uri.interlex.org/base/ilx_0738206": {
-                    "label": "bIR",
-                    "path": "L23_DBC-BIR_densities_v3.nrrd",
+            "http://uri.interlex.org/base/ilx_0383201": {
+                "label": "L23_DBC",
+                "etypes": {
+                    "http://uri.interlex.org/base/ilx_0738206": {
+                        "label": "bIR",
+                        "path": "L23_DBC-BIR_densities_v3.nrrd",
+                    },
                 },
             },
         },

@@ -23,7 +23,7 @@ def get_forge(
     nexus_org: str = None,
     nexus_project: str = None,
     nexus_token: str = None,
-):
+):  # pragma: no cover
     """Get KG forge."""
     nexus_base = nexus_base or os.getenv("NEXUS_BASE")
     nexus_org = nexus_org or os.getenv("NEXUS_ORG")

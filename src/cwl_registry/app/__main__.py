@@ -4,6 +4,9 @@ import logging
 import click
 
 from cwl_registry.app import (
+    cell_composition_summary,
+    density_calculation,
+    density_manipulation,
     me_type_property,
     placeholder_emodel_assignment,
     placeholder_morphology_assignment,
@@ -20,16 +23,14 @@ def main(verbose):
     logging.basicConfig(level=level)
 
 
-@main.group()
-def execute():
-    """Subcommand grouping together all execution wrappers."""
-
-
-execute.add_command(name="neurons-me-type-property", cmd=me_type_property.app)
-execute.add_command(
+main.add_command(name="neurons-me-type-property", cmd=me_type_property.app)
+main.add_command(name="density-calculation", cmd=density_calculation.app)
+main.add_command(name="density-manipulation", cmd=density_manipulation.app)
+main.add_command(name="cell-composition-summary", cmd=cell_composition_summary.app)
+main.add_command(
     name="placeholder-morphology-assignment", cmd=placeholder_morphology_assignment.app
 )
-execute.add_command(name="placeholder-emodel-assignment", cmd=placeholder_emodel_assignment.app)
+main.add_command(name="placeholder-emodel-assignment", cmd=placeholder_emodel_assignment.app)
 
 
 if __name__ == "__main__":

@@ -1,15 +1,19 @@
 """Morphoelectrical type generator function module."""
 import logging
 import subprocess
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict
 
 import click
+import libsonata
 import voxcell
+from voxcell.nexus.voxelbrain import Atlas
 
 from cwl_registry import Variant, recipes, registering, staging, utils
 from cwl_registry.hashing import get_target_hexdigest
 from cwl_registry.nexus import get_forge
+from cwl_registry.statistics import mtype_etype_url_mapping, node_population_composition_summary
 
 STAGE_DIR_NAME = "stage"
 TRANSFORM_DIR_NAME = "transform"
@@ -115,6 +119,7 @@ def _extract(
     )
 
     return {
+        "atlas-id": atlas_id,
         "region": region,
         "atlas-dir": atlas_dir,
         "me-type-densities-file": me_type_densities_file,
@@ -133,20 +138,21 @@ def _transform(staged_data: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
     composition = recipes.build_cell_composition_from_me_densities(region, me_type_densities)
     utils.write_yaml(composition_file, composition)
 
-    mtypes = [me_type_densities[identifier]["label"] for identifier in me_type_densities]
+    mtypes = [mtype_data["label"] for _, mtype_data in me_type_densities["mtypes"].items()]
 
     mtype_taxonomy_file = output_dir / "mtype_taxonomy.tsv"
     mtype_taxonomy = recipes.build_mtype_taxonomy(mtypes)
     mtype_taxonomy.to_csv(mtype_taxonomy_file, sep=" ", index=False)
 
-    return {
-        "region": region,
-        "atlas-dir": staged_data["atlas-dir"],
-        "parameters": utils.load_yaml(variant.get_config_file("parameters.yml"))["place_cells"],
-        "composition-file": composition_file,
-        "mtype-taxonomy-file": mtype_taxonomy_file,
-        "cluster-config": staged_data["variant"].get_resources_file("cluster_config.yml"),
-    }
+    transformed_data = deepcopy(staged_data)
+    transformed_data.update(
+        {
+            "parameters": utils.load_yaml(variant.get_config_file("parameters.yml"))["place_cells"],
+            "composition-file": composition_file,
+            "mtype-taxonomy-file": mtype_taxonomy_file,
+        }
+    )
+    return transformed_data
 
 
 def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
@@ -205,6 +211,40 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
         capture_output=False,
         shell=True,
     )
+
+    L.info("Generating partial circuit config...")
+    sonata_config_file = build_dir / "config.json"
+    _generate_circuit_config(
+        node_population_name=node_population_name,
+        nodes_file=nodes_file,
+        output_file=sonata_config_file,
+    )
+
+    L.info("Generating cell composition summary...")
+    mtype_urls, etype_urls = mtype_etype_url_mapping(
+        utils.load_json(transformed_data["me-type-densities-file"])
+    )
+    composition_summary_file = output_dir / "cell_composition_summary.json"
+    _generate_cell_composition_summary(
+        nodes_file=nodes_file,
+        node_population_name=node_population_name,
+        atlas_dir=transformed_data["atlas-dir"],
+        mtype_urls=mtype_urls,
+        etype_urls=etype_urls,
+        output_file=composition_summary_file,
+    )
+
+    ret = deepcopy(transformed_data)
+    ret.update(
+        {
+            "partial-circuit": sonata_config_file,
+            "composition-summary-file": composition_summary_file,
+        }
+    )
+    return ret
+
+
+def _generate_circuit_config(node_population_name: str, nodes_file: str, output_file: Path):
     data = {
         "version": 2,
         "manifest": {"$BASE_DIR": "."},
@@ -223,12 +263,22 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
         },
         "metadata": {"status": "partial"},
     }
-    sonata_config_file = build_dir / "config.json"
-    utils.write_json(filepath=sonata_config_file, data=data)
 
-    return {
-        "partial-circuit": sonata_config_file,
-    }
+    utils.write_json(filepath=output_file, data=data)
+
+    return data
+
+
+def _generate_cell_composition_summary(
+    nodes_file, node_population_name, atlas_dir, mtype_urls, etype_urls, output_file: Path
+):
+    atlas = Atlas.open(str(atlas_dir))
+    population = libsonata.NodeStorage(nodes_file).open_population(node_population_name)
+
+    composition_summary = node_population_composition_summary(
+        population, atlas, mtype_urls, etype_urls
+    )
+    utils.write_json(filepath=output_file, data=composition_summary)
 
 
 def _register(
@@ -251,11 +301,20 @@ def _register(
         task_digest,
         "circuit_me_type_bundle",
     )
-    registering.register_partial_circuit(
+    circuit_resource = registering.register_partial_circuit(
         forge,
         name="Cell properties partial circuit",
-        brain_region=region_id,
+        brain_region_id=region_id,
+        atlas_release_id=generated_data["atlas-id"],
         description="Partial circuit built with cell positions and me properties.",
         sonata_config_path=generated_data["partial-circuit"],
         target_digest=target_digest,
+    )
+    # pylint: disable=no-member
+    registering.register_cell_composition_summary(
+        forge,
+        name="Cell composition summary",
+        summary_file=generated_data["composition-summary-file"],
+        atlas_release_id=generated_data["atlas-id"],
+        derivation_entity_id=circuit_resource.id,
     )

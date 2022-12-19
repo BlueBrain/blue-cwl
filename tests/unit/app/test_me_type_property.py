@@ -7,6 +7,13 @@ from cwl_registry.app import me_type_property as tested
 from cwl_registry.utils import create_dir, write_yaml, write_json, load_yaml, load_json
 from kgforge.core import Resource
 
+from cwl_registry import utils
+
+from tests.unit.mocking import LocalForge
+
+
+DATA_DIR = Path(__file__).parent.parent / "data"
+
 
 def _mock_variant(variant_dir):
 
@@ -58,7 +65,7 @@ def _create_me_type_densities(output_file):
             },
         },
     }
-    write_json(filepath=output_file, data=dataset)
+    write_json(filepath=output_file, data={"mtypes": dataset})
 
 
 def _mock_me_type_densities_resource(resource_dir):
@@ -312,6 +319,20 @@ def test_me_type_property__generate(tmp_path):
     tdir = Path(tmp_path).resolve()
     out = tdir / "out"
 
+    bioname_dir = tdir / "bioname"
+    bioname_dir.mkdir()
+
+    atlas_dir = tdir / "atlas"
+    atlas_dir.mkdir()
+
+    manifest_file = bioname_dir / "MANIFEST.yml"
+    utils.write_json(
+        data={"common": {"node_population_name": "root__neurons"}}, filepath=manifest_file
+    )
+
+    me_type_densities_file = bioname_dir / "densities.json"
+    utils.write_json(data={}, filepath=me_type_densities_file)
+
     transformed_data = {
         "region": "root",
         "parameters": {
@@ -322,10 +343,17 @@ def test_me_type_property__generate(tmp_path):
         },
         "mtype-taxonomy-file": "None",
         "composition-file": "None",
-        "atlas-dir": "None",
+        "atlas-id": None,
+        "atlas-dir": None,
+        "me-type-densities-file": me_type_densities_file,
     }
 
-    with patch("subprocess.run"):
+    with (
+        patch("cwl_registry.app.me_type_property.subprocess.run"),
+        patch("cwl_registry.app.me_type_property.mtype_etype_url_mapping") as mock_me,
+        patch("cwl_registry.app.me_type_property._generate_cell_composition_summary"),
+    ):
+        mock_me.return_value = ({"id1": "label"}, {"id2": "label"})
         tested._generate(transformed_data, output_dir=out)
 
     build_dir = out / "build"
@@ -348,15 +376,43 @@ def test_me_type_property__generate(tmp_path):
     }
 
 
-def test_me_type_property__register():
+def test_me_type_property__register(tmp_path):
 
+    tdir = Path(tmp_path).resolve()
+
+    config_path = tdir / "circuit_config.json"
+    config_path.touch()
+
+    summary_file = tdir / "summary_file.json"
+    summary_file.touch()
+
+    forge = LocalForge(output_dir=tdir)
+    forge.storage["brain-region-id"] = Resource.from_json(
+        {
+            "id": "brain-region-id",
+            "type": "Class",
+            "label": "my-region",
+            "notation": "myr",
+        }
+    )
+    forge.storage["atlas-release-id"] = Resource.from_json(
+        {
+            "id": "atlas-release-id",
+            "type": "AtlasRelease",
+            "label": "my-atlas",
+        }
+    )
+    forge.storage["circuit-id"] = Resource.from_json(
+        {
+            "id": "circuit-id",
+            "type": "DetailedCircuit",
+        }
+    )
     generated_data = {
-        "partial-circuit": None,
+        "partial-circuit": config_path,
+        "atlas-id": "atlas-release-id",
+        "composition-summary-file": summary_file,
     }
-
-    # not much to do
-    with (
-        patch("cwl_registry.app.me_type_property.get_forge"),
-        patch("cwl_registry.registering.register_partial_circuit"),
-    ):
-        tested._register("my-region", generated_data, None, None, None, None, "0")
+    with (patch("cwl_registry.app.me_type_property.get_forge") as mock_forge,):
+        mock_forge.return_value = forge
+        tested._register("brain-region-id", generated_data, None, None, None, None, "0")

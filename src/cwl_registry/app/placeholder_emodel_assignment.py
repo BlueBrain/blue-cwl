@@ -61,10 +61,12 @@ def app(
         task_digest,
         "circuit_emodels_bundle",
     )
+    partial_circuit_resource = forge.retrieve(partial_circuit, cross_bucket=True)
     registering.register_partial_circuit(
         forge,
         name="Cell properties | Morphologies | emodels partial circuit",
-        brain_region=region,
+        brain_region_id=region,
+        atlas_release_id=partial_circuit_resource.atlasRelease.id,
         description="Partial circuit built with cell positions, morphologies, and emodels.",
         sonata_config_path=sonata_config_file,
         target_digest=target_digest,

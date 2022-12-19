@@ -157,7 +157,7 @@ def stage_me_type_densities(forge, resource_id: str, output_file: Path):
             "label": mtype_part["label"],
             "etypes": etype_groups,
         }
-    write_json(filepath=output_file, data=mtype_groups)
+    write_json(filepath=output_file, data={"mtypes": mtype_groups})
 
 
 def stage_dataset_groups(forge, dataset_resource_id, staging_function):
