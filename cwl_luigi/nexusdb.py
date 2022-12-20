@@ -36,7 +36,6 @@ class NexusTarget(luigi.Target):
 
         resources = forge.search(
             {
-                "type": "DetailedCircuit",
                 "wasGeneratedBy": {"type": "BMOTask", "targetDigest": target_hexdigest},
             }
         )
