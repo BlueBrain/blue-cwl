@@ -47,10 +47,10 @@ def app():
 
 @app.command()
 @click.argument("nodes_path")
-@click.option("--nexus-base", required=True)
-@click.option("--nexus-project", required=True)
-@click.option("--nexus-org", required=True)
-@click.option("--nexus-token", required=True)
+@click.option("--nexus-base", envvar="NEXUS_BASE", required=True)
+@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
+@click.option("--nexus-org", envvar="NEXUS_ORG", required=True)
+@click.option("--nexus-token", envvar="NEXUS_TOKEN", required=True)
 @click.option("--output", help="output")
 @click.option("--atlas-dir", help="Annotations atlas directory")
 def from_nodes_file(
