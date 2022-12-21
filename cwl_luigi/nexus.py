@@ -1,5 +1,6 @@
 """Nexus utils."""
 import json
+import os
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Dict, List, Optional
@@ -97,8 +98,23 @@ def _jsonld_to_json(data):
             _jsonld_to_json(v)
 
 
-def get_kg_forge(nexus_base, nexus_org, nexus_project, nexus_token):
+def _get_var_from_environment(var_name):
+    try:
+        return os.environ[var_name]
+    except KeyError as e:
+        raise ValueError(f"'{var_name}' env var not found.") from e
+
+
+def get_kg_forge(nexus_base=None, nexus_org=None, nexus_project=None, nexus_token=None):
     """Get kg forge."""
+    nexus_base = nexus_base or _get_var_from_environment("NEXUS_BASE")
+
+    nexus_org = nexus_org or _get_var_from_environment("NEXUS_ORG")
+
+    nexus_project = nexus_project or _get_var_from_environment("NEXUS_PROJ")
+
+    nexus_token = nexus_token or _get_var_from_environment("NEXUS_TOKEN")
+
     return KnowledgeGraphForge(
         ENVIRONMENTS["prod"],
         bucket=f"{nexus_org}/{nexus_project}",

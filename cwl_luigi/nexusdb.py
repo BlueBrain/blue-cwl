@@ -25,13 +25,12 @@ class NexusTarget(luigi.Target):
     @property
     def resource(self):
         """Get a resource by searching the knowledge graph about its type and unique hash."""
-        target_hexdigest = hashing.get_target_hexdigest(self.task.get_task_hexdigest(), self.name)
+        target_hexdigest = hashing.get_target_hexdigest(self.task.digest(), self.name)
 
         forge = get_kg_forge(
             nexus_base=self.task.kg_config["kg_base"],
             nexus_org=self.task.kg_config["kg_org"],
             nexus_project=self.task.kg_config["kg_proj"],
-            nexus_token=self.task.kg_config["nexus_token"],
         )
 
         resources = forge.search(

@@ -29,6 +29,15 @@ def _isocortex_region():
     )
 
 
+def _circuit_config_path(path):
+    return Resource.from_json(
+        {
+            "type": "DataDownload",
+            "url": "file://" + str(Path(path).resolve()),
+        }
+    )
+
+
 def register_partial_circuit(
     forge, name, brain_region, sonata_config_path, target_digest, description="", species=None
 ):
@@ -48,7 +57,7 @@ def register_partial_circuit(
         species=species,
         description=description,
         brainLocation=brain_location,
-        circuitConfigPath="file://" + str(Path(sonata_config_path).resolve()),
+        circuitConfigPath=_circuit_config_path(sonata_config_path),
         wasGeneratedBy=was_generated_by,
     )
 

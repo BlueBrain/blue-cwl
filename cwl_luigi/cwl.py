@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from cwl_luigi import cwl_parser
 from cwl_luigi.cwl_types import CWLType
-from cwl_luigi.environment import Environment
 
 L = logging.getLogger(__name__)
 
@@ -158,7 +157,7 @@ class CommandLineTool:
     inputs: Dict[str, CommandLineToolInput]
     outputs: Dict[str, CommandLineToolOutput]
     stdout: str
-    environment: Optional[Environment]
+    environment: Optional[dict]
 
     @classmethod
     def from_cwl(cls, cwl_path: Path) -> "CommandLineTool":
@@ -173,7 +172,7 @@ class CommandLineTool:
             output_name: CommandLineToolOutput.from_cwl(output_name, output_data, data["stdout"])
             for output_name, output_data in data["outputs"].items()
         }
-        environment = Environment(config=data["environment"]) if "environment" in data else None
+        environment = data["environment"] if "environment" in data else None
 
         return cls(
             cwlVersion=data["cwlVersion"],

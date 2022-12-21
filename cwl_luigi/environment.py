@@ -1,5 +1,4 @@
 """Environment related utilities."""
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict
 
@@ -14,13 +13,10 @@ from cwl_luigi.constants import (
 )
 
 
-def _build_module_cmd(cmd: str, config: Dict[str, Any], allocation) -> str:
+def _build_module_cmd(cmd: str, config: Dict[str, Any]) -> str:
     """Wrap the command with modules."""
     modulepath = config.get("modulepath", SPACK_MODULEPATH)
     modules = config["modules"]
-
-    if allocation:
-        cmd = allocation.shell_command(cmd)
 
     return " && ".join(
         [
@@ -35,7 +31,7 @@ def _build_module_cmd(cmd: str, config: Dict[str, Any], allocation) -> str:
     )
 
 
-def _build_apptainer_cmd(cmd: str, config: Dict[str, Any], allocation) -> str:
+def _build_apptainer_cmd(cmd: str, config: Dict[str, Any]) -> str:
     """Wrap the command with apptainer/singularity."""
     modulepath = config.get("modulepath", APPTAINER_MODULEPATH)
     modules = config.get("modules", APPTAINER_MODULES)
@@ -44,9 +40,6 @@ def _build_apptainer_cmd(cmd: str, config: Dict[str, Any], allocation) -> str:
     image = Path(APPTAINER_IMAGEPATH, config["image"])
     # the current working directory is used also inside the container
     cmd = f'{executable} exec {options} {image} bash <<EOF\ncd "$(pwd)" && {cmd}\nEOF\n'
-
-    if allocation:
-        cmd = allocation.shell_command(cmd)
 
     cmd = " && ".join(
         [
@@ -61,13 +54,9 @@ def _build_apptainer_cmd(cmd: str, config: Dict[str, Any], allocation) -> str:
     return cmd
 
 
-def _build_venv_cmd(cmd: str, config: Dict[str, Any], allocation):
+def _build_venv_cmd(cmd: str, config: Dict[str, Any]):
     """Wrap the command with an existing virtual environment."""
     path = config["path"]
-
-    if allocation:
-        cmd = allocation.shell_command(cmd)
-
     return f". {path}/bin/activate && {cmd}"
 
 
@@ -78,13 +67,7 @@ ENV_MAPPING: Dict[str, Any] = {
 }
 
 
-@dataclass(frozen=True, eq=True)
-class Environment:
-    """Runtime environment setup."""
-
-    config: Dict[str, Any]
-
-    def shell_command(self, cmd, allocation=None) -> str:
-        """Get shell command combining the chosen environment and the current cmd."""
-        build_function = ENV_MAPPING[self.config["env_type"]]
-        return build_function(cmd=cmd, config=self.config, allocation=allocation)
+def build_environment_command(cmd: str, config: dict) -> str:
+    """Get shell command combining the chosen environment and the current cmd."""
+    build_function = ENV_MAPPING[config["env_type"]]
+    return build_function(cmd=cmd, config=config)
