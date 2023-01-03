@@ -1,0 +1,2604 @@
+{
+  "version": 1,
+  "unitCode": {
+    "density": "mm^-3"
+  },
+  "hasPart": {
+    "http://api.brain-map.org/api/v2/data/Structure/614454342": {
+      "label": "Anterior cingulate area, dorsal part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 946.4342138285319,
+                  "count": 178
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454343": {
+      "label": "Anterior cingulate area, dorsal part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 825.4535894860079,
+                  "count": 348
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454344": {
+      "label": "Anterior cingulate area, ventral part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 774.6805061653693,
+                  "count": 113
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454345": {
+      "label": "Anterior cingulate area, ventral part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 910.2906515806641,
+                  "count": 330
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454355": {
+      "label": "Agranular insular area, dorsal part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 580.5561094395651,
+                  "count": 179
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454356": {
+      "label": "Agranular insular area, dorsal part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 787.1283456789059,
+                  "count": 485
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454357": {
+      "label": "Agranular insular area, posterior part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 774.0667561831672,
+                  "count": 178
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454358": {
+      "label": "Agranular insular area, posterior part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 875.014466236027,
+                  "count": 501
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/355": {
+      "label": "Agranular insular area, posterior part, layer 6b",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263343,
+                  "count": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454359": {
+      "label": "Agranular insular area, ventral part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 668.7176274207706,
+                  "count": 122
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454360": {
+      "label": "Agranular insular area, ventral part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 824.4570202164979,
+                  "count": 338
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454312": {
+      "label": "Dorsal auditory area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 365.0064916045758,
+                  "count": 40
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454313": {
+      "label": "Dorsal auditory area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 696.8957822806946,
+                  "count": 150
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454316": {
+      "label": "Primary auditory area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 326.42796640126926,
+                  "count": 53
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454317": {
+      "label": "Primary auditory area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 803.5340131787895,
+                  "count": 246
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454318": {
+      "label": "Posterior auditory area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 755.8879329114577,
+                  "count": 37
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454319": {
+      "label": "Posterior auditory area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 733.9735567572214,
+                  "count": 70
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454320": {
+      "label": "Ventral auditory area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 574.1850947379853,
+                  "count": 70
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454321": {
+      "label": "Ventral auditory area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1002.153466968204,
+                  "count": 264
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/703": {
+      "label": "Cortical subplate",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 7
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454382": {
+      "label": "Ectorhinal area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 631.6874707845908,
+                  "count": 76
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454383": {
+      "label": "Ectorhinal area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 910.4069570658315,
+                  "count": 322
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454278": {
+      "label": "Frontal pole, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 912.6333061430317,
+                  "count": 84
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454279": {
+      "label": "Frontal pole, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 2010.802439689989,
+                  "count": 284
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/526157192": {
+      "label": "Frontal pole, layer 5",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 7
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/526157196": {
+      "label": "Frontal pole, layer 6a",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 2
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/526322264": {
+      "label": "Frontal pole, layer 6b",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263343,
+                  "count": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454308": {
+      "label": "Gustatory areas, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1184.4159841591513,
+                  "count": 155
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454309": {
+      "label": "Gustatory areas, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 671.9570582800862,
+                  "count": 182
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/747": {
+      "label": "Infralimbic area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 710.5233447593364,
+                  "count": 33
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454347": {
+      "label": "Infralimbic area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 835.2107543778862,
+                  "count": 80
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454282": {
+      "label": "Primary motor area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 757.1664617213978,
+                  "count": 962
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454283": {
+      "label": "Primary motor area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 826.2241771912504,
+                  "count": 1998
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454284": {
+      "label": "Secondary motor area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 984.4043093049584,
+                  "count": 1419
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454285": {
+      "label": "Secondary motor area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 885.2127223313126,
+                  "count": 2091
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454350": {
+      "label": "Orbital area, lateral part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 652.9197540298902,
+                  "count": 121
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454351": {
+      "label": "Orbital area, lateral part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 816.8579866347221,
+                  "count": 355
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/524": {
+      "label": "Orbital area, medial part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 620.2046926345876,
+                  "count": 67
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454352": {
+      "label": "Orbital area, medial part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 848.364278043619,
+                  "count": 174
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/527696977": {
+      "label": "Orbital area, medial part, layer 6b",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263343,
+                  "count": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454353": {
+      "label": "Orbital area, ventrolateral part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1113.3689919043204,
+                  "count": 190
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454354": {
+      "label": "Orbital area, ventrolateral part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 798.6819088323421,
+                  "count": 281
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/803": {
+      "label": "Pallidum",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 23
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454380": {
+      "label": "Perirhinal area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 782.7072981199398,
+                  "count": 77
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454381": {
+      "label": "Perirhinal area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1002.6031401122405,
+                  "count": 235
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/195": {
+      "label": "Prelimbic area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 746.065397798,
+                  "count": 105
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454346": {
+      "label": "Prelimbic area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 686.3179541538066,
+                  "count": 190
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454361": {
+      "label": "Retrosplenial area, lateral agranular part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 845.2234112642383,
+                  "count": 201
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454362": {
+      "label": "Retrosplenial area, lateral agranular part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 748.2037696796149,
+                  "count": 322
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454369": {
+      "label": "Retrosplenial area, dorsal part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 541.0804381396582,
+                  "count": 186
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454370": {
+      "label": "Retrosplenial area, dorsal part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 997.9603313485806,
+                  "count": 628
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/606": {
+      "label": "Retrosplenial area, ventral part, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 895.8904354949004,
+                  "count": 229
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454371": {
+      "label": "Retrosplenial area, ventral part, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 907.4916136317277,
+                  "count": 692
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/98": {
+      "label": "subependymal zone",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 2
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454292": {
+      "label": "Primary somatosensory area, barrel field, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 933.3910838209199,
+                  "count": 498
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454293": {
+      "label": "Primary somatosensory area, barrel field, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 209.89630683916036,
+                  "count": 206
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454296": {
+      "label": "Primary somatosensory area, lower limb, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 893.6409682870121,
+                  "count": 211
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454297": {
+      "label": "Primary somatosensory area, lower limb, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 889.0942344993816,
+                  "count": 364
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454298": {
+      "label": "Primary somatosensory area, mouth, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 974.8925192365948,
+                  "count": 535
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454299": {
+      "label": "Primary somatosensory area, mouth, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 924.6478134202156,
+                  "count": 878
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454290": {
+      "label": "Primary somatosensory area, nose, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 809.8230531173214,
+                  "count": 183
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454291": {
+      "label": "Primary somatosensory area, nose, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 816.7496016451897,
+                  "count": 337
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454302": {
+      "label": "Primary somatosensory area, trunk, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 687.8235121318814,
+                  "count": 101
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454303": {
+      "label": "Primary somatosensory area, trunk, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1088.7947294024837,
+                  "count": 300
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454300": {
+      "label": "Primary somatosensory area, upper limb, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 781.9455612506536,
+                  "count": 269
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454301": {
+      "label": "Primary somatosensory area, upper limb, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 914.218090743428,
+                  "count": 579
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454304": {
+      "label": "Primary somatosensory area, unassigned, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 638.5067697630683,
+                  "count": 68
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454305": {
+      "label": "Primary somatosensory area, unassigned, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 706.1350766699439,
+                  "count": 158
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454306": {
+      "label": "Supplemental somatosensory area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 747.8291780063969,
+                  "count": 534
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454307": {
+      "label": "Supplemental somatosensory area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 919.1159709123348,
+                  "count": 1314
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454378": {
+      "label": "Temporal association areas, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 824.8741022974783,
+                  "count": 176
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454379": {
+      "label": "Temporal association areas, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1147.511447501678,
+                  "count": 556
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454310": {
+      "label": "Visceral area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 625.8751192150594,
+                  "count": 104
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454311": {
+      "label": "Visceral area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1055.2653191362947,
+                  "count": 393
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782550": {
+      "label": "Anterior area, layer 1",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 4
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454374": {
+      "label": "Anterior area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 634.6407420580982,
+                  "count": 92
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454375": {
+      "label": "Anterior area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1102.9937453307869,
+                  "count": 309
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782558": {
+      "label": "Anterior area, layer 4",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782562": {
+      "label": "Anterior area, layer 5",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 7
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782566": {
+      "label": "Anterior area, layer 6a",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263343,
+                  "count": 4
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782570": {
+      "label": "Anterior area, layer 6b",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263343,
+                  "count": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454324": {
+      "label": "Anterolateral visual area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 426.12160398637326,
+                  "count": 28
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454325": {
+      "label": "Anterolateral visual area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 666.0605954516361,
+                  "count": 88
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454326": {
+      "label": "Anteromedial visual area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 287.4654347535593,
+                  "count": 21
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454327": {
+      "label": "Anteromedial visual area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 762.4128427857742,
+                  "count": 101
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454328": {
+      "label": "Lateral visual area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 652.1688782794582,
+                  "count": 63
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454329": {
+      "label": "Lateral visual area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1139.9354630765697,
+                  "count": 233
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782578": {
+      "label": "Laterointermediate area, layer 1",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454336": {
+      "label": "Laterointermediate area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 634.6407420580982,
+                  "count": 24
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454337": {
+      "label": "Laterointermediate area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1102.993745330787,
+                  "count": 85
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782586": {
+      "label": "Laterointermediate area, layer 4",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782590": {
+      "label": "Laterointermediate area, layer 5",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782594": {
+      "label": "Laterointermediate area, layer 6a",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782598": {
+      "label": "Laterointermediate area, layer 6b",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454330": {
+      "label": "Primary visual area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 414.56382730581026,
+                  "count": 286
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454331": {
+      "label": "Primary visual area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 986.1704323769701,
+                  "count": 1291
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454332": {
+      "label": "Posterolateral visual area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 333.3704581587986,
+                  "count": 17
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454333": {
+      "label": "Posterolateral visual area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 949.7678122285964,
+                  "count": 149
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454334": {
+      "label": "posteromedial visual area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 770.2191924467627,
+                  "count": 81
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454335": {
+      "label": "posteromedial visual area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 923.7585582888244,
+                  "count": 173
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782632": {
+      "label": "Postrhinal area, layer 1",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.89110833026335,
+                  "count": 5
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454338": {
+      "label": "Postrhinal area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 634.6407420580982,
+                  "count": 74
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454339": {
+      "label": "Postrhinal area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1102.9937453307869,
+                  "count": 283
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782640": {
+      "label": "Postrhinal area, layer 4",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263343,
+                  "count": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782644": {
+      "label": "Postrhinal area, layer 5",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 8
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782648": {
+      "label": "Postrhinal area, layer 6a",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782652": {
+      "label": "Postrhinal area, layer 6b",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.89110833026335,
+                  "count": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782604": {
+      "label": "Rostrolateral visual area, layer 1",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454376": {
+      "label": "Rostrolateral visual area, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 634.6407420580982,
+                  "count": 67
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454377": {
+      "label": "Rostrolateral visual area, layer 3",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 1102.9937453307869,
+                  "count": 185
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782612": {
+      "label": "Rostrolateral visual area, layer 4",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782616": {
+      "label": "Rostrolateral visual area, layer 5",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263343,
+                  "count": 5
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782620": {
+      "label": "Rostrolateral visual area, layer 6a",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/312782624": {
+      "label": "Rostrolateral visual area, layer 6b",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/81": {
+      "label": "lateral ventricle",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263346,
+                  "count": 44
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/164": {
+      "label": "central canal, spinal cord/medulla",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.89110833026335,
+                  "count": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/108": {
+      "label": "choroid plexus",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263343,
+                  "count": 30
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/997": {
+      "label": "root",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383202": {
+          "label": "L23_LBC",
+          "about": "MType",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738199": {
+              "label": "bAC",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 20.891108330263354,
+                  "count": 74
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

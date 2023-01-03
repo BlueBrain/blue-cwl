@@ -131,16 +131,6 @@ def test_mtype_etype_url_mapping(density_distribution):
     assert res_etype_urls == {"dSTUT": ETYPE_URIS["dSTUT"], "cADpyr": ETYPE_URIS["cADpyr"]}
 
 
-def test_mtype_etype_url_mapping__inverted(density_distribution):
-
-    res_mtype_urls, res_etype_urls = test_module.mtype_etype_url_mapping(
-        density_distribution, invert=True
-    )
-
-    assert res_mtype_urls == {MTYPE_URIS["L23_BP"]: "L23_BP", MTYPE_URIS["L5_TPC:A"]: "L5_TPC:A"}
-    assert res_etype_urls == {ETYPE_URIS["dSTUT"]: "dSTUT", ETYPE_URIS["cADpyr"]: "cADpyr"}
-
-
 def test_node_population_composition_summary(population, atlas, mtype_urls, etype_urls):
 
     res = test_module.node_population_composition_summary(population, atlas, mtype_urls, etype_urls)
@@ -274,7 +264,7 @@ def test_get_statistics_from_nrrd_volume(region_map, brain_regions):
         path = Path(tfile.name)
         density.save_nrrd(path)
 
-        result = test_module._get_statistics_from_nrrd_volume(
+        result = test_module.get_statistics_from_nrrd_volume(
             region_map, brain_regions, mtype, etype, path
         )
 
@@ -356,3 +346,44 @@ def test_atlas_densities_composition_summary(density_distribution, region_map, b
             "count": 5.0,
         },
     }
+
+
+def test__cell_composition_summary_to_df(region_map, mtype_urls, etype_urls):
+    # try roundtrip of composition summary
+    df_region_mtype_etype = (
+        pd.DataFrame(
+            (
+                ("AAA", "L23_BP", "cADpyr", 10.0, 1),
+                ("AAA", "L5_TPC:A", "cADpyr", 20.0, 2),
+                ("AAA", "L23_BP", "dSTUT", 30.0, 3),
+                ("AAA", "L5_TPC:A", "dSTUT", 40.0, 4),
+                ("FRP1", "L23_BP", "cADpyr", 110.0, 11),
+                ("FRP1", "L5_TPC:A", "cADpyr", 120.0, 12),
+                ("FRP1", "L23_BP", "dSTUT", 130.0, 13),
+                ("FRP1", "L5_TPC:A", "dSTUT", 140.0, 14),
+            ),
+            columns=[
+                "region",
+                "mtype",
+                "etype",
+                "density",
+                "count",
+            ],
+        )
+        .set_index(["region", "mtype", "etype"])
+        .sort_index()
+    )
+
+    cell_composition_summary = test_module.density_summary_stats_region(
+        region_map, df_region_mtype_etype, mtype_urls, etype_urls
+    )
+
+    mtype_urls_inverse = {v: k for k, v in mtype_urls.items()}
+    etype_urls_inverse = {v: k for k, v in etype_urls.items()}
+
+    df = test_module.cell_composition_summary_to_df(
+        cell_composition_summary, region_map, mtype_urls_inverse, etype_urls_inverse
+    )
+    pd.testing.assert_frame_equal(
+        df.set_index(["region", "mtype", "etype"]).sort_index(), df_region_mtype_etype
+    )

@@ -18,8 +18,8 @@ def app():
 @click.option("--atlas-release", help="Atlas release KG resource id.", required=True)
 @click.option("--density-distribution", help="Density distribution KG dataset id.", required=True)
 @click.option("--nexus-base", envvar="NEXUS_BASE", required=True)
-@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
 @click.option("--nexus-org", envvar="NEXUS_ORG", required=True)
+@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
 @click.option("--nexus-token", envvar="NEXUS_TOKEN", required=True)
 @click.option("--task-digest", required=True)
 @click.option("--output-dir", required=True)
@@ -27,8 +27,8 @@ def from_density_distribution(
     atlas_release,
     density_distribution,
     nexus_base,
-    nexus_project,
     nexus_org,
+    nexus_project,
     nexus_token,
     task_digest,
     output_dir,

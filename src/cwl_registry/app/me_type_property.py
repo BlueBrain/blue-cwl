@@ -29,8 +29,8 @@ L = logging.getLogger(__name__)
 @click.option("--me-type-densities", required=True)
 @click.option("--atlas", required=True)
 @click.option("--nexus-base", envvar="NEXUS_BASE", required=True)
-@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
 @click.option("--nexus-org", envvar="NEXUS_ORG", required=True)
+@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
 @click.option("--nexus-token", envvar="NEXUS_TOKEN", required=True)
 @click.option("--task-digest", required=True)
 @click.option("--output-dir", required=True)
@@ -40,8 +40,8 @@ def app(
     me_type_densities,
     atlas,
     nexus_base,
-    nexus_project,
     nexus_org,
+    nexus_project,
     nexus_token,
     task_digest,
     output_dir,

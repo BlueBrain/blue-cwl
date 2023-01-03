@@ -4,6 +4,7 @@ import logging
 import click
 
 from cwl_registry.app import (
+    cell_composition_manipulation,
     cell_composition_summary,
     density_calculation,
     density_manipulation,
@@ -32,6 +33,7 @@ execute.add_command(name="neurons-me-type-property", cmd=me_type_property.app)
 execute.add_command(name="density-calculation", cmd=density_calculation.app)
 execute.add_command(name="density-manipulation", cmd=density_manipulation.app)
 execute.add_command(name="cell-composition-summary", cmd=cell_composition_summary.app)
+execute.add_command(name="cell-composition-manipulation", cmd=cell_composition_manipulation.app)
 execute.add_command(
     name="placeholder-morphology-assignment", cmd=placeholder_morphology_assignment.app
 )

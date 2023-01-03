@@ -9,7 +9,6 @@ ME_TYPE_DENSITIES="https://bbp.epfl.ch/neurosciencegraph/data/d6485af7-820c-465b
 
 VARIANT_CONFIG="https://bbp.epfl.ch/neurosciencegraph/data/0a4f576a-39d9-4214-a474-a4ee049e43cf?rev=1"
 
-
 rm -rf out && mkdir out
 
 cwl-registry -vv execute neurons-me-type-property \
@@ -20,5 +19,6 @@ cwl-registry -vv execute neurons-me-type-property \
     --nexus-base ${NEXUS_BASE:-"https://bbp.epfl.ch/nexus/v1"} \
     --nexus-org ${NEXUS_ORG:-"bbp"} \
     --nexus-project ${NEXUS_PROJ:-"mmb-point-neuron-framework-model"} \
+    --nexus-token $NEXUS_TOKEN \
     --task-digest "0" \
     --output-dir ./out

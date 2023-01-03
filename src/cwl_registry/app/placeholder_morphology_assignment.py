@@ -15,8 +15,8 @@ from cwl_registry.nexus import get_forge
 @click.option("--mtype-morphologies", required=True)
 @click.option("--partial-circuit", required=True)
 @click.option("--nexus-base", envvar="NEXUS_BASE", required=True)
-@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
 @click.option("--nexus-org", envvar="NEXUS_ORG", required=True)
+@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
 @click.option("--nexus-token", envvar="NEXUS_TOKEN", required=True)
 @click.option("--task-digest", required=True)
 @click.option("--output-dir", required=True)
@@ -25,8 +25,8 @@ def app(
     mtype_morphologies,
     partial_circuit,
     nexus_base,
-    nexus_project,
     nexus_org,
+    nexus_project,
     nexus_token,
     task_digest,
     output_dir,
