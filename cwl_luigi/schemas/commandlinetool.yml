@@ -223,7 +223,6 @@ properties:
           required:
           - id
           - type
-          - outputBinding
     - type: object
       patternProperties:
         "^.*$":

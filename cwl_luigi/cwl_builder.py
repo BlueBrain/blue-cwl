@@ -15,6 +15,7 @@ def build_workflow_cwl_datasets(
 ) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
     """Convert the recipe dict into a cwl workflow and a cwl config."""
     config: Dict[str, Any] = {"inputs": {}}
+
     workflow: Dict[str, Any] = {
         "cwlVersion": "v1.2",
         "class": "Workflow",
