@@ -21,6 +21,7 @@ L = logging.getLogger(__name__)
 @click.option("--nexus-org", envvar="NEXUS_ORG", required=True)
 @click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
 @click.option("--nexus-token", envvar="NEXUS_TOKEN", required=True)
+@click.option("--region", required=True)
 @click.option("--base-composition-summary", required=True)
 @click.option("--base-density-distribution", required=True)
 @click.option("--atlas-release", required=True)
@@ -32,6 +33,7 @@ def app(  # pylint: disable=too-many-arguments
     nexus_org,
     nexus_project,
     nexus_token,
+    region,  # pylint: disable=unused-argument
     base_composition_summary,
     base_density_distribution,
     atlas_release,

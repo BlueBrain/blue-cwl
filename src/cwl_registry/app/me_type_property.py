@@ -10,7 +10,7 @@ import libsonata
 import voxcell
 from voxcell.nexus.voxelbrain import Atlas
 
-from cwl_registry import Variant, recipes, registering, staging, utils
+from cwl_registry import Variant, recipes, registering, staging, utils, validation
 from cwl_registry.hashing import get_target_hexdigest
 from cwl_registry.nexus import get_forge
 from cwl_registry.statistics import mtype_etype_url_mapping, node_population_composition_summary
@@ -28,10 +28,6 @@ L = logging.getLogger(__name__)
 @click.option("--variant-config", required=False)
 @click.option("--me-type-densities", required=True)
 @click.option("--atlas", required=True)
-@click.option("--nexus-base", envvar="NEXUS_BASE", required=True)
-@click.option("--nexus-org", envvar="NEXUS_ORG", required=True)
-@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
-@click.option("--nexus-token", envvar="NEXUS_TOKEN", required=True)
 @click.option("--task-digest", required=True)
 @click.option("--output-dir", required=True)
 def app(
@@ -39,10 +35,6 @@ def app(
     variant_config,
     me_type_densities,
     atlas,
-    nexus_base,
-    nexus_org,
-    nexus_project,
-    nexus_token,
     task_digest,
     output_dir,
 ):
@@ -55,10 +47,6 @@ def app(
         me_type_densities,
         atlas,
         output_dir,
-        nexus_base,
-        nexus_token,
-        nexus_org,
-        nexus_project,
     )
 
     transform_dir = utils.create_dir(output_dir / TRANSFORM_DIR_NAME)
@@ -69,10 +57,6 @@ def app(
     _register(
         region,
         generated_entities,
-        nexus_base,
-        nexus_token,
-        nexus_org,
-        nexus_project,
         task_digest,
     )
 
@@ -83,10 +67,6 @@ def _extract(
     me_type_densities_id: str,
     atlas_id: str,
     output_dir: Path,
-    nexus_base: str,
-    nexus_token: str,
-    nexus_org: str,
-    nexus_project: str,
 ) -> Dict[str, Any]:
     """Stage resources from the knowledge graph."""
     staging_dir = utils.create_dir(output_dir / STAGE_DIR_NAME)
@@ -94,15 +74,11 @@ def _extract(
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     me_type_densities_file = staging_dir / "mtype-densities.json"
 
-    forge = get_forge(
-        nexus_base=nexus_base,
-        nexus_org=nexus_org,
-        nexus_project=nexus_project,
-        nexus_token=nexus_token,
-    )
+    forge = get_forge()
+
     variant = Variant.from_resource_id(forge, variant_config_id, staging_dir=variant_dir)
 
-    region = forge.retrieve(brain_region_id, cross_bucket=True).notation
+    region = utils.get_region_resource_acronym(forge, brain_region_id)
 
     staging.stage_atlas(
         forge=forge,
@@ -112,9 +88,11 @@ def _extract(
         parcellation_volume_basename="brain_regions.nrrd",
     )
 
+    cell_composition = forge.retrieve(me_type_densities_id, cross_bucket=True)
+
     staging.stage_me_type_densities(
         forge=forge,
-        resource_id=me_type_densities_id,
+        resource_id=cell_composition.cellCompositionVolume.id,
         output_file=me_type_densities_file,
     )
 
@@ -212,6 +190,8 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
         shell=True,
     )
 
+    validation.check_population_name_in_nodes(node_population_name, nodes_file)
+
     L.info("Generating partial circuit config...")
     sonata_config_file = build_dir / "config.json"
     _generate_circuit_config(
@@ -219,6 +199,7 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
         nodes_file=nodes_file,
         output_file=sonata_config_file,
     )
+    validation.check_population_name_in_config(node_population_name, sonata_config_file)
 
     L.info("Generating cell composition summary...")
     mtype_urls, etype_urls = mtype_etype_url_mapping(
@@ -245,7 +226,8 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
 
 
 def _generate_circuit_config(node_population_name: str, nodes_file: str, output_file: Path):
-    data = {
+
+    config = {
         "version": 2,
         "manifest": {"$BASE_DIR": "."},
         "networks": {
@@ -264,9 +246,9 @@ def _generate_circuit_config(node_population_name: str, nodes_file: str, output_
         "metadata": {"status": "partial"},
     }
 
-    utils.write_json(filepath=output_file, data=data)
+    utils.write_json(filepath=output_file, data=config)
 
-    return data
+    return config
 
 
 def _generate_cell_composition_summary(
@@ -284,19 +266,11 @@ def _generate_cell_composition_summary(
 def _register(
     region_id,
     generated_data,
-    nexus_base,
-    nexus_token,
-    nexus_org,
-    nexus_project,
     task_digest,
 ):
     """Register outputs to nexus."""
-    forge = get_forge(
-        nexus_base=nexus_base,
-        nexus_org=nexus_org,
-        nexus_project=nexus_project,
-        nexus_token=nexus_token,
-    )
+    forge = get_forge()
+
     target_digest = get_target_hexdigest(
         task_digest,
         "circuit_me_type_bundle",

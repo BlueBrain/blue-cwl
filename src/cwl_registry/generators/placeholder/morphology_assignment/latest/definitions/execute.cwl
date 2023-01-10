@@ -11,6 +11,7 @@ baseCommand: ['cwl-registry', 'execute', 'placeholder-morphology-assignment']
 environment:
   env_type: VENV
   path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-densities
+  enable_internet: true
 
 
 inputs:
@@ -29,26 +30,6 @@ inputs:
       type: NexusType
       inputBinding:
         prefix: --mtype-morphologies
-
-    - id: nexus_base
-      type: string
-      inputBinding:
-        prefix: --nexus-base
-
-    - id: nexus_token
-      type: string
-      inputBinding:
-        prefix: --nexus-token
-
-    - id: nexus_org
-      type: string
-      inputBinding:
-        prefix: --nexus-org
-
-    - id: nexus_project
-      type: string
-      inputBinding:
-        prefix: --nexus-project
 
     - id: output_dir
       type: Directory

@@ -1,2 +1,0 @@
-__default__:
-  salloc: -A ${{SALLOC_ACCOUNT}} -p prod --time 2:00:00 --exclusive

@@ -252,3 +252,8 @@ def get_directory_contents(directory_path: Path) -> Dict[str, Path]:
     if directory_path.is_dir():
         return {path.name: path for path in directory_path.iterdir()}
     return {}
+
+
+def get_region_resource_acronym(forge, resource_id: str) -> str:
+    """Retrieve the hierarchy acronym from a KG registered region."""
+    return forge.retrieve(resource_id, cross_bucket=True).notation

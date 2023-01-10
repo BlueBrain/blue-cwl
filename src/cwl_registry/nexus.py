@@ -137,10 +137,15 @@ def retrieve_variant_data(
 ):
     """Retrieve variant data from KG resource."""
     variant_resource = forge.retrieve(resource_id, cross_bucket=True)
+    assert variant_resource is not None
     L.debug("Variant resource: %s", variant_resource)
 
-    configs_resource = forge.retrieve(variant_resource.configs.id, cross_bucket=True)
-    L.debug("Variant configs resource: %s", configs_resource)
+    try:
+        configs_resource = forge.retrieve(variant_resource.configs.id, cross_bucket=True)
+        configs = _get_files(configs_resource)
+    except AttributeError:
+        configs = {}
+    L.debug("Variant configs: %s", configs)
 
     resources_resource = forge.retrieve(variant_resource.allocation_resources.id, cross_bucket=True)
     L.debug("Variant allocation resource: %s", resources_resource)

@@ -146,7 +146,8 @@ def _mock_me_type_densities_resource(resource_dir):
     write_json(filepath=output_file, data=dataset)
 
     info = {}
-    info["me-type-densities-id"] = Mock(
+    info["me-type-densities-id"] = Resource(
+        id="me-type-densities-id",
         distribution=Resource(
             type="DataDownload",
             atLocation=Mock(
@@ -154,7 +155,7 @@ def _mock_me_type_densities_resource(resource_dir):
             ),
             encodingFormat="application/json",
             name="me_type_densities.json",
-        )
+        ),
     )
 
     for dset in ["L23_BP-dSTUT-id.nrrd", "L23_BP-bIR-id.nrrd", "L23_DBC-bIR-id.nrrd"]:
@@ -172,6 +173,17 @@ def _mock_me_type_densities_resource(resource_dir):
             )
         )
     return info
+
+
+def _mock_cell_composition_resource(resource_dir):
+    densities = _mock_me_type_densities_resource(resource_dir)
+    return {
+        "cell-composition-id": Resource(
+            id="me-type-densities-id",
+            cellCompositionVolume=densities["me-type-densities-id"],
+        ),
+        **densities,
+    }
 
 
 def _mock_atlas_resource(resource_dir):
@@ -223,7 +235,7 @@ def test_me_type_property__extract(tmp_path):
         "brain-region-id": Mock(notation="root"),
         "variant-config-id": None,
         **_mock_atlas_resource(create_dir(resources_dir / "atlas")),
-        **_mock_me_type_densities_resource(resources_dir),
+        **_mock_cell_composition_resource(resources_dir),
     }
 
     with (
@@ -239,13 +251,9 @@ def test_me_type_property__extract(tmp_path):
         res = tested._extract(
             brain_region_id="brain-region-id",
             variant_config_id="variant-config-id",
-            me_type_densities_id="me-type-densities-id",
+            me_type_densities_id="cell-composition-id",
             atlas_id="atlas-id",
             output_dir=out,
-            nexus_base=None,
-            nexus_token=None,
-            nexus_org=None,
-            nexus_project=None,
         )
 
     assert res["region"] == "root"
@@ -352,6 +360,7 @@ def test_me_type_property__generate(tmp_path):
         patch("cwl_registry.app.me_type_property.subprocess.run"),
         patch("cwl_registry.app.me_type_property.mtype_etype_url_mapping") as mock_me,
         patch("cwl_registry.app.me_type_property._generate_cell_composition_summary"),
+        patch("cwl_registry.validation.check_population_name_in_nodes"),
     ):
         mock_me.return_value = ({"id1": "label"}, {"id2": "label"})
         tested._generate(transformed_data, output_dir=out)
@@ -415,4 +424,4 @@ def test_me_type_property__register(tmp_path):
     }
     with (patch("cwl_registry.app.me_type_property.get_forge") as mock_forge,):
         mock_forge.return_value = forge
-        tested._register("brain-region-id", generated_data, None, None, None, None, "0")
+        tested._register("brain-region-id", generated_data, "0")

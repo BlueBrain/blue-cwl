@@ -41,8 +41,8 @@ def test_variant__get_definition_file(variant):
 
 def test_variant__get_resources_file(variant):
 
-    filepath = variant.get_resources_file("cluster_config.yml")
-    assert filepath == variant.resources["cluster_config.yml"]
+    filepath = variant.get_resources_file("variant_config.yml")
+    assert filepath == variant.resources["variant_config.yml"]
 
     with pytest.raises(KeyError):
         variant.get_resources_file("nonexistent.duh")
@@ -58,7 +58,7 @@ def test_get_variant(variant):
     assert set(configs) == {"parameters.yml"}
 
     resources = variant.resources
-    assert set(resources) == {"cluster_config.yml", "variant_config.yml"}
+    assert set(resources) == {"variant_config.yml"}
 
 
 def test_get_variant__no_version():

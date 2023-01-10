@@ -11,29 +11,15 @@ baseCommand: ['cwl-registry', 'execute', 'cell-composition-manipulation']
 environment:
   env_type: VENV
   path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-densities
+  enable_internet: true
 
 
 inputs:
 
-    - id: nexus_base
-      type: string
+    - id: region
+      type: NexusType
       inputBinding:
-        prefix: --nexus-base
-
-    - id: nexus_org
-      type: string
-      inputBinding:
-        prefix: --nexus-org
-
-    - id: nexus_project
-      type: string
-      inputBinding:
-        prefix: --nexus-project
-
-    - id: nexus_token
-      type: string
-      inputBinding:
-        prefix: --nexus-token
+        prefix: --region
 
     - id: base_composition_summary
       type: NexusType
@@ -54,11 +40,6 @@ inputs:
       type: NexusType
       inputBinding:
         prefix: --recipe
-
-    - id: task_digest
-      type: string
-      inputBinding:
-        prefix: --task-digest
 
     - id: output_dir
       type: Directory
