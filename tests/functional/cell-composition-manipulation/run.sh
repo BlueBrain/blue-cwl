@@ -1,3 +1,5 @@
+# Primary somatosensory area (SSp)
+REGION="http://api.brain-map.org/api/v2/data/Structure/322?rev=16"
 
 # prod
 ATLAS="https://bbp.epfl.ch/neurosciencegraph/data/4906ab85-694f-469d-962f-c0174e901885?rev=2"
@@ -18,6 +20,7 @@ RECIPE="https://bbp.epfl.ch/neurosciencegraph/data/1743b844-5206-4a53-9890-76ac4
 #rm -rf out && mkdir out
 
 cwl-registry -vv execute cell-composition-manipulation \
+    --region $REGION \
     --nexus-base ${NEXUS_BASE:-"https://bbp.epfl.ch/nexus/v1"} \
     --nexus-org ${NEXUS_ORG:-"bbp"} \
     --nexus-project ${NEXUS_PROJ:-"mmb-point-neuron-framework-model"} \

@@ -6,7 +6,7 @@ import click
 import voxcell
 
 # pylint: disable=no-name-in-module
-from bba_data_push.bba_dataset_push import _push_cellcomposition
+from bba_data_push.bba_dataset_push import push_cellcomposition
 from kgforge.core import Resource
 
 from cwl_registry import density_manipulation, staging, statistics, utils
@@ -119,15 +119,16 @@ def app(  # pylint: disable=too-many-arguments
 
     updated_density_release_path = output_dir / "updated_density_release.json"
     updated_cell_composition_summary_path = output_dir / "updated_cell_composition_summary.json"
-    cell_composition_id = _push_cellcomposition(
+    cell_composition_id = push_cellcomposition(
         forge,
-        verbose=True,
         atlasrelease_id=atlas_release,
         volume_path=updated_density_release_path,
         summary_path=updated_cell_composition_summary_path,
         name="Cell Composition",
         description="Cell Composition",
         resource_tag=None,
+        output_dir=output_dir,
+        L=L,
     )
 
     resource = forge.retrieve(cell_composition_id, cross_bucket=True)

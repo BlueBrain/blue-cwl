@@ -36,7 +36,7 @@ setup(
         "pandas",
         "voxcell",
         "joblib",
-        "bba_data_push",
+        "bba_data_push>=1.0.3",
     ],
     packages=find_packages(where="src"),
     package_dir={"": "src"},
