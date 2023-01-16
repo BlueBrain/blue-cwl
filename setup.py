@@ -35,7 +35,7 @@ setup(
         "luigi>=3.0",
         "click>=8.0",
         "jsonschema>=3.0",
-        "cwl-registry>=0.1.1",
+        "nexusforge>=0.8.0",
     ],
     python_requires=">=3.9",
     packages=find_packages(),
