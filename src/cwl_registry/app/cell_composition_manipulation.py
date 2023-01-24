@@ -124,6 +124,7 @@ def app(  # pylint: disable=too-many-arguments
         atlasrelease_id=atlas_release,
         volume_path=updated_density_release_path,
         summary_path=updated_cell_composition_summary_path,
+        densities_path=updated_densities_dir,
         name="Cell Composition",
         description="Cell Composition",
         resource_tag=None,
