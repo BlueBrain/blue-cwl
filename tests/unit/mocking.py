@@ -33,6 +33,9 @@ class LocalForge:
         else:
             self._output_dir = Path(output_dir).resolve()
 
+    def as_json(self, resource):
+        return {}
+
     def _get_id(self):
         new_id = str(uuid.uuid1())
         while new_id in self.storage:

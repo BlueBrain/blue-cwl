@@ -46,16 +46,10 @@ def register_partial_circuit(
     brain_region_id,
     atlas_release_id,
     sonata_config_path,
-    target_digest,
     description="",
     species_id=None,
 ):
     """Register a partial circuit."""
-    was_generated_by = Resource(
-        type="BMOTask",
-        targetDigest=target_digest,
-    )
-
     circuit = Resource(
         type="DetailedCircuit",
         name=name,
@@ -64,7 +58,6 @@ def register_partial_circuit(
         brainLocation=_brain_location(forge, brain_region_id),
         atlasRelease=_as_reference(forge, atlas_release_id),
         circuitConfigPath=_circuit_config_path(sonata_config_path),
-        wasGeneratedBy=was_generated_by,
     )
     forge.register(circuit)
 
@@ -79,7 +72,7 @@ def _as_derivation(forge, entity_id, properties=("id", "type")):
 
 
 def register_cell_composition_summary(
-    forge, name, summary_file, atlas_release_id, derivation_entity_id, target_digest=None
+    forge, name, summary_file, atlas_release_id, derivation_entity_id
 ):
     """Create and register a cell composition summary."""
     summary = Resource.from_json(
@@ -93,12 +86,6 @@ def register_cell_composition_summary(
             "derivation": _as_derivation(forge, derivation_entity_id),
         }
     )
-
-    if target_digest:
-        summary.wasGeneratedBy = Resource(
-            type="BMOTask",
-            targetDigest=target_digest,
-        )
 
     forge.register(summary)
     return summary

@@ -17,6 +17,7 @@ import yaml
 
 from cwl_registry.constants import DEFAULT_CIRCUIT_BUILD_PARAMETERS
 from cwl_registry.exceptions import CWLWorkflowError
+from cwl_registry.nexus import get_resource
 
 ExistingFile = click.Path(
     exists=True, readable=True, dir_okay=False, resolve_path=True, path_type=str
@@ -183,7 +184,7 @@ def get_config_path_from_circuit_resource(forge, resource_id: str) -> Path:
             - A single string with or without a file prefix.
             - A DataDownload resource with the config path as a url with or without file prefix.
     """
-    partial_circuit_resource = forge.retrieve(resource_id, cross_bucket=True)
+    partial_circuit_resource = get_resource(forge, resource_id)
 
     config_path = partial_circuit_resource.circuitConfigPath
 
@@ -256,4 +257,24 @@ def get_directory_contents(directory_path: Path) -> Dict[str, Path]:
 
 def get_region_resource_acronym(forge, resource_id: str) -> str:
     """Retrieve the hierarchy acronym from a KG registered region."""
-    return forge.retrieve(resource_id, cross_bucket=True).notation
+    return get_resource(forge, resource_id).notation
+
+
+def write_resource_to_definition_output(
+    forge, resource, variant, output_dir: os.PathLike, output_name: str = None
+):
+    """Write a resource to the filepath determined by the tool output path definition.
+
+    Note: This function assumes there is only one output if 'output_name' is None
+    """
+    outputs = variant.tool_definition.outputs
+
+    if not output_name:
+        assert len(outputs) == 1
+        output_name = list(outputs)[0]
+
+    out_filename = outputs[output_name].outputBinding["glob"]
+
+    out_filepath = Path(output_dir, out_filename)
+
+    write_json(filepath=out_filepath, data=forge.as_json(resource))

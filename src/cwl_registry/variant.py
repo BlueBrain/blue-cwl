@@ -5,16 +5,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional
 
+from cwl_luigi import cwl
+
+from cwl_registry.constants import (
+    CONFIGS_DIR_NAME,
+    DEFINITION_FILENAME,
+    DEFINITIONS_DIR_NAME,
+    RESOURCES_DIR_NAME,
+)
 from cwl_registry.exceptions import CWLRegistryError
 from cwl_registry.nexus import retrieve_variant_data
 from cwl_registry.utils import get_directory_contents
 
 L = logging.getLogger(__name__)
-
-
-CONFIGS_DIR_NAME = "configs"
-RESOURCES_DIR_NAME = "resources"
-DEFINITIONS_DIR_NAME = "definitions"
 
 
 @dataclass(frozen=True)
@@ -28,6 +31,10 @@ class Variant:
     configs: Dict[str, Path]
     resources: Dict[str, Path]
     definitions: Dict[str, Path]
+
+    def __repr__(self):
+        """Return repr string."""
+        return f"Variant({self.generator_name}, {self.name}, {self.version})"
 
     @classmethod
     def from_resource_id(
@@ -51,7 +58,12 @@ class Variant:
     @property
     def execute_definition_file(self):
         """Return the tool definition of the variant."""
-        return self.get_definition_file("execute.cwl")
+        return self.get_definition_file(DEFINITION_FILENAME)
+
+    @property
+    def tool_definition(self):
+        """Return the cwl definition for this variant."""
+        return cwl.CommandLineTool.from_cwl(self.execute_definition_file)
 
     def get_config_file(self, filename: str) -> Path:
         """Get config file path.
@@ -84,11 +96,8 @@ class Variant:
         return self.resources[filename]
 
 
-def _get_variant(generator_name: str, variant_name: str, version: str = None):
+def _get_variant(generator_name: str, variant_name: str, version: str):
     """Get variant's paths."""
-    if version is None:
-        version = "latest"
-
     package_path = importlib.resources.files("cwl_registry")
     L.debug("Package path: %s", package_path)
 

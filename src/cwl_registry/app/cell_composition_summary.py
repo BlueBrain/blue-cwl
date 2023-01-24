@@ -5,7 +5,6 @@ import click
 from voxcell.nexus.voxelbrain import LocalAtlas
 
 from cwl_registry import registering, staging, statistics, utils
-from cwl_registry.hashing import get_target_hexdigest
 from cwl_registry.nexus import get_forge
 
 
@@ -21,7 +20,6 @@ def app():
 @click.option("--nexus-org", envvar="NEXUS_ORG", required=True)
 @click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
 @click.option("--nexus-token", envvar="NEXUS_TOKEN", required=True)
-@click.option("--task-digest", required=True)
 @click.option("--output-dir", required=True)
 def from_density_distribution(
     atlas_release,
@@ -30,7 +28,6 @@ def from_density_distribution(
     nexus_org,
     nexus_project,
     nexus_token,
-    task_digest,
     output_dir,
 ):
     """Calculate summary statistics from density distribution."""
@@ -68,10 +65,6 @@ def from_density_distribution(
     composition_summary_file = output_dir / "cell_composition_summary.json"
     utils.write_json(filepath=composition_summary_file, data=summary)
 
-    target_digest = get_target_hexdigest(
-        task_digest,
-        "composition_summary",
-    )
     # pylint: disable=no-member
     registering.register_cell_composition_summary(
         forge,
@@ -79,5 +72,4 @@ def from_density_distribution(
         summary_file=composition_summary_file,
         atlas_release_id=atlas_release,
         derivation_entity_id=density_distribution,
-        target_digest=target_digest,
     )

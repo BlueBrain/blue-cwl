@@ -7,6 +7,8 @@ from typing import Dict, Optional
 
 from kgforge.core import KnowledgeGraphForge, Resource
 
+from cwl_registry.exceptions import CWLRegistryError
+
 ext_to_format = {
     ".json": "application/json",
     ".yaml": "application/yaml",
@@ -48,6 +50,18 @@ def get_forge(
     )
 
 
+def find_variants(forge, generator_name, variant_name, version):
+    """Return variants from KG."""
+    return forge.search(
+        {
+            "type": "VariantConfig",
+            "generator_name": generator_name,
+            "variant_name": variant_name,
+            "version": version,
+        }
+    )
+
+
 def get_resource(forge, resource_id):
     """Get resource from knowledge graph."""
     resource = forge.retrieve(resource_id, cross_bucket=True)
@@ -77,8 +91,13 @@ def read_json_file_from_resource(resource):
         return json.load(fd)
 
 
-def register_variant(forge: KnowledgeGraphForge, variant):
+def register_variant(forge: KnowledgeGraphForge, variant, update=False):
     """Create a kg resource out of the variant files."""
+    existing = find_variants(forge, variant.generator_name, variant.name, variant.version)
+
+    if existing and not update:
+        raise CWLRegistryError(f"Variant {variant} already registered in KG.")
+
     variant_spec = f"{variant.generator_name}|{variant.name}|{variant.version}"
 
     configs = Resource(
@@ -111,17 +130,29 @@ def register_variant(forge: KnowledgeGraphForge, variant):
     )
     forge.register(resources)
 
-    resource = Resource(
-        name=f"Task Variant Configuration: {variant_spec}",
-        variant_name=variant.name,
-        generator_name=variant.generator_name,
-        version=variant.version,
-        type="VariantConfig",
-        configs=forge.reshape(configs, ["id", "type"]),
-        definitions=forge.reshape(definitions, ["id", "type"]),
-        allocation_resources=forge.reshape(resources, ["id", "type"]),
-    )
-    forge.register(resource)
+    configs = forge.reshape(configs, ["id", "type"])
+    definitions = forge.reshape(definitions, ["id", "type"])
+    resources = forge.reshape(resources, ["id", "type"])
+
+    if existing:
+        assert len(existing) == 1
+        resource = get_resource(forge, existing[0].id)
+        resource.configs = configs
+        resource.definitions = definitions
+        resource.allocation_resources = resources
+        forge.update(resource)
+    else:
+        resource = Resource(
+            name=f"Task Variant Configuration: {variant_spec}",
+            variant_name=variant.name,
+            generator_name=variant.generator_name,
+            version=variant.version,
+            type="VariantConfig",
+            configs=configs,
+            definitions=definitions,
+            allocation_resources=resources,
+        )
+        forge.register(resource)
     return resource
 
 

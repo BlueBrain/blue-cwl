@@ -7,11 +7,10 @@ import voxcell
 
 # pylint: disable=no-name-in-module
 from bba_data_push.bba_dataset_push import push_cellcomposition
-from kgforge.core import Resource
 
 from cwl_registry import density_manipulation, staging, statistics, utils
-from cwl_registry.hashing import get_target_hexdigest
 from cwl_registry.nexus import get_forge, get_resource, read_json_file_from_resource
+from cwl_registry.variant import Variant
 
 L = logging.getLogger(__name__)
 
@@ -26,7 +25,7 @@ L = logging.getLogger(__name__)
 @click.option("--base-density-distribution", required=True)
 @click.option("--atlas-release", required=True)
 @click.option("--recipe", help="Recipe for manipulations")
-@click.option("--task-digest", help="Task's hash.")
+@click.option("--variant-config", required=True)
 @click.option("--output-dir", required=True)
 def app(  # pylint: disable=too-many-arguments
     nexus_base,
@@ -38,7 +37,7 @@ def app(  # pylint: disable=too-many-arguments
     base_density_distribution,
     atlas_release,
     recipe,
-    task_digest,
+    variant_config,
     output_dir,
 ):
     """Density Manipulation CLI"""
@@ -124,7 +123,7 @@ def app(  # pylint: disable=too-many-arguments
         atlasrelease_id=atlas_release,
         volume_path=updated_density_release_path,
         summary_path=updated_cell_composition_summary_path,
-        densities_path=updated_densities_dir,
+        densities_dir=updated_densities_dir,
         name="Cell Composition",
         description="Cell Composition",
         resource_tag=None,
@@ -133,11 +132,9 @@ def app(  # pylint: disable=too-many-arguments
     )
 
     resource = forge.retrieve(cell_composition_id, cross_bucket=True)
-    target_digest = get_target_hexdigest(
-        task_digest, "cell_composition_manipulation__density_distribution"
+    utils.write_resource_to_definition_output(
+        forge=forge,
+        resource=resource,
+        variant=Variant.from_resource_id(forge, variant_config),
+        output_dir=output_dir,
     )
-    resource.wasGeneratedBy = Resource(
-        type="BMOTask",
-        targetDigest=target_digest,
-    )
-    forge.update(resource)

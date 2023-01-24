@@ -31,6 +31,11 @@ inputs:
       inputBinding:
         prefix: --etype-emodels
 
+    - id: variant_config
+      type: NexusType
+      inputBinding:
+        prefix: --variant-config
+
     - id: output_dir
       type: Directory
       inputBinding:
@@ -42,4 +47,4 @@ outputs:
       type: NexusType
       doc: Circuit bundle with emodels.
       outputBinding:
-        glob: "circuit_config.json"
+        glob: "circuit_emodels_bundle.json"

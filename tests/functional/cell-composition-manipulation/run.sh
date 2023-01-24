@@ -13,9 +13,11 @@ BASE_COMPOSITION_SUMMARY="https://bbp.epfl.ch/neurosciencegraph/data/f5094a3a-5d
 
 # prod
 RECIPE="https://bbp.epfl.ch/neurosciencegraph/data/1743b844-5206-4a53-9890-76ac492d5c6b?rev=1"
+VARIANT_CONFIG="https://bbp.epfl.ch/neurosciencegraph/data/90c9c651-706d-4ecb-bf3a-7eabfe5f2f89?rev=1"
 
 # staging
 # RECIPE="https://bbp.epfl.ch/neurosciencegraph/data/99f0f32c-5757-4dfa-af70-539e079972bb?rev=1"
+
 
 #rm -rf out && mkdir out
 
@@ -30,4 +32,5 @@ cwl-registry -vv execute cell-composition-manipulation \
     --atlas-release $ATLAS \
     --recipe $RECIPE \
     --task-digest "0" \
+    --variant-config $VARIANT_CONFIG \
     --output-dir ./out

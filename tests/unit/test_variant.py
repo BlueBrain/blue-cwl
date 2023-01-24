@@ -4,12 +4,15 @@ from cwl_registry.exceptions import CWLRegistryError
 from cwl_registry import variant as tested
 
 
+VERSION = "v0.3.0"
+
+
 @pytest.fixture
 def variant():
     return tested.Variant.from_registry(
         generator_name="me_type_property",
         variant_name="neurons_me_type_property",
-        version="latest",
+        version=VERSION,
     )
 
 
@@ -17,7 +20,7 @@ def test_variant__attributes(variant):
 
     assert variant.name == "neurons_me_type_property"
     assert variant.generator_name == "me_type_property"
-    assert variant.version == "latest"
+    assert variant.version == VERSION
 
 
 def test_variant__get_config_file(variant):
@@ -59,14 +62,6 @@ def test_get_variant(variant):
 
     resources = variant.resources
     assert set(resources) == {"variant_config.yml"}
-
-
-def test_get_variant__no_version():
-    variant = tested._get_variant(
-        generator_name="me_type_property",
-        variant_name="neurons_me_type_property",
-    )
-    assert "latest" in str(variant.execute_definition_file)
 
 
 def test_get_variant_spec():

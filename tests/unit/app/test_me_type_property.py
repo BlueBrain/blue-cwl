@@ -421,7 +421,11 @@ def test_me_type_property__register(tmp_path):
         "partial-circuit": config_path,
         "atlas-id": "atlas-release-id",
         "composition-summary-file": summary_file,
+        "variant": Variant.from_registry("me_type_property", "neurons_me_type_property", "v0.3.0"),
     }
-    with (patch("cwl_registry.app.me_type_property.get_forge") as mock_forge,):
+    with (
+        patch("cwl_registry.app.me_type_property.get_forge") as mock_forge,
+        patch("cwl_registry.utils.write_json") as mock_write,
+    ):
         mock_forge.return_value = forge
-        tested._register("brain-region-id", generated_data, "0")
+        tested._register("brain-region-id", generated_data, tdir)

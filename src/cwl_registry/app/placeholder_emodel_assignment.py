@@ -6,21 +6,21 @@ import libsonata
 import numpy as np
 
 from cwl_registry import registering, staging, utils, validation
-from cwl_registry.hashing import get_target_hexdigest
 from cwl_registry.nexus import get_forge
+from cwl_registry.variant import Variant
 
 
 @click.command()
 @click.option("--region", required=True)
 @click.option("--partial-circuit", required=True)
 @click.option("--etype-emodels", required=True)
-@click.option("--task-digest", required=True)
+@click.option("--variant-config", required=True)
 @click.option("--output-dir", required=True)
 def app(
     region,
     partial_circuit,
     etype_emodels,
-    task_digest,
+    variant_config,
     output_dir,
 ):
     """Placeholder emodel assignment cli."""
@@ -51,19 +51,20 @@ def app(
     )
     validation.check_population_name_in_config(population_name, sonata_config_file)
 
-    target_digest = get_target_hexdigest(
-        task_digest,
-        "circuit_emodels_bundle",
-    )
     partial_circuit_resource = forge.retrieve(partial_circuit, cross_bucket=True)
-    registering.register_partial_circuit(
+    circuit_resource = registering.register_partial_circuit(
         forge,
         name="Cell properties | Morphologies | emodels partial circuit",
         brain_region_id=region,
         atlas_release_id=partial_circuit_resource.atlasRelease.id,
         description="Partial circuit built with cell positions, morphologies, and emodels.",
         sonata_config_path=sonata_config_file,
-        target_digest=target_digest,
+    )
+    utils.write_resource_to_definition_output(
+        forge=forge,
+        resource=circuit_resource,
+        variant=Variant.from_resource_id(forge, variant_config),
+        output_dir=output_dir,
     )
 
 

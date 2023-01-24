@@ -11,7 +11,6 @@ import voxcell
 from voxcell.nexus.voxelbrain import Atlas
 
 from cwl_registry import Variant, recipes, registering, staging, utils, validation
-from cwl_registry.hashing import get_target_hexdigest
 from cwl_registry.nexus import get_forge
 from cwl_registry.statistics import mtype_etype_url_mapping, node_population_composition_summary
 
@@ -28,14 +27,12 @@ L = logging.getLogger(__name__)
 @click.option("--variant-config", required=False)
 @click.option("--me-type-densities", required=True)
 @click.option("--atlas", required=True)
-@click.option("--task-digest", required=True)
 @click.option("--output-dir", required=True)
 def app(
     region,
     variant_config,
     me_type_densities,
     atlas,
-    task_digest,
     output_dir,
 ):
     """Morphoelectrical type generator cli entry."""
@@ -57,7 +54,7 @@ def app(
     _register(
         region,
         generated_entities,
-        task_digest,
+        output_dir,
     )
 
 
@@ -266,15 +263,11 @@ def _generate_cell_composition_summary(
 def _register(
     region_id,
     generated_data,
-    task_digest,
+    output_dir,
 ):
     """Register outputs to nexus."""
     forge = get_forge()
 
-    target_digest = get_target_hexdigest(
-        task_digest,
-        "circuit_me_type_bundle",
-    )
     circuit_resource = registering.register_partial_circuit(
         forge,
         name="Cell properties partial circuit",
@@ -282,7 +275,13 @@ def _register(
         atlas_release_id=generated_data["atlas-id"],
         description="Partial circuit built with cell positions and me properties.",
         sonata_config_path=generated_data["partial-circuit"],
-        target_digest=target_digest,
+    )
+    # write the circuit resource to the respective output file specified by the definition
+    utils.write_resource_to_definition_output(
+        forge=forge,
+        resource=circuit_resource,
+        variant=generated_data["variant"],
+        output_dir=output_dir,
     )
     # pylint: disable=no-member
     registering.register_cell_composition_summary(

@@ -93,7 +93,6 @@ def test_register_partial_circuit():
         brain_region_id="brain-region-id",
         atlas_release_id="atlas-release-id",
         sonata_config_path="my-sonata-path",
-        target_digest="0",
         description="my-description",
     )
 

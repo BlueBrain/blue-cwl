@@ -41,6 +41,11 @@ inputs:
       inputBinding:
         prefix: --recipe
 
+    - id: variant_config
+      type: NexusType
+      inputBinding:
+        prefix: --variant-config
+
     - id: output_dir
       type: Directory
       inputBinding:
@@ -50,3 +55,5 @@ outputs:
 
     - id: cell_composition_manipulation__density_distribution
       type: NexusType
+      outputBinding:
+        glob: "density-distribution.json"
