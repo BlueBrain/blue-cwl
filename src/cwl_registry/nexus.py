@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from typing import Dict, Optional
 
+from entity_management import state
 from kgforge.core import KnowledgeGraphForge, Resource
 
 from cwl_registry.exceptions import CWLRegistryError
@@ -28,9 +29,9 @@ def get_forge(
 ):  # pragma: no cover
     """Get KG forge."""
     nexus_base = nexus_base or os.getenv("NEXUS_BASE")
-    nexus_org = nexus_org or os.getenv("NEXUS_ORG")
-    nexus_project = nexus_project or os.getenv("NEXUS_PROJ")
-    nexus_token = nexus_token or os.getenv("NEXUS_TOKEN")
+    nexus_org = nexus_org or state.get_org()
+    nexus_project = nexus_project or state.get_proj()
+    nexus_token = nexus_token or state.get_token()
 
     return KnowledgeGraphForge(
         configuration="https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml",

@@ -16,10 +16,6 @@ L = logging.getLogger(__name__)
 
 
 @click.command()
-@click.option("--nexus-base", envvar="NEXUS_BASE", required=True)
-@click.option("--nexus-org", envvar="NEXUS_ORG", required=True)
-@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
-@click.option("--nexus-token", envvar="NEXUS_TOKEN", required=True)
 @click.option("--region", required=True)
 @click.option("--base-composition-summary", required=True)
 @click.option("--base-density-distribution", required=True)
@@ -28,10 +24,6 @@ L = logging.getLogger(__name__)
 @click.option("--variant-config", required=True)
 @click.option("--output-dir", required=True)
 def app(  # pylint: disable=too-many-arguments
-    nexus_base,
-    nexus_org,
-    nexus_project,
-    nexus_token,
     region,  # pylint: disable=unused-argument
     base_composition_summary,
     base_density_distribution,
@@ -43,7 +35,7 @@ def app(  # pylint: disable=too-many-arguments
     """Density Manipulation CLI"""
     output_dir = utils.create_dir(Path(output_dir).resolve())
 
-    forge = get_forge(nexus_base, nexus_org, nexus_project, nexus_token)
+    forge = get_forge()
     density_distribution_file = output_dir / "density_distribution.json"
     L.info("Staging density distribution to  %s", density_distribution_file)
     staging.stage_me_type_densities(

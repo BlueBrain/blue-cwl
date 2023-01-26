@@ -8,10 +8,6 @@ from cwl_registry.nexus import get_forge
 
 
 @click.command()
-@click.option("--nexus-base", envvar="NEXUS_BASE", required=True)
-@click.option("--nexus-org", envvar="NEXUS_ORG", required=True)
-@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
-@click.option("--nexus-token", envvar="NEXUS_TOKEN", required=True)
 @click.option("--base-stats", required=True)
 @click.option("--base-atlas-densities", required=True)
 @click.option("--base-atlas-densities-materialized", required=True)
@@ -20,10 +16,6 @@ from cwl_registry.nexus import get_forge
 @click.option("--recipe", help="Recipe for manipulations")
 @click.option("--output-dir", required=True)
 def app(  # pylint: disable=too-many-arguments
-    nexus_base,
-    nexus_org,
-    nexus_project,
-    nexus_token,
     base_stats,
     base_atlas_densities,
     base_atlas_densities_materialized,
@@ -36,7 +28,7 @@ def app(  # pylint: disable=too-many-arguments
     region_map = voxcell.RegionMap.load_json(hierarchy)
     brain_regions = voxcell.VoxelData.load_nrrd(annotations)
 
-    forge = get_forge(nexus_base, nexus_org, nexus_project, nexus_token)
+    forge = get_forge()
     manipulation_recipe = utils.load_json(recipe)
     mtype_urls, etype_urls = statistics.mtype_etype_url_mapping_from_nexus(forge)
 

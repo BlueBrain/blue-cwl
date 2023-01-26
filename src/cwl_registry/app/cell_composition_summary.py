@@ -16,27 +16,14 @@ def app():
 @app.command()
 @click.option("--atlas-release", help="Atlas release KG resource id.", required=True)
 @click.option("--density-distribution", help="Density distribution KG dataset id.", required=True)
-@click.option("--nexus-base", envvar="NEXUS_BASE", required=True)
-@click.option("--nexus-org", envvar="NEXUS_ORG", required=True)
-@click.option("--nexus-project", envvar="NEXUS_PROJ", required=True)
-@click.option("--nexus-token", envvar="NEXUS_TOKEN", required=True)
 @click.option("--output-dir", required=True)
 def from_density_distribution(
     atlas_release,
     density_distribution,
-    nexus_base,
-    nexus_org,
-    nexus_project,
-    nexus_token,
     output_dir,
 ):
     """Calculate summary statistics from density distribution."""
-    forge = get_forge(
-        nexus_base=nexus_base,
-        nexus_org=nexus_org,
-        nexus_project=nexus_project,
-        nexus_token=nexus_token,
-    )
+    forge = get_forge()
     output_dir = utils.create_dir(output_dir)
 
     atlas_dir = utils.create_dir(output_dir / "atlas")
