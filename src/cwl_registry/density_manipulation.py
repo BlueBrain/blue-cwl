@@ -18,18 +18,21 @@ def _read_density_manipulation_recipe(recipe):
     assert recipe["version"] == 1
 
     df = []
-    for mtype_etypes in recipe["overrides"].values():
-        region_label = mtype_etypes["label"]
+    for id_, mtype_etypes in recipe["overrides"].items():
+        assert (
+            "/Structure" in id_
+        ), f"ID should match something like api/v2/data/Structure/500, is {id_}"
+        region_id = int(id_.split("/")[-1])
         for etypes in mtype_etypes["hasPart"].values():
             mtype_label = etypes["label"]
             for etype in etypes["hasPart"].values():
                 etype_label = etype["label"]
                 if "density" in etype:
-                    df.append((region_label, mtype_label, etype_label, "density", etype["density"]))
+                    df.append((region_id, mtype_label, etype_label, "density", etype["density"]))
                 elif "density_ratio" in etype:
                     df.append(
                         (
-                            region_label,
+                            region_id,
                             mtype_label,
                             etype_label,
                             "density_ratio",
@@ -39,7 +42,7 @@ def _read_density_manipulation_recipe(recipe):
                 else:
                     raise Exception(
                         "Neither `density` or `density_ratio` exist in "
-                        f"{(region_label, mtype_label, etype_label)}"
+                        f"{(region_id, mtype_label, etype_label)}"
                     )
 
     df = pd.DataFrame(df, columns=["region", "mtype", "etype", "operation", "value"])
@@ -67,9 +70,7 @@ def _cell_composition_volume_to_df(cell_composition_volume, mtype_urls_inverse, 
     ).set_index(["mtype", "etype"])
 
 
-def _create_updated_densities(
-    output_dir, region_map, brain_regions, all_operations, materialized_densities
-):
+def _create_updated_densities(output_dir, brain_regions, all_operations, materialized_densities):
     """Apply the operations to the NRRD files"""
     updated = []
     for (mtype, etype), operations in all_operations.groupby(
@@ -82,11 +83,7 @@ def _create_updated_densities(
         L.info("doing: %s, %s: [%s]", mtype, etype, path)
         nrrd = voxcell.VoxelData.load_nrrd(path)
         for row in operations.itertuples():
-            # XXX: I think we should use acronyms
-            id_ = region_map.find(row.region, "name")
-            assert len(id_) == 1
-            id_ = next(iter(id_))
-            idx = np.nonzero(brain_regions.raw == id_)
+            idx = np.nonzero(brain_regions.raw == row.region)
 
             if row.operation == "density":
                 nrrd.raw[idx] = row.value
@@ -141,7 +138,6 @@ def _update_density_release(original_density_release, updated_densities, mtype_u
 
 def density_manipulation(
     output_dir,
-    region_map,
     brain_regions,
     manipulation_recipe,
     materialized_cell_composition_volume,
@@ -153,7 +149,6 @@ def density_manipulation(
 
     Args:
         output_dir(str): where to output the updated densities
-        region_map: voxcell.region map to use
         brain_regions: annotation atlas
         manipulation_recipe(dict): recipe containing the manipulations to perform
         materialized_cell_composition_volume(dict): a cell composition, where
@@ -172,7 +167,7 @@ def density_manipulation(
     )
 
     updated_densities = _create_updated_densities(
-        output_dir, region_map, brain_regions, manipulation_operations, materialized_densities
+        output_dir, brain_regions, manipulation_operations, materialized_densities
     )
 
     updated_density_release = _update_density_release(

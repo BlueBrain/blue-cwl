@@ -73,7 +73,6 @@ def app(  # pylint: disable=too-many-arguments
     updated_densities_dir = utils.create_dir(output_dir / "updated_densities_dir")
     updated_densities, updated_density_release = density_manipulation.density_manipulation(
         updated_densities_dir,
-        region_map,
         brain_regions,
         manipulation_recipe,
         materialized_cell_composition_volume,

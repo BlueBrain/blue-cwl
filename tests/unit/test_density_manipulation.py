@@ -20,7 +20,6 @@ DENSITY_MANIPULATION_RECIPE = {
     },
     "overrides": {
         "http://api.brain-map.org/api/v2/data/Structure/23": {
-            "label": "Anterior amygdalar area",
             "hasPart": {
                 "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType": {
                     "label": "GEN_mtype",
@@ -47,7 +46,6 @@ DENSITY_MANIPULATION_RECIPE = {
             },
         },
         "http://api.brain-map.org/api/v2/data/Structure/935": {
-            "label": "Anterior cingulate area, dorsal part, layer 1",
             "hasPart": {
                 "L23_LBC_ID": {
                     "label": "L23_LBC",
@@ -125,10 +123,10 @@ def test__read_density_manipulation_recipe():
     res = test_module._read_density_manipulation_recipe(DENSITY_MANIPULATION_RECIPE)
     expected = pd.DataFrame(
         [
-            ("Anterior amygdalar area", "GEN_mtype", "GEN_etype", "density", 10),
-            ("Anterior amygdalar area", "GIN_mtype", "GIN_etype", "density", 20),
+            (23, "GEN_mtype", "GEN_etype", "density", 10),
+            (23, "GIN_mtype", "GIN_etype", "density", 20),
             (
-                "Anterior cingulate area, dorsal part, layer 1",
+                935,
                 "L23_LBC",
                 "bAC",
                 "density_ratio",
@@ -166,13 +164,13 @@ def test__cell_composition_volume_to_df(tmpdir, cell_composition_volume):
     pdt.assert_frame_equal(res, expected)
 
 
-def test__create_updated_densities(tmpdir, region_map, brain_regions, cell_composition_volume):
+def test__create_updated_densities(tmpdir, brain_regions, cell_composition_volume):
     all_operations = test_module._read_density_manipulation_recipe(DENSITY_MANIPULATION_RECIPE)
     materialized_densities = test_module._cell_composition_volume_to_df(
         cell_composition_volume, MTYPE_URLS_INVERSE, ETYPE_URLS_INVERSE
     )
     updated_densities = test_module._create_updated_densities(
-        tmpdir, region_map, brain_regions, all_operations, materialized_densities
+        tmpdir, brain_regions, all_operations, materialized_densities
     )
 
     nrrd_files = set(Path(tmpdir).glob("*"))
