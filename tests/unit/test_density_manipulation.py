@@ -54,6 +54,16 @@ DENSITY_MANIPULATION_RECIPE = {
                 }
             },
         },
+        "http://api.brain-map.org/api/v2/data/Structure/222": {
+            "hasPart": {
+                "L23_LBC_ID": {
+                    "label": "L23_LBC",
+                    "about": "MType",
+                    # includes manipulation of something with zero density
+                    "hasPart": {"bAC_ID": {"label": "bAC", "about": "EType", "density_ratio": 20}},
+                }
+            },
+        },
     },
 }
 
@@ -92,7 +102,10 @@ def brain_regions(atlas):
 
 @pytest.fixture
 def cell_composition_volume(tmpdir, brain_regions):
-    ones = brain_regions.with_data(np.ones_like(brain_regions.raw))
+    ones = brain_regions.with_data(np.ones_like(brain_regions.raw, dtype=float))
+
+    # make "Nucleus raphe obscurus" have no density
+    ones.raw[brain_regions.raw == 222] = 0
     for i in range(3):
         ones.save_nrrd(tmpdir / f"{i}.nrrd")
 
@@ -131,6 +144,13 @@ def test__read_density_manipulation_recipe():
                 "bAC",
                 "density_ratio",
                 30,
+            ),
+            (
+                222,
+                "L23_LBC",
+                "bAC",
+                "density_ratio",
+                20,
             ),
         ],
         columns=[
@@ -187,6 +207,10 @@ def test__create_updated_densities(tmpdir, brain_regions, cell_composition_volum
     # updated GIN_mtype in  AAA / "Anterior amygdalar area"
     data = voxcell.VoxelData.load_nrrd(tmpdir / "2.nrrd")
     assert ((data.raw == 20) == (brain_regions.raw == 23)).all()
+
+    # updated GIN_mtype RO / "Nucleus raphe obscurus"
+    data = voxcell.VoxelData.load_nrrd(tmpdir / "2.nrrd")
+    assert ((data.raw == 0) == (brain_regions.raw == 222)).all()
 
 
 def test__update_density_summary_statistics(tmpdir, region_map, brain_regions):

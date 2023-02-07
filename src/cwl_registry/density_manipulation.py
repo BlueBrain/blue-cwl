@@ -88,7 +88,9 @@ def _create_updated_densities(output_dir, brain_regions, all_operations, materia
             if row.operation == "density":
                 nrrd.raw[idx] = row.value
             elif row.operation == "density_ratio":
-                nrrd.raw[idx] *= row.value
+                current_density = np.mean(nrrd.raw[idx])
+                if current_density > 0:
+                    nrrd.raw[idx] *= row.value / current_density
 
         new_path = os.path.join(output_dir, os.path.basename(path))
         updated.append((mtype, etype, new_path))
