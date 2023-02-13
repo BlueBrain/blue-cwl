@@ -8,7 +8,6 @@ from cwl_workflow.__main__ import main
 
 
 def run_cli_command(cmd, tmp_dir):
-
     tmp_dir.mkdir()
 
     runner = CliRunner()

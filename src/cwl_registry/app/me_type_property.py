@@ -223,7 +223,6 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
 
 
 def _generate_circuit_config(node_population_name: str, nodes_file: str, output_file: Path):
-
     config = {
         "version": 2,
         "manifest": {"$BASE_DIR": "."},

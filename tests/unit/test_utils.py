@@ -19,7 +19,6 @@ DATA_DIR = Path(__file__).parent / "data"
 def test_cwd():
     cwd = os.getcwd()
     with tempfile.TemporaryDirectory() as tdir:
-
         tdir = Path(tdir).resolve()
 
         with tested.cwd(tdir):
@@ -47,14 +46,12 @@ def io_data():
 
 
 def test_load_yaml(io_data):
-
     yaml_file = DATA_DIR / "test_file.yml"
     data = tested.load_yaml(yaml_file)
     assert data == io_data
 
 
 def test_write_yaml(io_data):
-
     with tempfile.NamedTemporaryFile(suffix=".yml") as tfile:
         tested.write_yaml(data=io_data, filepath=tfile.name)
         filecmp.cmp(tfile.name, DATA_DIR / "test_file.yml")
@@ -67,14 +64,12 @@ def test_load_json(io_data):
 
 
 def test_write_json(io_data):
-
     with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
         tested.write_yaml(data=io_data, filepath=tfile.name)
         filecmp.cmp(tfile.name, DATA_DIR / "test_file.json")
 
 
 def test_run_circuit_build_phase():
-
     with patch("subprocess.run"):
         tested.run_circuit_build_phase(
             bioname_dir="bioname-dir",
@@ -85,7 +80,6 @@ def test_run_circuit_build_phase():
 
 
 def test_build_manifest__default_parameters():
-
     res = tested.build_manifest(
         region="my-region",
         atlas_dir="my-atlas-dir",
@@ -125,7 +119,6 @@ def test_build_manifest__default_parameters_with_release():
 
 
 def test_build_manifest__custom_parameters():
-
     custom_parameters = {
         "step1": {"a": 1},
         "step2": {"b": 2},
@@ -151,9 +144,7 @@ def test_build_manifest__custom_parameters():
 
 
 def teste_add_properties_to_node_population():
-
     with tempfile.TemporaryDirectory() as tdir:
-
         tdir = Path(tdir)
 
         test_path = tdir / "nodes.h5"
@@ -181,7 +172,6 @@ def teste_add_properties_to_node_population():
 
 
 def test_get_config_path_from_circuit_resource__direct_path():
-
     forge = Mock()
     forge.retrieve.return_value = Mock(circuitConfigPath="file:///some-path")
 
@@ -195,7 +185,6 @@ def test_get_config_path_from_circuit_resource__direct_path():
 
 
 def test_get_config_path_from_circuit_resource__data_download():
-
     resource = Mock()
     resource.circuitConfigPath = Mock(type="DataDownload", url="file:///some-path")
 
@@ -254,7 +243,6 @@ def config_nodes_2(config_nodes_1):
 
 
 def test_get_biophysical_partial_population_from_config(config_nodes_1):
-
     nodes_file, population_name = tested.get_biophysical_partial_population_from_config(
         config_nodes_1
     )
@@ -298,7 +286,6 @@ def test_update_circuit_config_population__no_population(config, request):
 def _check_population_changes(
     old_config, new_config, population_name, updated_nodes_file, updated_data
 ):
-
     for network_type, network_data in old_config["networks"].items():
         for i, entry in enumerate(network_data):
             new_entry = new_config["networks"][network_type][i]
@@ -325,7 +312,6 @@ def _check_population_changes(
 def test_update_circuit_config_population__node_population__add_morphologies_dir(
     config_fixture, request
 ):
-
     config = request.getfixturevalue(config_fixture)
 
     res = tested.update_circuit_config_population(
@@ -351,7 +337,6 @@ def test_update_circuit_config_population__node_population__add_morphologies_dir
 
 @pytest.mark.parametrize("config_fixture", ["config_nodes_1", "config_nodes_2"])
 def test_update_circuit_config_population__node_population__add_emodels(config_fixture, request):
-
     config = request.getfixturevalue(config_fixture)
 
     res = tested.update_circuit_config_population(

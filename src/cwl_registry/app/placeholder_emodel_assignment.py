@@ -69,7 +69,6 @@ def app(
 
 
 def _create_model_template(nodes_file: Path, population_name: str):
-
     pop = libsonata.NodeStorage(nodes_file).open_population(population_name)
     etypes = pop.get_attribute("etype", libsonata.Selection(np.arange(0, pop.size)))
 

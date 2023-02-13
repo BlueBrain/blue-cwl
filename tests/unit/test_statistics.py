@@ -56,9 +56,7 @@ def etype_urls():
 
 @pytest.fixture
 def density_distribution(brain_regions):
-
     with tempfile.TemporaryDirectory() as tdir:
-
         tdir = Path(tdir)
 
         v1_raw = np.zeros_like(brain_regions.raw)
@@ -90,7 +88,6 @@ def density_distribution(brain_regions):
 
 @pytest.fixture
 def population():
-
     positions = np.array(
         [
             [5990.0, 6224.0, 3419.0],
@@ -115,7 +112,6 @@ def population():
     n_cells = len(positions)
 
     with tempfile.NamedTemporaryFile(suffix=".h5") as tfile:
-
         path = Path(tfile.name)
 
         cells.save_sonata(path, forced_library=["mtype", "etype", "region"])
@@ -124,7 +120,6 @@ def population():
 
 
 def test_mtype_etype_url_mapping(density_distribution):
-
     res_mtype_urls, res_etype_urls = test_module.mtype_etype_url_mapping(density_distribution)
 
     assert res_mtype_urls == {"L23_BP": MTYPE_URIS["L23_BP"], "L5_TPC:A": MTYPE_URIS["L5_TPC:A"]}
@@ -132,7 +127,6 @@ def test_mtype_etype_url_mapping(density_distribution):
 
 
 def test_node_population_composition_summary(population, atlas, mtype_urls, etype_urls):
-
     res = test_module.node_population_composition_summary(population, atlas, mtype_urls, etype_urls)
 
     # regions
@@ -217,7 +211,6 @@ def test_node_population_composition_summary(population, atlas, mtype_urls, etyp
     assert set(regions) == set(expected)
 
     for region_id, expected_mtypes in expected.items():
-
         region = regions[region_id]
         assert region["about"] == "BrainRegion"
         assert region["label"] == uri_to_label[region_id]
@@ -226,7 +219,6 @@ def test_node_population_composition_summary(population, atlas, mtype_urls, etyp
         assert set(mtypes) == set(expected_mtypes)
 
         for mtype_id, expected_etypes in expected_mtypes.items():
-
             mtype = mtypes[mtype_id]
             assert mtype["about"] == "MType"
             assert mtype["label"] == uri_to_label[mtype_id]
@@ -235,7 +227,6 @@ def test_node_population_composition_summary(population, atlas, mtype_urls, etyp
             assert set(etypes) == set(expected_etypes)
 
             for etype_id, expected_composition in expected_etypes.items():
-
                 etype = etypes[etype_id]
                 assert etype["about"] == "EType"
                 assert etype["label"] == uri_to_label[etype_id]
@@ -248,7 +239,6 @@ def test_node_population_composition_summary(population, atlas, mtype_urls, etyp
 
 
 def test_get_statistics_from_nrrd_volume(region_map, brain_regions):
-
     raw = np.zeros_like(brain_regions.raw, dtype=float)
 
     # mask selected so that it includes 0 and two regions: 320, 656
@@ -260,7 +250,6 @@ def test_get_statistics_from_nrrd_volume(region_map, brain_regions):
     etype = "my-etype"
 
     with tempfile.NamedTemporaryFile(suffix=".nrrd") as tfile:
-
         path = Path(tfile.name)
         density.save_nrrd(path)
 
@@ -295,7 +284,6 @@ def test_get_statistics_from_nrrd_volume(region_map, brain_regions):
 
 
 def test_atlas_densities_composition_summary(density_distribution, region_map, brain_regions):
-
     result = test_module.atlas_densities_composition_summary(
         density_distribution, region_map, brain_regions
     )

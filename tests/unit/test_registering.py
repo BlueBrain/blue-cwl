@@ -7,7 +7,6 @@ from tests.unit.mocking import LocalForge
 
 
 def test_as_reference():
-
     forge = LocalForge()
     forge.storage["entity-id"] = Resource.from_json(
         {"id": "entity-id", "type": "MyType", "label": "MyLabel"}
@@ -27,7 +26,6 @@ def test_as_reference():
 
 
 def test_circuit_config_path():
-
     path = Path("my-path")
     res = test_module._circuit_config_path(path)
 
@@ -38,7 +36,6 @@ def test_circuit_config_path():
 
 
 def test_brain_location():
-
     forge = LocalForge()
     forge.storage["entity-id"] = Resource.from_json(
         {"id": "entity-id", "type": "MyType", "label": "my-label"}
@@ -52,7 +49,6 @@ def test_brain_location():
 
 
 def test_subject():
-
     forge = LocalForge()
     forge.storage["entity-id"] = Resource.from_json(
         {"id": "entity-id", "type": "MyType", "label": "my-label"}
@@ -70,7 +66,6 @@ def test_subject():
 
 
 def test_register_partial_circuit():
-
     forge = LocalForge()
     forge.storage["brain-region-id"] = Resource.from_json(
         {
@@ -109,7 +104,6 @@ def test_register_partial_circuit():
 
 
 def test_register_cell_composition_summary():
-
     with tempfile.TemporaryDirectory() as tdir:
         tdir = Path(tdir)
 

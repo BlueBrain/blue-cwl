@@ -1,11 +1,11 @@
 """Nexus stuff."""
-import json
 import logging
 import os
 from pathlib import Path
 from typing import Dict, Optional
 
 from entity_management import state
+from entity_management.nexus import file_as_dict
 from kgforge.core import KnowledgeGraphForge, Resource
 
 from cwl_registry.exceptions import CWLRegistryError
@@ -86,10 +86,7 @@ def read_json_file_from_resource(resource):
     else:
         distribution = resource.distribution
 
-    filepath = distribution.atLocation.location
-
-    with open(_remove_prefix("file://", filepath), mode="r", encoding="utf-8") as fd:
-        return json.load(fd)
+    return file_as_dict(distribution.contentUrl)
 
 
 def register_variant(forge: KnowledgeGraphForge, variant, update=False):
@@ -209,7 +206,6 @@ def _stage_into_subdir(subdir_path: Path, paths_dict: Dict[str, Path]):
     new_paths_dict = {}
     subdir_path.mkdir(parents=True, exist_ok=True)
     for filename, path in paths_dict.items():
-
         new_path = subdir_path / filename
         L.debug("%s - > %s", path, new_path)
 
@@ -221,12 +217,9 @@ def _stage_into_subdir(subdir_path: Path, paths_dict: Dict[str, Path]):
 
 
 def _get_files(resource):
-
     files = {}
     for part in resource.hasPart:
-
         if hasattr(part, "distribution"):
-
             distribution = part.distribution
 
             filename = distribution.name

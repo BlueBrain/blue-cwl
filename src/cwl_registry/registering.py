@@ -5,7 +5,6 @@ from kgforge.core import Resource
 
 
 def _subject(forge, species_id):
-
     if species_id:
         species = _as_reference(forge, species_id, properties=["id", "label"])
     else:

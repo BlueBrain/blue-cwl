@@ -9,11 +9,9 @@ def build_cell_composition_from_me_densities(region: str, me_type_densities: Dic
     composition = {"version": "v2", "neurons": []}
 
     for _, mtype in me_type_densities["mtypes"].items():
-
         mtype_name = mtype["label"]
 
         for _, etype in mtype["etypes"].items():
-
             density = etype["path"]
             etype_name = etype["label"]
 

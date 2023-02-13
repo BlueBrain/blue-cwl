@@ -75,7 +75,6 @@ def mtype_etype_url_mapping(density_distribution):
     etype_urls = {}
 
     for mtype_url, mtype_data in density_distribution["mtypes"].items():
-
         mtype_label = mtype_data["label"]
         assert mtype_label not in mtype_urls
         mtype_urls[mtype_label] = mtype_url
@@ -158,7 +157,6 @@ def _get_node_counts(population):
 
 
 def _get_atlas_region_volumes(region_map, brain_regions):
-
     ids, counts = np.unique(brain_regions.raw, return_counts=True)
 
     volumes = {}
@@ -235,7 +233,6 @@ def atlas_densities_composition_summary(density_distribution, region_map, brain_
 
 
 def _get_nrrd_statistics(region_map, brain_regions, density_distribution):
-
     p = Parallel(
         n_jobs=-2,
         backend="multiprocessing",

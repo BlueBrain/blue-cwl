@@ -7,6 +7,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from entity_management.nexus import get_file_location
 from kgforge.core import Resource
 
 from cwl_registry.nexus import get_resource, read_json_file_from_resource
@@ -142,15 +143,15 @@ def stage_me_type_densities(forge, resource_id: str, output_file: Path):
     mtype_groups = {}
 
     for mtype_part in dataset["hasPart"]:
-
         etype_groups = {}
 
         for etype_part in mtype_part["hasPart"]:
-
             me_resource = get_resource(forge=forge, resource_id=etype_part["hasPart"][0]["@id"])
             etype_groups[etype_part["@id"]] = {
                 "label": etype_part["label"],
-                "path": _remove_prefix("file://", me_resource.distribution.atLocation.location),
+                "path": _remove_prefix(
+                    "file://", get_file_location(me_resource.distribution.contentUrl)
+                ),
             }
 
         mtype_groups[mtype_part["@id"]] = {
@@ -170,13 +171,10 @@ def stage_dataset_groups(forge, dataset_resource_id, staging_function):
     existing: Dict[str, str] = {}
 
     for identifier, group in dataset.items():
-
         # sometimes the entries start with @context for example
         if identifier not in {"@context", "@type", "@id"}:
-
             entries = []
             for part in group["hasPart"]:
-
                 entry_id = part["@id"]
                 if entry_id in existing:
                     value = existing[entry_id]

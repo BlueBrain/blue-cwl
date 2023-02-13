@@ -40,7 +40,7 @@ def _read_density_manipulation_recipe(recipe):
                         )
                     )
                 else:
-                    raise Exception(
+                    raise KeyError(
                         "Neither `density` or `density_ratio` exist in "
                         f"{(region_id, mtype_label, etype_label)}"
                     )

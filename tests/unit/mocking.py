@@ -13,11 +13,9 @@ from kgforge.core.reshaping import Reshaper
 
 
 class LocalForge:
-
     storage = {}
 
     def __init__(self, configuration=None, output_dir=None):
-
         if configuration is None:
             configuration = "https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml"
 
@@ -97,7 +95,6 @@ def get_local_forge():
 
 
 def test_mock_forge():
-
     Resource.from_Json(
         {
             "type": "DetailedCircuit",

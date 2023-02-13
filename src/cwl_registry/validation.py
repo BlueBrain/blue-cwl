@@ -21,7 +21,6 @@ def check_population_name_in_config(population_name, config_file):
 
     found = False
     for node in nodes:
-
         populations = node["populations"]
 
         if population_name in populations:

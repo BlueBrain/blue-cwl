@@ -58,7 +58,6 @@ def test_build_cell_composition_from_me_densities():
 
 
 def test_build_mtype_taxonomy():
-
     res = tested.build_mtype_taxonomy(["L1_DAC", "GEN_mtype"])
 
     expected = pd.DataFrame(

@@ -14,9 +14,7 @@ def _create_test_file(path, text):
 
 @pytest.fixture
 def mock_forge():
-
     with tempfile.TemporaryDirectory() as tdir:
-
         tdir = Path(tdir)
 
         parameters1_path = _create_test_file(tdir / "parameters1.yml", "foo1")
@@ -88,7 +86,6 @@ def mock_forge():
 
 
 def test_retrieve_variant_data(mock_forge):
-
     data = tested.retrieve_variant_data(mock_forge, "variant-config-id")
 
     assert data["configs"] == {
@@ -102,7 +99,6 @@ def test_retrieve_variant_data(mock_forge):
 
 
 def test_retrieve_variant_data__with_staging(mock_forge):
-
     with tempfile.TemporaryDirectory() as tdir:
         tdir = Path(tdir)
         data = tested.retrieve_variant_data(mock_forge, "variant-config-id", staging_dir=tdir)

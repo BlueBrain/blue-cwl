@@ -70,7 +70,6 @@ def app(
 
 
 def _assign_morphologies(nodes_file: Path, population_name: str, mtype_to_morphologies):
-
     pop = libsonata.NodeStorage(nodes_file).open_population(population_name)
 
     mtypes = pop.get_attribute("mtype", libsonata.Selection(np.arange(0, pop.size)))
