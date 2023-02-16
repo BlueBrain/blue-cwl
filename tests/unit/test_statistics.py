@@ -341,21 +341,20 @@ def test__cell_composition_summary_to_df(region_map, mtype_urls, etype_urls):
     df_region_mtype_etype = (
         pd.DataFrame(
             (
-                ("AAA", "L23_BP", "cADpyr", 10.0, 1),
-                ("AAA", "L5_TPC:A", "cADpyr", 20.0, 2),
-                ("AAA", "L23_BP", "dSTUT", 30.0, 3),
-                ("AAA", "L5_TPC:A", "dSTUT", 40.0, 4),
-                ("FRP1", "L23_BP", "cADpyr", 110.0, 11),
-                ("FRP1", "L5_TPC:A", "cADpyr", 120.0, 12),
-                ("FRP1", "L23_BP", "dSTUT", 130.0, 13),
-                ("FRP1", "L5_TPC:A", "dSTUT", 140.0, 14),
+                ("AAA", "L23_BP", "cADpyr", 10.0),
+                ("AAA", "L5_TPC:A", "cADpyr", 20.0),
+                ("AAA", "L23_BP", "dSTUT", 30.0),
+                ("AAA", "L5_TPC:A", "dSTUT", 40.0),
+                ("FRP1", "L23_BP", "cADpyr", 110.0),
+                ("FRP1", "L5_TPC:A", "cADpyr", 120.0),
+                ("FRP1", "L23_BP", "dSTUT", 130.0),
+                ("FRP1", "L5_TPC:A", "dSTUT", 140.0),
             ),
             columns=[
                 "region",
                 "mtype",
                 "etype",
                 "density",
-                "count",
             ],
         )
         .set_index(["region", "mtype", "etype"])

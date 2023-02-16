@@ -6,6 +6,7 @@ import logging
 import os
 import pathlib
 import subprocess
+import urllib
 from contextlib import contextmanager
 from copy import deepcopy
 from pathlib import Path
@@ -277,3 +278,10 @@ def write_resource_to_definition_output(
     out_filepath = Path(output_dir, out_filename)
 
     write_json(filepath=out_filepath, data=forge.as_json(resource))
+
+
+@log
+def url_without_revision(url: str) -> str:
+    """Return the url without the revision query."""
+    url = urllib.parse.urlparse(url)
+    return url._replace(query="").geturl()

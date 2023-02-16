@@ -14,14 +14,10 @@ import pandas.testing as pdt
 
 DENSITY_MANIPULATION_RECIPE = {
     "version": 1,
-    "base_atlas_density_dataset": {
-        "@id": "https://bbp.epfl.ch/neurosciencegraph/data/27652d4d-3a6f-42c7-9833-64396104c445",
-        "_rev": 10,
-    },
     "overrides": {
         "http://api.brain-map.org/api/v2/data/Structure/23": {
             "hasPart": {
-                "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType": {
+                "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType?rev=1": {
                     "label": "GEN_mtype",
                     "about": "MType",
                     "hasPart": {
@@ -36,7 +32,7 @@ DENSITY_MANIPULATION_RECIPE = {
                     "label": "GIN_mtype",
                     "about": "MType",
                     "hasPart": {
-                        "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronEType": {
+                        "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronEType?rev=0": {
                             "label": "GIN_etype",
                             "about": "EType",
                             "density": 20,

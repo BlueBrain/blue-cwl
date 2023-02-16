@@ -7,6 +7,8 @@ import pandas as pd
 import voxcell
 from joblib import Parallel, delayed
 
+from cwl_registry.utils import url_without_revision
+
 L = logging.getLogger(__name__)
 
 
@@ -21,9 +23,9 @@ def cell_composition_summary_to_df(
     for region_url, mtype_payload in cell_composition_summary["hasPart"].items():
         region_acronym = region_map.get(int(region_url.split("/")[-1]), "acronym")
         for mtype_url, etype_payload in mtype_payload["hasPart"].items():
-            mtype_label = mtype_urls_inverse[mtype_url]
+            mtype_label = mtype_urls_inverse[url_without_revision(mtype_url)]
             for etype_url, payload in etype_payload["hasPart"].items():
-                etype_label = etype_urls_inverse[etype_url]
+                etype_label = etype_urls_inverse[url_without_revision(etype_url)]
                 composition = payload["composition"]["neuron"]
                 ret.append(
                     (
@@ -31,11 +33,10 @@ def cell_composition_summary_to_df(
                         mtype_label,
                         etype_label,
                         composition["density"],
-                        composition["count"],
                     )
                 )
 
-    ret = pd.DataFrame(ret, columns=["region", "mtype", "etype", "density", "count"])
+    ret = pd.DataFrame(ret, columns=["region", "mtype", "etype", "density"])
 
     return ret
 
