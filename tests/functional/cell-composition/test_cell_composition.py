@@ -49,10 +49,8 @@ def inputs(tmpdir_factory):
 
     return {
         "region": "http://api.brain-map.org/api/v2/data/Structure/322?rev=16",
-        "atlas-release": "https://bbp.epfl.ch/neurosciencegraph/data/8586fff5-8212-424c-bb52-73b514e93422?rev=1",
-        "base-density-distribution": "https://bbp.epfl.ch/neurosciencegraph/data/1f678feb-6d4b-4917-83a0-8966b27a1dc2?rev=2",
-        "base-composition-summary": "https://bbp.epfl.ch/neurosciencegraph/data/f5094a3a-5dff-45d7-9b04-5db1a162e01a",
-        "recipe": "https://bbp.epfl.ch/neurosciencegraph/data/99f0f32c-5757-4dfa-af70-539e079972bb?rev=4",
+        "base-cell-composition": "https://bbp.epfl.ch/neurosciencegraph/data/8ed7e1d5-a76d-4974-b522-1d962a0b6a6d",
+        "configuration": "https://bbp.epfl.ch/neurosciencegraph/data/99f0f32c-5757-4dfa-af70-539e079972bb?rev=4",
         "variant-config": "https://bbp.epfl.ch/neurosciencegraph/data/a5c5d83c-4f02-455d-87c1-17f75401d7d7?rev=1",
         "output-dir": output_dir,
     }

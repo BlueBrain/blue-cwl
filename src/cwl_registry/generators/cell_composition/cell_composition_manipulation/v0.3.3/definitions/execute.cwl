@@ -10,7 +10,7 @@ baseCommand: ['cwl-registry', 'execute', 'cell-composition-manipulation']
 
 environment:
   env_type: VENV
-  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-densities
+  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-v0.3.3
   enable_internet: true
 
 
@@ -21,22 +21,12 @@ inputs:
       inputBinding:
         prefix: --region
 
-    - id: base_composition_summary
+    - id: base_cell_composition
       type: NexusType
       inputBinding:
-        prefix: --base-composition-summary
+        prefix: --base-cell-composition
 
-    - id: base_density_distribution
-      type: NexusType
-      inputBinding:
-        prefix: --base-density-distribution
-
-    - id: atlas_release
-      type: NexusType
-      inputBinding:
-        prefix: --atlas-release
-
-    - id: recipe
+    - id: configuration
       type: NexusType
       inputBinding:
         prefix: --recipe
@@ -56,4 +46,4 @@ outputs:
     - id: cell_composition_manipulation__density_distribution
       type: NexusType
       outputBinding:
-        glob: "density-distribution.json"
+        glob: "output-density-distribution.json"

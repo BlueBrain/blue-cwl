@@ -18,18 +18,14 @@ L = logging.getLogger(__name__)
 
 @click.command()
 @click.option("--region", required=True)
-@click.option("--base-composition-summary", required=True)
-@click.option("--base-density-distribution", required=True)
-@click.option("--atlas-release", required=True)
-@click.option("--recipe", help="Recipe for manipulations")
+@click.option("--base-cell-composition", required=True)
+@click.option("--configuration", help="Recipe for manipulations")
 @click.option("--variant-config", required=True)
 @click.option("--output-dir", required=True)
 def app(  # pylint: disable=too-many-arguments
     region,  # pylint: disable=unused-argument
-    base_composition_summary,
-    base_density_distribution,
-    atlas_release,
-    recipe,
+    base_cell_composition,
+    configuration,
     variant_config,
     output_dir,
 ):
@@ -38,30 +34,33 @@ def app(  # pylint: disable=too-many-arguments
     staging_dir = utils.create_dir(output_dir / "stage")
 
     forge = get_forge()
+
+    cell_composition = get_resource(forge, base_cell_composition)
+
     density_distribution_file = staging_dir / "density_distribution.json"
     L.info("Staging density distribution to  %s", density_distribution_file)
     staging.stage_me_type_densities(
         forge=forge,
-        resource_id=base_density_distribution,
+        resource_id=cell_composition.cellCompositionVolume.id,
         output_file=density_distribution_file,
     )
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     L.info("Staging atlas to  %s", atlas_dir)
     hierarchy_path, annotations_path = staging.stage_atlas(
         forge=forge,
-        resource_id=atlas_release,
+        resource_id=cell_composition.atlasRelease.id,
         output_dir=atlas_dir,
         parcellation_ontology_basename="hierarchy.json",
         parcellation_volume_basename="brain_regions.nrrd",
     )
 
-    manipulation_recipe = read_json_file_from_resource(get_resource(forge, recipe))
+    manipulation_recipe = read_json_file_from_resource(get_resource(forge, configuration))
     utils.write_json(
         data=manipulation_recipe,
         filepath=staging_dir / "manipulation_recipe.json",
     )
 
-    # the materialized version
+    # the materialized version that has gpfs paths instead of ids
     materialized_cell_composition_volume = utils.load_json(density_distribution_file)
 
     _check_recipe_compatibility_with_density_distribution(
@@ -74,7 +73,7 @@ def app(  # pylint: disable=too-many-arguments
 
     # the original registered version
     original_density_release = read_json_file_from_resource(
-        get_resource(forge, base_density_distribution)
+        get_resource(forge, cell_composition.cellCompositionVolume.id)
     )
     utils.write_json(
         data=original_density_release,
@@ -97,7 +96,7 @@ def app(  # pylint: disable=too-many-arguments
     )
 
     original_cell_composition_summary = read_json_file_from_resource(
-        get_resource(forge, base_composition_summary)
+        get_resource(forge, _get_summary_id(cell_composition.cellCompositionSummary))
     )
     utils.write_json(
         data=original_cell_composition_summary,
@@ -130,7 +129,7 @@ def app(  # pylint: disable=too-many-arguments
     updated_cell_composition_summary_path = output_dir / "updated_cell_composition_summary.json"
     cell_composition_id = push_cellcomposition(
         forge,
-        atlasrelease_id=atlas_release,
+        atlasrelease_id=cell_composition.atlasRelease.id,
         volume_path=updated_density_release_path,
         summary_path=updated_cell_composition_summary_path,
         densities_dir=updated_densities_dir,
@@ -148,6 +147,14 @@ def app(  # pylint: disable=too-many-arguments
         variant=Variant.from_resource_id(forge, variant_config),
         output_dir=output_dir,
     )
+
+
+def _get_summary_id(entry):
+    """Handle the summary being a list or a single entry dict."""
+    if isinstance(entry, list):
+        return entry[0].id
+
+    return entry.id
 
 
 def _check_recipe_compatibility_with_density_distribution(density_distribution: dict, recipe: dict):
