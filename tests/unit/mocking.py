@@ -4,6 +4,9 @@ import shutil
 from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch, Mock
+
+import pytest
+
 from kgforge.core import Resource
 from kgforge.core.conversions.json import as_json, from_json
 from kgforge.core.forge import KnowledgeGraphForge
@@ -73,34 +76,10 @@ class LocalForge:
         return resource
 
     def register(self, resource, *args, **kwargs):
-        resource.id = self._get_id()
+        if not hasattr(resource, "id"):
+            resource.id = self._get_id()
+
         self.storage[resource.id] = resource
 
     def retrieve(self, resource_id, *args, **kwargs):
         return self.storage[resource_id]
-
-
-def get_local_forge():
-    """Return a KnowledgGraphForge the store of which is local.
-
-    A local forge objects uses a local directory to store resources and makes no connections to the
-    nexus databases.
-    """
-    with patch("kgforge.core.forge.import_class", new=partially_mocked_import_class):
-        return KnowledgeGraphForge(
-            configuration="https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml",
-            bucket="nse/test",
-            token="asdfasdf",
-        )
-
-
-def test_mock_forge():
-    Resource.from_Json(
-        {
-            "type": "DetailedCircuit",
-            "circuitConfigPath": {
-                "type": "DataDownload",
-                "url": "path-to-config",
-            },
-        }
-    )

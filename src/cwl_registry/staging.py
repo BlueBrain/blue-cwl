@@ -134,31 +134,89 @@ def stage_resource_distribution_file(
     return target_path
 
 
-def stage_me_type_densities(forge, resource_id: str, output_file: Path):
+def stage_me_type_densities(forge, resource_id: str, output_file: Path) -> None:
     """Stage me type densities resource."""
     resource = get_resource(forge=forge, resource_id=resource_id)
 
     dataset = read_json_file_from_resource(resource)
 
-    mtype_groups = {}
+    materialize_density_distribution(forge, dataset, output_file=output_file)
 
-    for mtype_part in dataset["hasPart"]:
-        etype_groups = {}
 
-        for etype_part in mtype_part["hasPart"]:
-            me_resource = get_resource(forge=forge, resource_id=etype_part["hasPart"][0]["@id"])
-            etype_groups[etype_part["@id"]] = {
-                "label": etype_part["label"],
-                "path": _remove_prefix(
-                    "file://", get_file_location(me_resource.distribution.contentUrl)
-                ),
-            }
+def materialize_density_distribution(
+    forge, dataset: dict, output_file: Optional[os.PathLike] = None
+) -> dict:
+    """Materialize the me type densities distribution."""
+    groups = apply_to_grouped_dataset(
+        forge,
+        dataset,
+        group_names=("mtypes", "etypes"),
+        apply_function=get_distribution_path_from_resource,
+    )
 
-        mtype_groups[mtype_part["@id"]] = {
-            "label": mtype_part["label"],
-            "etypes": etype_groups,
-        }
-    write_json(filepath=output_file, data={"mtypes": mtype_groups})
+    if output_file:
+        write_json(filepath=output_file, data=groups)
+
+    return groups
+
+
+def get_distribution_path_from_resource(forge, resource_id):
+    """Get json file path from resource's distribution."""
+    resource = get_resource(forge=forge, resource_id=resource_id)
+    return {"path": get_file_location(resource.distribution.contentUrl).removeprefix("file://")}
+
+
+def apply_to_grouped_dataset(
+    forge,
+    dataset,
+    group_names: Optional[list] = None,
+    apply_function=get_distribution_path_from_resource,
+):
+    """Materialize a grouped dataset with resource ids."""
+    visited = {}
+
+    def materialize(data, index):
+        if "hasPart" in data:
+            # collapse the bottom most list which always has one element
+            if len(data["hasPart"]) == 1 and "hasPart" not in data["hasPart"][0]:
+                return materialize(data["hasPart"][0], index + 1)
+
+            contents = {}
+            for entry in data["hasPart"]:
+                res = materialize(entry, index + 1)
+                contents[entry["@id"]] = {"label": get_label(entry), **res}
+
+            level_name = "hasPart" if group_names is None else group_names[index + 1]
+
+            return {level_name: contents}
+
+        resource_id = get_id(data)
+
+        if resource_id in visited:
+            value = visited[resource_id]
+        else:
+            value = apply_function(forge, resource_id)
+            visited[resource_id] = value
+
+        return value
+
+    def get_id(entry):
+        """Get id with revision if available."""
+        resource_id = entry["@id"]
+
+        if "_rev" in entry:
+            assert "?rev" not in resource_id
+            resource_id = f"{resource_id}?rev={entry['_rev']}"
+
+        return resource_id
+
+    def get_label(entry):
+        """Get label if available or fetch it from the resource."""
+        if "label" not in entry:
+            return get_resource(forge=forge, resource_id=entry["@id"]).label
+        return entry["label"]
+
+    return materialize(dataset, index=-1)
 
 
 def stage_dataset_groups(forge, dataset_resource_id, staging_function):
