@@ -1,5 +1,6 @@
 """Workflow wrappers."""
 import logging
+import os
 
 import click
 
@@ -20,8 +21,27 @@ from cwl_registry.version import VERSION
 @click.option("-v", "--verbose", count=True, default=0, help="-v for INFO, -vv for DEBUG")
 def main(verbose):
     """CWL Registry execution tools."""
-    level = (logging.WARNING, logging.INFO, logging.DEBUG)[min(verbose, 2)]
-    logging.basicConfig(level=level)
+    existing_handlers = logging.getLogger().handlers
+
+    if existing_handlers:
+        logging.warning(
+            "A basicConfig has been set at import time. This is an antipattern and needs to be "
+            "addressed by the respective package as it overrides this cli's configuration."
+        )
+
+    # Allow overriding the logging with the DEBUG env var.
+    # This is particularly useful for bbp-workflow because it allows changing the logging level
+    # without changing the generator definition of the wrapper.
+    if os.getenv("DEBUG", "False").lower() == "true":
+        level = logging.DEBUG
+    else:
+        level = (logging.WARNING, logging.INFO, logging.DEBUG)[min(verbose, 2)]
+
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s %(levelname)-8s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
 
 @main.group()
@@ -41,4 +61,4 @@ execute.add_command(name="placeholder-emodel-assignment", cmd=placeholder_emodel
 
 
 if __name__ == "__main__":
-    main(verbose=2)
+    main(verbose=1)
