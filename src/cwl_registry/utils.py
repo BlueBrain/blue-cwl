@@ -225,6 +225,7 @@ def update_circuit_config_population(
 ) -> Dict[str, Any]:
     """Create a new config from an existing one with updated population data."""
     config = deepcopy(config)
+    population_data = deepcopy(population_data)
 
     network_entries = (
         entry for network_data in config["networks"].values() for entry in network_data
@@ -233,7 +234,19 @@ def update_circuit_config_population(
     for entry in network_entries:
         if population_name in entry["populations"]:
             entry["nodes_file"] = str(filepath)
-            entry["populations"][population_name].update(population_data)
+
+            existing_data = entry["populations"][population_name]
+
+            # append the new partial entries to the existing ones
+            if "partial" in population_data and "partial" in existing_data:
+                partial = population_data.pop("partial")
+                for e in partial:
+                    assert e not in existing_data["partial"], f"{e} partial entry already exists."
+
+                existing_data["partial"].extend(partial)
+
+            existing_data.update(population_data)
+
             return config
 
     raise CWLWorkflowError(f"Population name {population_name} not in config.")

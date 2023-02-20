@@ -318,7 +318,7 @@ def test_update_circuit_config_population__node_population__add_morphologies_dir
         config,
         population_name="a-pop",
         population_data={
-            "partial": ["cell-properties", "morphologies"],
+            "partial": ["morphologies"],
             "morphologies_dir": "new-morph-path",
         },
         filepath="new-path",
@@ -335,26 +335,67 @@ def test_update_circuit_config_population__node_population__add_morphologies_dir
     )
 
 
-@pytest.mark.parametrize("config_fixture", ["config_nodes_1", "config_nodes_2"])
-def test_update_circuit_config_population__node_population__add_emodels(config_fixture, request):
-    config = request.getfixturevalue(config_fixture)
-
+def test_update_circuit_config_population__node_population__add_emodels__1(config_nodes_1):
     res = tested.update_circuit_config_population(
-        config,
+        config_nodes_1,
         population_name="a-pop",
         population_data={
-            "partial": ["cell-properties", "morphologies", "emodels"],
+            "partial": ["emodels"],
             "biophysical_neuron_models_dir": "new-emodels-dir",
         },
         filepath="new-path",
     )
     _check_population_changes(
-        old_config=config,
+        old_config=config_nodes_1,
         new_config=res,
         population_name="a-pop",
         updated_nodes_file="new-path",
         updated_data={
+            "partial": ["cell-properties", "emodels"],
+            "biophysical_models_dir": "new-emodels-dir",
+        },
+    )
+
+
+def test_update_circuit_config_population__node_population__add_emodels_2(config_nodes_2):
+    res = tested.update_circuit_config_population(
+        config_nodes_2,
+        population_name="b-pop",
+        population_data={
+            "partial": ["emodels"],
+            "biophysical_neuron_models_dir": "new-emodels-dir",
+        },
+        filepath="new-path",
+    )
+    _check_population_changes(
+        old_config=config_nodes_2,
+        new_config=res,
+        population_name="b-pop",
+        updated_nodes_file="new-path",
+        updated_data={
             "partial": ["cell-properties", "morphologies", "emodels"],
+            "biophysical_models_dir": "new-emodels-dir",
+        },
+    )
+
+
+def test_update_circuit_config_population__node_population__add_emodels__3(config_nodes_2):
+    res = tested.update_circuit_config_population(
+        config_nodes_2,
+        population_name="a-pop",
+        population_data={
+            "partial": ["emodels"],
+            "biophysical_neuron_models_dir": "new-emodels-dir",
+        },
+        filepath="new-path",
+    )
+    _check_population_changes(
+        old_config=config_nodes_2,
+        new_config=res,
+        population_name="a-pop",
+        updated_nodes_file="new-path",
+        updated_data={
+            "partial": ["cell-properties", "emodels"],
             "biophysical_models_dir": "new-emodels-dir",
         },
     )

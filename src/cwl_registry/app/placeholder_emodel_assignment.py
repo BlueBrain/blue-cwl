@@ -54,7 +54,7 @@ def app(
     partial_circuit_resource = forge.retrieve(partial_circuit, cross_bucket=True)
     circuit_resource = registering.register_partial_circuit(
         forge,
-        name="Cell properties | Morphologies | emodels partial circuit",
+        name="Partial circuit with emodels",
         brain_region_id=region,
         atlas_release_id=partial_circuit_resource.atlasRelease.id,
         description="Partial circuit built with cell positions, morphologies, and emodels.",
@@ -82,7 +82,7 @@ def _write_partial_config(old_config, output_nodes_file, population_name, emodel
         config=old_config,
         population_name=population_name,
         population_data={
-            "partial": ["cell-properties", "morphologies", "emodels"],
+            "partial": ["emodels"],
             "biophysical_neuron_models_dir": str(emodels_dir),
         },
         filepath=output_nodes_file,

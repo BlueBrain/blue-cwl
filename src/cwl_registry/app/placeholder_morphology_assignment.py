@@ -55,7 +55,7 @@ def app(
     partial_circuit = forge.retrieve(partial_circuit, cross_bucket=True)
     circuit_resource = registering.register_partial_circuit(
         forge,
-        name="Cell properties | Morphologies  partial circuit",
+        name="Partial circuit with morphologies",
         brain_region_id=region,
         atlas_release_id=partial_circuit.atlasRelease.id,
         description="Partial circuit built with cell properties, and morphologies.",
@@ -85,7 +85,7 @@ def _write_partial_config(config, nodes_file, population_name, morphologies_dir,
         config=config,
         population_name=population_name,
         population_data={
-            "partial": ["cell-properties", "morphologies"],
+            "partial": ["morphologies"],
             "morphologies_dir": str(morphologies_dir),
         },
         filepath=str(nodes_file),
