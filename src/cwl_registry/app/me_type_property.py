@@ -237,7 +237,9 @@ def _generate_circuit_config(node_population_name: str, nodes_file: str, output_
                         }
                     },
                 }
-            ]
+            ],
+            # TODO: To be removed when libsonata==0.1.17 is widely deployed
+            "edges": [],
         },
         "metadata": {"status": "partial"},
     }
