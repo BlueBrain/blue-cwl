@@ -11,7 +11,13 @@ include = 'src/cwl_registry\/.*\.py$|tests\/.*\.py$|doc\/source\/conf\.py$|setup
 profile = "black"
 line_length = 100
 
-[tool.converage.paths]
+[tool.pytest.ini_options]
+addopts = [
+    "-vv",
+    "--import-mode=importlib",
+]
+
+[tool.coverage.paths]
 source = [
     "src",
     "*/site-packages",

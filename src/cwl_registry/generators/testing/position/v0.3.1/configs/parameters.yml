@@ -1,0 +1,8 @@
+place_cells:
+  soma_placement: basic
+  density_factor: 1.0
+  sort_by:
+  - region
+  - mtype
+  seed: 0
+  mini_frequencies: false

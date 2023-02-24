@@ -67,8 +67,13 @@ def get_resource(forge, resource_id):
     """Get resource from knowledge graph."""
     resource = forge.retrieve(resource_id, cross_bucket=True)
 
-    assert resource is not None
-
+    if resource is None:
+        # pylint: disable=protected-access
+        raise CWLRegistryError(
+            f"Resource id {resource_id} could not be retrieved.\n"
+            f"endpoint: {forge._store.endpoint}\n"
+            f"bucket  : {forge._store.bucket}"
+        )
     return resource
 
 
@@ -165,21 +170,21 @@ def retrieve_variant_data(
     forge: KnowledgeGraphForge, resource_id: str, staging_dir: Optional[Path] = None
 ):
     """Retrieve variant data from KG resource."""
-    variant_resource = forge.retrieve(resource_id, cross_bucket=True)
+    variant_resource = get_resource(forge, resource_id)
     assert variant_resource is not None
     L.debug("Variant resource: %s", variant_resource)
 
     try:
-        configs_resource = forge.retrieve(variant_resource.configs.id, cross_bucket=True)
+        configs_resource = get_resource(forge, variant_resource.configs.id)
         configs = _get_files(configs_resource)
     except AttributeError:
         configs = {}
     L.debug("Variant configs: %s", configs)
 
-    resources_resource = forge.retrieve(variant_resource.allocation_resources.id, cross_bucket=True)
+    resources_resource = get_resource(forge, variant_resource.allocation_resources.id)
     L.debug("Variant allocation resource: %s", resources_resource)
 
-    definitions_resource = forge.retrieve(variant_resource.definitions.id, cross_bucket=True)
+    definitions_resource = get_resource(forge, variant_resource.definitions.id)
     L.debug("Variant definitions resource: %s", definitions_resource)
 
     configs = _get_files(configs_resource)
