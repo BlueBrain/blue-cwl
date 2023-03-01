@@ -9,13 +9,11 @@ def _subject(forge, species_id):
         species = _as_reference(forge, species_id, properties=["id", "label"])
     else:
         species = Resource(
-            id="http://purl.obolibrary.org/obo/NCBITaxon_10090",
-            label=["Mus musculus", "Mus Musculus"],
+            id="http://purl.obolibrary.org/obo/NCBITaxon_10090", label="Mus musculus"
         )
-    return Resource(
-        type="Subject",
-        species=species,
-    )
+    resource = Resource(type="Subject", species=species)
+    forge.register(resource)
+    return forge.reshape(resource, ["id", "type", "species"])
 
 
 def _circuit_config_path(path):

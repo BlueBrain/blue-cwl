@@ -57,7 +57,7 @@ def test_subject():
     res = test_module._subject(forge, None)
     assert res.type == "Subject"
     assert res.species.id == "http://purl.obolibrary.org/obo/NCBITaxon_10090"
-    assert res.species.label == ["Mus musculus", "Mus Musculus"]
+    assert res.species.label == "Mus musculus"
 
     res = test_module._subject(forge, "entity-id")
     assert res.type == "Subject"

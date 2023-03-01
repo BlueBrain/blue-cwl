@@ -1,5 +1,7 @@
 from tests.functional.utils import WrapperBuild
 
+from entity_management.simulation import DetailedCircuit
+
 import pytest
 
 
@@ -22,3 +24,8 @@ def cell_position(tmpdir_factory):
 
 def test_cell_position_completes(cell_position):
     pass
+
+
+def test_detailed_circuit_compatibility(cell_position):
+    circuit = DetailedCircuit.from_id(cell_position.output_id)
+    assert circuit.circuitConfigPath is not None

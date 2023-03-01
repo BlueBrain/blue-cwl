@@ -2,6 +2,8 @@ import pytest
 
 from tests.functional.utils import WrapperBuild
 
+from entity_management.simulation import DetailedCircuit
+
 
 @pytest.fixture(scope="module")
 def emodel_assignment(tmpdir_factory):
@@ -22,3 +24,8 @@ def emodel_assignment(tmpdir_factory):
 
 def test_placeholder_emodel_assignment_completes(emodel_assignment):
     pass
+
+
+def test_detailed_circuit_compatibility(emodel_assignment):
+    circuit = DetailedCircuit.from_id(emodel_assignment.output_id)
+    assert circuit.circuitConfigPath is not None

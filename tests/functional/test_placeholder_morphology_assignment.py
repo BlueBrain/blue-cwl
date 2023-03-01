@@ -2,6 +2,8 @@ import pytest
 
 from tests.functional.utils import WrapperBuild
 
+from entity_management.simulation import DetailedCircuit
+
 
 @pytest.fixture(scope="module")
 def morphology_assignment(tmpdir_factory):
@@ -22,3 +24,8 @@ def morphology_assignment(tmpdir_factory):
 
 def test_placeholder_morphology_assignment_completes(morphology_assignment):
     pass
+
+
+def test_detailed_circuit_compatibility(morphology_assignment):
+    circuit = DetailedCircuit.from_id(morphology_assignment.output_id)
+    assert circuit.circuitConfigPath is not None
