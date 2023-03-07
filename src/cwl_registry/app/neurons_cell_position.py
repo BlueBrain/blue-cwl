@@ -11,7 +11,7 @@ import voxcell
 from voxcell.nexus.voxelbrain import Atlas
 
 from cwl_registry import Variant, recipes, registering, staging, utils, validation
-from cwl_registry.nexus import get_forge
+from cwl_registry.nexus import get_forge, get_resource
 from cwl_registry.statistics import mtype_etype_url_mapping, node_population_composition_summary
 
 STAGE_DIR_NAME = "stage"
@@ -25,24 +25,16 @@ L = logging.getLogger(__name__)
 @click.command()
 @click.option("--region", required=True)
 @click.option("--variant-config", required=False)
-@click.option("--me-type-densities", required=True)
-@click.option("--atlas", required=True)
+@click.option("--cell-composition", required=True)
 @click.option("--output-dir", required=True)
-def app(
-    region,
-    variant_config,
-    me_type_densities,
-    atlas,
-    output_dir,
-):
+def app(region, variant_config, cell_composition, output_dir):
     """Morphoelectrical type generator cli entry."""
     output_dir = utils.create_dir(Path(output_dir).resolve())
 
     staged_entities = _extract(
         region,
         variant_config,
-        me_type_densities,
-        atlas,
+        cell_composition,
         output_dir,
     )
 
@@ -61,8 +53,7 @@ def app(
 def _extract(
     brain_region_id: str,
     variant_config_id: str,
-    me_type_densities_id: str,
-    atlas_id: str,
+    cell_compositions_id: str,
     output_dir: Path,
 ) -> Dict[str, Any]:
     """Stage resources from the knowledge graph."""
@@ -77,16 +68,15 @@ def _extract(
 
     region = utils.get_region_resource_acronym(forge, brain_region_id)
 
+    cell_composition = get_resource(forge, cell_compositions_id)
+
     staging.stage_atlas(
         forge=forge,
-        resource_id=atlas_id,
+        resource_id=cell_composition.atlasRelease.id,
         output_dir=atlas_dir,
         parcellation_ontology_basename="hierarchy.json",
         parcellation_volume_basename="brain_regions.nrrd",
     )
-
-    cell_composition = forge.retrieve(me_type_densities_id, cross_bucket=True)
-
     staging.stage_me_type_densities(
         forge=forge,
         resource_id=cell_composition.cellCompositionVolume.id,
@@ -94,7 +84,7 @@ def _extract(
     )
 
     return {
-        "atlas-id": atlas_id,
+        "atlas-id": cell_composition.atlasRelease.id,
         "region": region,
         "atlas-dir": atlas_dir,
         "me-type-densities-file": me_type_densities_file,

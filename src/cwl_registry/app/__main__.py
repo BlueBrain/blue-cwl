@@ -9,7 +9,7 @@ from cwl_registry.app import (
     cell_composition_summary,
     density_calculation,
     density_manipulation,
-    me_type_property,
+    neurons_cell_position,
     placeholder_emodel_assignment,
     placeholder_morphology_assignment,
 )
@@ -49,7 +49,7 @@ def execute():
     """Subcommand grouping together all execution wrappers."""
 
 
-execute.add_command(name="neurons-me-type-property", cmd=me_type_property.app)
+execute.add_command(name="neurons-cell-position", cmd=neurons_cell_position.app)
 execute.add_command(name="density-calculation", cmd=density_calculation.app)
 execute.add_command(name="density-manipulation", cmd=density_manipulation.app)
 execute.add_command(name="cell-composition-summary", cmd=cell_composition_summary.app)

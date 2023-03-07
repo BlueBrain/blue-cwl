@@ -74,9 +74,11 @@ class WrapperBuild:
     def _run(self):
         arguments = [f"--{key}={value}" for key, value in self.inputs.items()]
 
+        full_command = self.command + arguments
+
         result = CliRunner().invoke(
-            main, self.command + arguments, env=os.environ, catch_exceptions=False, color=True
+            main, full_command, env=os.environ, catch_exceptions=False, color=True
         )
         if result.exit_code != 0:
-            _print_details(command + arguments, inputs)
+            _print_details(full_command, self.inputs)
         assert result.exit_code == 0, result.output

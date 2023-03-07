@@ -5,12 +5,12 @@ id: me_type_property
 label: Morph-Electric type property generator
 stdout: stdout.txt
 
-baseCommand: ['cwl-registry', 'execute', 'neurons-me-type-property']
+baseCommand: ['cwl-registry', 'execute', 'neurons-cell-position']
 
 
 environment:
   env_type: VENV
-  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-densities
+  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-v0.3.3
   enable_internet: true
 
 
@@ -21,15 +21,10 @@ inputs:
       inputBinding:
         prefix: --region
 
-    - id: atlas
+    - id: cell_composition
       type: NexusType
       inputBinding:
-        prefix: --atlas
-
-    - id: me_type_densities
-      type: NexusType
-      inputBinding:
-        prefix: --me-type-densities
+        prefix: --cell-composition
 
     - id: variant_config
       type: NexusType
@@ -43,8 +38,8 @@ inputs:
 
 outputs:
 
-    - id: circuit_me_type_bundle
+    - id: cell_position_partial_circuit
       type: NexusType
       doc: Circuit bundle with me-types and soma positions.
       outputBinding:
-        glob: "me-type-property-partial-circuit.json"
+        glob: "partial-circuit.json"
