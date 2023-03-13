@@ -2,7 +2,7 @@ import re
 import pytest
 from cwl_registry.exceptions import CWLRegistryError
 
-from cwl_registry.app import cell_composition_manipulation as test_module
+from cwl_registry.wrappers import cell_composition_manipulation as test_module
 
 
 def test_check_recipe_compatibility_with_density_distribution__correct():

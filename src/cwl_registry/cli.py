@@ -4,7 +4,8 @@ import os
 
 import click
 
-from cwl_registry.app import (
+from cwl_registry.version import VERSION
+from cwl_registry.wrappers import (
     cell_composition_manipulation,
     cell_composition_summary,
     density_calculation,
@@ -13,7 +14,6 @@ from cwl_registry.app import (
     placeholder_emodel_assignment,
     placeholder_morphology_assignment,
 )
-from cwl_registry.version import VERSION
 
 
 @click.group("cwl-registry", help=__doc__.format(esc="\b"))

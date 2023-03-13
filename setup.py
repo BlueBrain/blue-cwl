@@ -27,7 +27,7 @@ setup(
         "Source": "git@bbpgitlab.epfl.ch:nse/cwl-registry.git",
     },
     license="BBP-internal-confidential",
-    entry_points={"console_scripts": ["cwl-registry=cwl_registry.app.__main__:main"]},
+    entry_points={"console_scripts": ["cwl-registry=cwl_registry.cli:main"]},
     install_requires=[
         "click>=8.0",
         "libsonata",

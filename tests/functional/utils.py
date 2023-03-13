@@ -2,7 +2,7 @@ import os
 import json
 
 from click.testing import CliRunner
-from cwl_registry.app.__main__ import main
+from cwl_registry.cli import main
 import subprocess
 from pathlib import Path
 from cwl_registry.nexus import get_forge
