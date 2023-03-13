@@ -1,9 +1,11 @@
 """Density Manipulation of nrrd files"""
 import copy
+import itertools
 import logging
 import os
 from urllib.parse import parse_qs, urlsplit, urlunparse
 
+import joblib
 import numpy as np
 import pandas as pd
 import voxcell
@@ -72,7 +74,16 @@ def _cell_composition_volume_to_df(cell_composition_volume, mtype_urls_inverse, 
 
 def _create_updated_densities(output_dir, brain_regions, all_operations, materialized_densities):
     """Apply the operations to the NRRD files"""
-    updated = []
+    p = joblib.Parallel(
+        n_jobs=-2,
+        backend="multiprocessing",
+    )
+
+    worker_function = joblib.delayed(_create_updated_density)
+
+    work = []
+
+    updated = {}
     for (mtype, etype), operations in all_operations.groupby(
         [
             "mtype",
@@ -80,23 +91,41 @@ def _create_updated_densities(output_dir, brain_regions, all_operations, materia
         ]
     ):
         path = str(materialized_densities.loc[(mtype, etype)].path)
-        L.info("doing: %s, %s: [%s]", mtype, etype, path)
-        nrrd = voxcell.VoxelData.load_nrrd(path)
-        for row in operations.itertuples():
-            idx = np.nonzero(brain_regions.raw == row.region)
-
-            if row.operation == "density":
-                nrrd.raw[idx] = row.value
-            elif row.operation == "density_ratio":
-                current_density = np.mean(nrrd.raw[idx])
-                if current_density > 0:
-                    nrrd.raw[idx] *= row.value / current_density
-
         new_path = os.path.join(output_dir, os.path.basename(path))
-        updated.append((mtype, etype, new_path))
-        nrrd.save_nrrd(new_path)
 
-    return pd.DataFrame(updated, columns=["mtype", "etype", "path"])
+        updated[path] = mtype, etype, new_path
+
+        work.append(
+            worker_function(
+                input_nrrd_path=path,
+                output_nrrd_path=new_path,
+                operations=operations,
+                brain_regions=brain_regions,
+            )
+        )
+
+    L.debug("Densities to be updated: %d", len(updated))
+
+    for path in p(work):
+        mtype, etype, _ = updated[path]
+        L.info("Completed: %s, %s: [%s]", mtype, etype, path)
+
+    return pd.DataFrame(list(updated.values()), columns=["mtype", "etype", "path"])
+
+
+def _create_updated_density(input_nrrd_path, output_nrrd_path, operations, brain_regions):
+    nrrd = voxcell.VoxelData.load_nrrd(input_nrrd_path)
+    for row in operations.itertuples():
+        idx = np.nonzero(brain_regions.raw == row.region)
+
+        if row.operation == "density":
+            nrrd.raw[idx] = row.value
+        elif row.operation == "density_ratio":
+            nrrd.raw[idx] *= row.value
+
+    nrrd.save_nrrd(output_nrrd_path)
+
+    return input_nrrd_path
 
 
 def _update_density_release(original_density_release, updated_densities, mtype_urls, etype_urls):
@@ -186,15 +215,27 @@ def _update_density_summary_statistics(
     updated_densities,
 ):
     """Ibid"""
-    res = []
+    p = joblib.Parallel(
+        n_jobs=-2,
+        backend="multiprocessing",
+    )
+
+    worker_function = joblib.delayed(statistics.get_statistics_from_nrrd_volume)
+
+    work = []
+
     for _, mtype_label, etype_label, nrrd_path in updated_densities.itertuples():
-        res.extend(
-            statistics.get_statistics_from_nrrd_volume(
-                region_map, brain_regions, mtype_label, etype_label, nrrd_path
+        work.append(
+            worker_function(
+                region_map,
+                brain_regions,
+                mtype_label,
+                etype_label,
+                nrrd_path,
             )
         )
 
-    res = pd.DataFrame.from_records(res)
+    res = pd.DataFrame.from_records(list(itertools.chain.from_iterable(p(work))))
     res = (
         res.set_index(["region", "mtype", "etype"])
         .combine_first(original_cell_composition_summary.set_index(["region", "mtype", "etype"]))

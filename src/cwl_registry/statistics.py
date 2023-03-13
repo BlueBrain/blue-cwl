@@ -225,8 +225,10 @@ def atlas_densities_composition_summary(density_distribution, region_map, brain_
     """Calculate the composition summary statistics of a density distribution."""
     mtype_urls, etype_urls = mtype_etype_url_mapping(density_distribution)
 
+    L.info("Extracting statistics from density distribution.")
     nrrd_stats = _get_nrrd_statistics(region_map, brain_regions, density_distribution)
 
+    L.info("Converting statistics from dataframe to json format.")
     summary_statistics = density_summary_stats_region(
         region_map, nrrd_stats, mtype_urls, etype_urls
     )

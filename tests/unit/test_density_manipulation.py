@@ -221,32 +221,12 @@ def test__update_density_summary_statistics(tmpdir, region_map, brain_regions):
     original_cell_composition_summary = statistics.cell_composition_summary_to_df(
         original_cell_composition_summary, region_map, MTYPE_URLS_INVERSE, ETYPE_URLS_INVERSE
     )
-
-    with patch("cwl_registry.statistics.get_statistics_from_nrrd_volume") as mock:
-        mock.return_value = [
-            {
-                "region": "RSPagl2",
-                "mtype": "L23_LBC",
-                "etype": "bAC",
-                "count": 0,
-                "density": 0.10000000000000002,
-            },
-            {
-                "region": "RSPagl3",
-                "mtype": "L23_LBC",
-                "etype": "bAC",
-                "count": 0,
-                "density": 0.10000000000000002,
-            },
-        ]
-        res = test_module._update_density_summary_statistics(
-            original_cell_composition_summary,
-            brain_regions,
-            region_map,
-            updated_densities,
-        )
-
-    # only the mock'd values should be overridden
+    res = test_module._update_density_summary_statistics(
+        original_cell_composition_summary,
+        brain_regions,
+        region_map,
+        updated_densities,
+    )
     assert np.allclose(res.loc[("RSPagl2", "L23_LBC", "bAC")][["count", "density"]], (0.0, 0.1))
     assert np.allclose(res.loc[("RSPagl3", "L23_LBC", "bAC")][["count", "density"]], (0.0, 0.1))
 

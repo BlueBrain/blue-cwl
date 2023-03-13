@@ -1,11 +1,15 @@
 """Nexus stuff."""
 import logging
 import os
+from datetime import datetime
+from functools import wraps
 from pathlib import Path
 from typing import Dict, Optional
 
+import jwt
+import requests
 from entity_management import state
-from entity_management.nexus import file_as_dict
+from entity_management.nexus import _print_nexus_error, file_as_dict
 from kgforge.core import KnowledgeGraphForge, Resource
 
 from cwl_registry.exceptions import CWLRegistryError
@@ -21,19 +25,71 @@ ext_to_format = {
 L = logging.getLogger(__name__)
 
 
+# Renew the token if it expires in 5 minutes from now
+SECONDS_TO_EXPIRATION = 5 * 60
+
+
+def _decode(token):
+    """Decode the token, and return its contents."""
+    return jwt.decode(token, options={"verify_signature": False})
+
+
+def _has_expired(token):
+    """Check if the token has expired or is going to expire in 'SECONDS_TO_EXPIRATION'."""
+    expiration_time = _decode(token)["exp"]
+    return datetime.timestamp(datetime.now()) + SECONDS_TO_EXPIRATION > expiration_time
+
+
+def _refresh_token_on_failure(func):
+    """Refresh access token on failure and try again."""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        """Decorator function"""
+        try:
+            return func(*args, **kwargs)
+        except requests.exceptions.HTTPError as e1:
+            if e1.response.status_code == 401 and state.has_offline_token():
+                kwargs["token"] = state.refresh_token()
+                try:
+                    return func(*args, **kwargs)
+                except requests.exceptions.HTTPError as e2:
+                    _print_nexus_error(e2)
+                    raise
+            _print_nexus_error(e1)
+            raise
+
+    return wrapper
+
+
+def _get_valid_token(token: Optional[str] = None, force_refresh: bool = False) -> str:
+    """Return a valid token if possible."""
+    if token is None:
+        token = state.get_token()
+    else:
+        state.set_token(token)
+
+    # the access token can only be refreshed if an offline/refresh token is available
+    if (force_refresh or _has_expired(token)) and state.has_offline_token():
+        return state.refresh_token()
+
+    return token
+
+
 def get_forge(
     nexus_base: str = None,
     nexus_org: str = None,
     nexus_project: str = None,
     nexus_token: str = None,
+    force_refresh: bool = False,
 ):  # pragma: no cover
     """Get KG forge."""
     nexus_base = nexus_base or os.getenv("NEXUS_BASE")
     nexus_org = nexus_org or state.get_org()
     nexus_project = nexus_project or state.get_proj()
-    nexus_token = nexus_token or state.get_token()
+    nexus_token = _get_valid_token(nexus_token, force_refresh)
 
-    return KnowledgeGraphForge(
+    return _refresh_token_on_failure(KnowledgeGraphForge)(
         configuration="https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml",
         bucket=f"{nexus_org}/{nexus_project}",
         endpoint=nexus_base,

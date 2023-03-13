@@ -3,19 +3,7 @@ import os
 import traceback
 from click.testing import CliRunner
 from contextlib import contextmanager
-
-from cwl_workflow.__main__ import main
-
-
-def run_cli_command(cmd, tmp_dir):
-    tmp_dir.mkdir()
-
-    runner = CliRunner()
-
-    with runner.isolated_filesystem(temp_dir=tmp_dir):
-        result = runner.invoke(main, cmd, catch_exceptions=False)
-
-    assert result.exit_code == 0, "".join(traceback.format_exception(*result.exc_info))
+from unittest.mock import patch
 
 
 @contextmanager
@@ -27,3 +15,8 @@ def cwd(path):
         yield
     finally:
         os.chdir(original_cwd)
+
+
+def patchenv(**envvars):
+    """Patch function environment."""
+    return patch.dict(os.environ, envvars, clear=True)

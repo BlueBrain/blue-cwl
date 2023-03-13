@@ -37,6 +37,14 @@ def app(  # pylint: disable=too-many-arguments
 
     cell_composition = get_resource(forge, base_cell_composition)
 
+    original_cell_composition_summary = read_json_file_from_resource(
+        get_resource(forge, _get_summary_id(cell_composition.cellCompositionSummary))
+    )
+    utils.write_json(
+        data=original_cell_composition_summary,
+        filepath=staging_dir / "original_cell_composition_summary.json",
+    )
+
     density_distribution_file = staging_dir / "density_distribution.json"
     L.info("Staging density distribution to  %s", density_distribution_file)
     staging.stage_me_type_densities(
@@ -95,14 +103,6 @@ def app(  # pylint: disable=too-many-arguments
         etype_urls,
     )
 
-    original_cell_composition_summary = read_json_file_from_resource(
-        get_resource(forge, _get_summary_id(cell_composition.cellCompositionSummary))
-    )
-    utils.write_json(
-        data=original_cell_composition_summary,
-        filepath=staging_dir / "original_cell_composition_summary.json",
-    )
-
     L.info("Updating cell composition summary statistics...")
     cell_composition_summary = density_manipulation.update_composition_summary_statistics(
         brain_regions,
@@ -128,7 +128,7 @@ def app(  # pylint: disable=too-many-arguments
     updated_density_release_path = output_dir / "updated_density_release.json"
     updated_cell_composition_summary_path = output_dir / "updated_cell_composition_summary.json"
     cell_composition_id = push_cellcomposition(
-        forge,
+        forge=get_forge(force_refresh=True),
         atlasrelease_id=cell_composition.atlasRelease.id,
         volume_path=updated_density_release_path,
         summary_path=updated_cell_composition_summary_path,
@@ -140,7 +140,8 @@ def app(  # pylint: disable=too-many-arguments
         L=L,
     )
 
-    resource = forge.retrieve(cell_composition_id, cross_bucket=True)
+    forge = get_forge(force_refresh=True)
+    resource = get_resource(forge, cell_composition_id)
     utils.write_resource_to_definition_output(
         forge=forge,
         resource=resource,
