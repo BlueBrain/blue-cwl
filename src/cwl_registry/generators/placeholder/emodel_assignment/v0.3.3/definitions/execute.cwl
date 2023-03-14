@@ -10,7 +10,7 @@ baseCommand: ['cwl-registry', 'execute', 'placeholder-emodel-assignment']
 
 environment:
   env_type: VENV
-  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-config
+  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-v0.3.3
   enable_internet: true
 
 

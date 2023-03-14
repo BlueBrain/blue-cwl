@@ -1,16 +1,16 @@
 cwlVersion: v1.2
 class: CommandLineTool
 
-id: placeholder_emodel_assignment
-label: EModel assignment
+id: placeholder_morphology_assignment
+label: Morphology Assignment
 stdout: stdout.txt
 
-baseCommand: ['cwl-registry', 'execute', 'placeholder-emodel-assignment']
+baseCommand: ['cwl-registry', 'execute', 'placeholder-morphology-assignment']
 
 
 environment:
   env_type: VENV
-  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-densities
+  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-v0.3.3
   enable_internet: true
 
 
@@ -26,10 +26,10 @@ inputs:
       inputBinding:
         prefix: --partial-circuit
 
-    - id: etype_emodels
+    - id: mtype_morphologies
       type: NexusType
       inputBinding:
-        prefix: --etype-emodels
+        prefix: --mtype-morphologies
 
     - id: variant_config
       type: NexusType
@@ -43,8 +43,8 @@ inputs:
 
 outputs:
 
-    - id: "circuit_emodels_bundle"
+    - id: "circuit_morphologies_bundle"
       type: NexusType
-      doc: Circuit bundle with emodels.
+      doc: Circuit bundle with me-types and morphologies.
       outputBinding:
-        glob: "circuit_emodels_bundle.json"
+        glob: "circuit_morphologies_bundle.json"
