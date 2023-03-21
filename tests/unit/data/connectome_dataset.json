@@ -1,0 +1,112 @@
+{
+  "hasPart": {
+    "1": {
+      "hasPart": {
+        "1": {
+          "hasPart": {
+            "http://api.brain-map.org/api/v2/data/Structure/23": {
+              "hasPart": {
+                "http://api.brain-map.org/api/v2/data/Structure/935": {
+                  "hasPart": {
+                    "http://uri.interlex.org/base/ilx_0383231?rev=34": {
+                      "hasPart": {
+                        "http://uri.interlex.org/base/ilx_0383231?rev=34": {
+                          "hasPart": {
+                            "inputs": [
+                              {
+                                "name": "scale",
+                                "value": 1
+                              },
+                              {
+                                "name": "exponent",
+                                "value": 1
+                              },
+                              {
+                                "name": "mean_synapses_per_connection",
+                                "value": 100
+                              },
+                              {
+                                "name": "sdev_synapses_per_connection",
+                                "value": 1
+                              },
+                              {
+                                "name": "mean_conductance_velocity",
+                                "value": 0.3
+                              },
+                              {
+                                "name": "sdev_conductance_velocity",
+                                "value": 0.01
+                              },
+                              {
+                                "name": "seed",
+                                "value": 0
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "2": {
+      "hasPart": {
+        "1": {
+          "hasPart": {
+            "http://api.brain-map.org/api/v2/data/Structure/23": {
+              "hasPart": {
+                "http://api.brain-map.org/api/v2/data/Structure/935": {
+                  "hasPart": {
+                    "http://uri.interlex.org/base/ilx_0383231?rev=34": {
+                      "hasPart": {
+                        "http://uri.interlex.org/base/ilx_0383231?rev=34": {
+                          "hasPart": {
+                            "inputs": [
+                              {
+                                "name": "scale",
+                                "value": 1
+                              },
+                              {
+                                "name": "exponent",
+                                "value": 1
+                              },
+                              {
+                                "name": "mean_synapses_per_connection",
+                                "value": 100
+                              },
+                              {
+                                "name": "sdev_synapses_per_connection",
+                                "value": 1
+                              },
+                              {
+                                "name": "mean_conductance_velocity",
+                                "value": 0.3
+                              },
+                              {
+                                "name": "sdev_conductance_velocity",
+                                "value": 0.01
+                              },
+                              {
+                                "name": "seed",
+                                "value": 0
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

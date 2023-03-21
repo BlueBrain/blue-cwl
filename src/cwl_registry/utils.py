@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import click
+import libsonata
 import voxcell
 import yaml
 
@@ -201,7 +202,7 @@ def get_config_path_from_circuit_resource(forge, resource_id: str) -> Path:
 
 
 def get_biophysical_partial_population_from_config(circuit_config):
-    """Get the biophysical population file and name fromt he config."""
+    """Get the biophysical node population file and name fromt he config."""
     nodes_file = population_name = None
     for node_dict in circuit_config["networks"]["nodes"]:
         populations = node_dict["populations"]
@@ -215,6 +216,19 @@ def get_biophysical_partial_population_from_config(circuit_config):
         raise CWLWorkflowError(f"No biophysical population found in config: {circuit_config}")
 
     return nodes_file, population_name
+
+
+def get_edge_population_name(edges_file):
+    """Return population name from file."""
+    storage = libsonata.EdgeStorage(edges_file)
+    pop_names = storage.population_names
+    if len(pop_names) > 1:
+        raise CWLWorkflowError(
+            f"More than one population are not supported.\n"
+            f"Populations: {pop_names}\n"
+            f"File: {edges_file}"
+        )
+    return list(pop_names)[0]
 
 
 def update_circuit_config_population(

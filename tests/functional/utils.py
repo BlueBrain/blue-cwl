@@ -76,9 +76,8 @@ class WrapperBuild:
 
         full_command = self.command + arguments
 
+        _print_details(full_command, self.inputs)
         result = CliRunner().invoke(
             main, full_command, env=os.environ, catch_exceptions=False, color=True
         )
-        if result.exit_code != 0:
-            _print_details(full_command, self.inputs)
         assert result.exit_code == 0, result.output

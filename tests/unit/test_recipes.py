@@ -68,3 +68,82 @@ def test_build_mtype_taxonomy():
         }
     )
     pdt.assert_frame_equal(res, expected)
+
+
+def test_build_connectome_distance_dependent_recipe():
+    configuration = pd.DataFrame(
+        {
+            "hi": ["left"],
+            "hj": ["left"],
+            "ri": ["SSp-bfd2"],
+            "rj": ["SSp-bfd2"],
+            "mi": ["L23_LBC"],
+            "mj": ["L23_LBC"],
+            "scale": 0.11,
+            "exponent": 0.007,
+            "mean_synapses_per_connection": 100,
+            "sdev_synapses_per_connection": 1,
+            "mean_conductance_velocity": 0.3,
+            "sdev_conductance_velocity": 0.01,
+        }
+    )
+
+    config_path = "my-config-path"
+    output_dir = "my-dir"
+
+    res = tested.build_connectome_distance_dependent_recipe(config_path, configuration, output_dir)
+
+    assert res == {
+        "circuit_config": "my-config-path",
+        "output_path": "my-dir",
+        "seed": 0,
+        "manip": {
+            "name": "ConnWiringPerPathway_DD",
+            "fcts": [
+                {
+                    "source": "conn_wiring",
+                    "kwargs": {
+                        "sel_src": {
+                            "region": "SSp-bfd2",
+                            "mtype": "L23_LBC",
+                        },
+                        "sel_dest": {
+                            "region": "SSp-bfd2",
+                            "mtype": "L23_LBC",
+                        },
+                        "amount_pct": 100.0,
+                        "prob_model_file": {
+                            "model": "ConnProb2ndOrderExpModel",
+                            "scale": 0.11,
+                            "exponent": 0.007,
+                        },
+                        "nsynconn_model_file": {
+                            "model": "ConnPropsModel",
+                            "src_types": ["L23_LBC"],
+                            "tgt_types": ["L23_LBC"],
+                            "prop_stats": {
+                                "n_syn_per_conn": {
+                                    "L23_LBC": {
+                                        "L23_LBC": {
+                                            "type": "gamma",
+                                            "mean": 100,
+                                            "std": 1,
+                                            "dtype": "int",
+                                            "lower_bound": 1,
+                                            "upper_bound": 1000,
+                                        }
+                                    }
+                                }
+                            },
+                        },
+                        "delay_model_file": {
+                            "model": "LinDelayModel",
+                            "delay_mean_coefs": [0.3, 0.003],
+                            "delay_std": 0.01,
+                            "delay_min": 0.2,
+                        },
+                    },
+                },
+            ],
+        },
+    }

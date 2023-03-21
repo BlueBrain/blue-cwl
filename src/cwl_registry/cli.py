@@ -8,6 +8,7 @@ from cwl_registry.version import VERSION
 from cwl_registry.wrappers import (
     cell_composition_manipulation,
     cell_composition_summary,
+    connectome_distance_dependent,
     density_calculation,
     density_manipulation,
     neurons_cell_position,
@@ -58,6 +59,7 @@ execute.add_command(
     name="placeholder-morphology-assignment", cmd=placeholder_morphology_assignment.app
 )
 execute.add_command(name="placeholder-emodel-assignment", cmd=placeholder_emodel_assignment.app)
+execute.add_command(name="connectome-distance-dependent", cmd=connectome_distance_dependent.app)
 
 
 if __name__ == "__main__":

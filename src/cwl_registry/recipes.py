@@ -103,3 +103,69 @@ def build_mtype_taxonomy(mtypes: List[str]):
     per_mtype_df = df.loc[available_mtypes_mask]
 
     return per_mtype_df.reset_index(drop=True)
+
+
+def build_connectome_distance_dependent_recipe(config_path, configuration, output_dir):
+    """Build recipe for connectome manipulator."""
+    res = {
+        "circuit_config": str(config_path),
+        "output_path": str(output_dir),
+        "seed": 0,
+        "manip": {"name": "ConnWiringPerPathway_DD", "fcts": []},
+    }
+    # TODO: Add hemisphere when hemispheres are available
+    for row in configuration.itertuples():
+        res["manip"]["fcts"].append(
+            {
+                "source": "conn_wiring",
+                "kwargs": {
+                    "sel_src": {
+                        "region": row.ri,
+                        "mtype": row.mi,
+                    },
+                    "sel_dest": {
+                        "region": row.rj,
+                        "mtype": row.mj,
+                    },
+                    "amount_pct": 100.0,
+                    "prob_model_file": {
+                        "model": "ConnProb2ndOrderExpModel",
+                        "scale": row.scale,
+                        "exponent": row.exponent,
+                    },
+                    "nsynconn_model_file": {
+                        "model": "ConnPropsModel",
+                        "src_types": [
+                            row.mi,
+                        ],
+                        "tgt_types": [
+                            row.mj,
+                        ],
+                        "prop_stats": {
+                            "n_syn_per_conn": {
+                                row.mi: {
+                                    row.mj: {
+                                        "type": "gamma",
+                                        "mean": row.mean_synapses_per_connection,
+                                        "std": row.sdev_synapses_per_connection,
+                                        "dtype": "int",
+                                        "lower_bound": 1,
+                                        "upper_bound": 1000,
+                                    }
+                                }
+                            }
+                        },
+                    },
+                    "delay_model_file": {
+                        "model": "LinDelayModel",
+                        "delay_mean_coefs": [
+                            row.mean_conductance_velocity,
+                            0.003,
+                        ],
+                        "delay_std": row.sdev_conductance_velocity,
+                        "delay_min": 0.2,
+                    },
+                },
+            }
+        )
+    return res
