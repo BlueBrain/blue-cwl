@@ -4,6 +4,7 @@ from pathlib import Path
 import click
 import libsonata
 import numpy as np
+from voxcell.math_utils import angles_to_matrices
 
 from cwl_registry import registering, staging, utils, validation
 from cwl_registry.nexus import get_forge
@@ -41,8 +42,15 @@ def app(
 
     output_nodes_file = output_dir / "nodes.h5"
     properties = _assign_morphologies(nodes_file, population_name, mtype_to_morphologies)
+    orientations = np.repeat(
+        angles_to_matrices([np.pi / 2], "y"), repeats=len(properties["morphology"]), axis=0
+    )
     utils.write_node_population_with_properties(
-        nodes_file, population_name, properties, output_nodes_file
+        nodes_file=nodes_file,
+        population_name=population_name,
+        properties=properties,
+        orientations=orientations,
+        output_file=output_nodes_file,
     )
     validation.check_population_name_in_nodes(population_name, output_nodes_file)
 

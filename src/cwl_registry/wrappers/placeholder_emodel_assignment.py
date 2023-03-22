@@ -41,7 +41,10 @@ def app(
 
     output_nodes_file = output_dir / "nodes.h5"
     utils.write_node_population_with_properties(
-        nodes_file, population_name, properties, output_nodes_file
+        nodes_file=nodes_file,
+        population_name=population_name,
+        properties=properties,
+        output_file=output_nodes_file,
     )
     validation.check_population_name_in_nodes(population_name, output_nodes_file)
 

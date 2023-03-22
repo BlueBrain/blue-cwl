@@ -14,6 +14,7 @@ from typing import Any, Dict, Optional
 
 import click
 import libsonata
+import numpy as np
 import voxcell
 import yaml
 
@@ -267,11 +268,18 @@ def update_circuit_config_population(
 
 
 def write_node_population_with_properties(
-    nodes_file: Path, population_name: str, properties: Dict[str, Any], output_file: Path
+    nodes_file: Path,
+    population_name: str,
+    properties: Dict[str, Any],
+    output_file: Path,
+    orientations: Optional[np.array] = None,
 ):
     """Write a copy of nodes_file with additional properties for the given population."""
     population = voxcell.CellCollection.load_sonata(nodes_file, population_name=population_name)
     population.add_properties(properties, overwrite=False)
+    if orientations is not None:
+        population.orientations = orientations
+        population.orientation_format = "quaternions"
     population.save_sonata(output_file)
 
 
