@@ -29,7 +29,7 @@ inputs:
     - id: configuration
       type: NexusType
       inputBinding:
-        prefix: --recipe
+        prefix: --configuration
 
     - id: variant_config
       type: NexusType

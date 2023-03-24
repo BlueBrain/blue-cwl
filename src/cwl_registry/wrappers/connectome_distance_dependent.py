@@ -47,7 +47,7 @@ def _app(configuration, partial_circuit, variant_config, output_dir):
     )
     config = utils.load_json(config_path)
 
-    build_dir = utils.create_dir(output_dir / "build")
+    build_dir = utils.create_dir(output_dir / "build", clean_if_exists=True)
 
     L.debug("Generating connectome recipe...")
     recipe_file = build_dir / "manipulation-config.json"

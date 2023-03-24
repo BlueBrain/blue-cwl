@@ -162,8 +162,8 @@ def _check_recipe_compatibility_with_density_distribution(density_distribution: 
     """Check if the me combinations in recipe are present in the base density distribution."""
     recipe_me_combos = {
         (
-            f"{mtype_id}={mtype_data['label']}",
-            f"{etype_id}={etype_data['label']}",
+            f"{utils.url_without_revision(mtype_id)}={mtype_data['label']}",
+            f"{utils.url_without_revision(etype_id)}={etype_data['label']}",
         )
         for region_data in recipe["overrides"].values()
         for mtype_id, mtype_data in region_data["hasPart"].items()
@@ -172,8 +172,8 @@ def _check_recipe_compatibility_with_density_distribution(density_distribution: 
 
     distribution_me_combos = {
         (
-            f"{mtype_id}={mtype_data['label']}",
-            f"{etype_id}={etype_data['label']}",
+            f"{utils.url_without_revision(mtype_id)}={mtype_data['label']}",
+            f"{utils.url_without_revision(etype_id)}={etype_data['label']}",
         )
         for mtype_id, mtype_data in density_distribution["mtypes"].items()
         for etype_id, etype_data in mtype_data["etypes"].items()

@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import pathlib
+import shutil
 import subprocess
 import urllib
 from contextlib import contextmanager
@@ -79,9 +80,11 @@ def cwd(path):
 
 
 @log
-def create_dir(path: os.PathLike) -> Path:
+def create_dir(path: os.PathLike, clean_if_exists=False) -> Path:
     """Create directory and parents if it doesn't already exist."""
     path = Path(path)
+    if path.exists() and clean_if_exists:
+        shutil.rmtree(path)
     path.mkdir(parents=True, exist_ok=True)
     return path
 
