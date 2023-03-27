@@ -43,7 +43,7 @@ inputs:
 
 outputs:
 
-    - id: "circuit_morphologies_bundle"
+    - id: partial_circuit
       type: NexusType
       doc: Circuit bundle with me-types and morphologies.
       outputBinding:

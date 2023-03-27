@@ -43,7 +43,7 @@ inputs:
 
 outputs:
 
-    - id: "circuit_emodels_bundle"
+    - id: partial_circuit
       type: NexusType
       doc: Circuit bundle with emodels.
       outputBinding:

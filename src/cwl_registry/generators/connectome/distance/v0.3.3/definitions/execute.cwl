@@ -38,7 +38,7 @@ inputs:
 
 outputs:
 
-    - id: "circuit_connectome_bundle"
+    - id: partial_circuit
       type: NexusType
       doc: Circuit bundle with connectivity.
       outputBinding:

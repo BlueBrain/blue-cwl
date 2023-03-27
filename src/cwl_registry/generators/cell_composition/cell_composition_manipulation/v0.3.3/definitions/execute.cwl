@@ -43,7 +43,7 @@ inputs:
 
 outputs:
 
-    - id: cell_composition_manipulation__density_distribution
+    - id: cell_composition
       type: NexusType
       outputBinding:
         glob: "output-density-distribution.json"

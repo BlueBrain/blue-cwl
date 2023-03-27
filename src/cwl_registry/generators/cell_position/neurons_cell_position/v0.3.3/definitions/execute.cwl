@@ -38,7 +38,7 @@ inputs:
 
 outputs:
 
-    - id: cell_position_partial_circuit
+    - id: partial_circuit
       type: NexusType
       doc: Circuit bundle with me-types and soma positions.
       outputBinding:
