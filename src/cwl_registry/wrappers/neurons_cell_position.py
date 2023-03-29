@@ -157,6 +157,8 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
                 parameters["density_factor"],
                 "--atlas-property",
                 "region ~brain_regions",
+                "--atlas-property",
+                "hemisphere hemisphere",
                 "--sort-by",
                 ",".join(parameters["sort_by"]),
                 "--seed",

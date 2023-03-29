@@ -347,6 +347,7 @@ def stage_atlas(
     output_dir: Path,
     parcellation_ontology_basename: Optional[str] = "hierarchy.json",
     parcellation_volume_basename: Optional[str] = "brain_regions.nrrd",
+    parcellation_hemisphere_basename: Optional[str] = "hemisphere.nrrd",
     symbolic=True,
 ):
     """Stage an atlas to the given output_dir.
@@ -356,7 +357,8 @@ def stage_atlas(
         resource_id: The resource id of the entity.
         output_dir: The output directory to put the files in.
         parcellation_ontology_basename: The filename of the retrieved hierarchy.
-        parcellation_volume_basename: The filename of the retrieved annotation.
+        parcellation_volume_basename: The filename of the retrieved brain annotations
+        parcellation_hemisphere_basename: The filename of the retrieved hemisphere volume.
         symbolic: If True symbolic links will be attempted if the datasets exist on gpfs
             otherwise the files will be downloaded.
     """
@@ -379,7 +381,17 @@ def stage_atlas(
         basename=parcellation_volume_basename,
         symbolic=symbolic,
     )
-    return ontology_path, volume_path
+
+    hemisphere_path = stage_resource_distribution_file(
+        forge,
+        atlas.hemisphereVolume.id,
+        output_dir=output_dir,
+        encoding_type="nrrd",
+        basename=parcellation_hemisphere_basename,
+        symbolic=symbolic,
+    )
+
+    return ontology_path, volume_path, hemisphere_path
 
 
 def stage_file(source: Path, target: Path, symbolic: bool = True) -> None:

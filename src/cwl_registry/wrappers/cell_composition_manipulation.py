@@ -54,7 +54,7 @@ def app(  # pylint: disable=too-many-arguments
     )
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     L.info("Staging atlas to  %s", atlas_dir)
-    hierarchy_path, annotations_path = staging.stage_atlas(
+    hierarchy_path, annotations_path, _ = staging.stage_atlas(
         forge=forge,
         resource_id=cell_composition.atlasRelease.id,
         output_dir=atlas_dir,
