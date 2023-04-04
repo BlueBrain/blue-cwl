@@ -181,9 +181,17 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
 
     validation.check_population_name_in_nodes(node_population_name, nodes_file)
 
+    node_sets_file = _generate_node_sets(
+        nodes_file=nodes_file,
+        population_name=node_population_name,
+        atlas_dir=transformed_data["atlas-dir"],
+        output_dir=build_dir,
+    )
+
     L.info("Generating partial circuit config...")
     sonata_config_file = build_dir / "config.json"
     _generate_circuit_config(
+        node_sets_file=node_sets_file,
         node_population_name=node_population_name,
         nodes_file=nodes_file,
         output_file=sonata_config_file,
@@ -214,10 +222,49 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
     return ret
 
 
-def _generate_circuit_config(node_population_name: str, nodes_file: str, output_file: Path):
+def _generate_node_sets(nodes_file: Path, population_name: str, atlas_dir: Path, output_dir: Path):
+    output_path = output_dir / "node_sets.json"
+
+    L.info("Generating node sets for the placed cells at %s", output_path)
+
+    cmd = list(
+        map(
+            str,
+            (
+                "brainbuilder",
+                "targets",
+                "node-sets",
+                "--atlas",
+                atlas_dir,
+                "--full-hierarchy",
+                "--allow-empty",
+                "--population",
+                population_name,
+                "--output",
+                output_path,
+                nodes_file,
+            ),
+        )
+    )
+    str_command = " ".join(cmd)
+    L.debug("Command: %s", str_command)
+    subprocess.run(
+        str_command,
+        check=True,
+        capture_output=False,
+        shell=True,
+    )
+
+    return output_path
+
+
+def _generate_circuit_config(
+    node_sets_file: Path, node_population_name: str, nodes_file: str, output_file: Path
+):
     config = {
         "version": 2,
         "manifest": {"$BASE_DIR": "."},
+        "node_sets_file": str(node_sets_file),
         "networks": {
             "nodes": [
                 {

@@ -181,7 +181,7 @@ def _get_atlas_region_volumes(region_map, brain_regions):
 
 def _density_summary_stats_mtype(mtype_urls, etype_urls, df_mtype_etype):
     ret = {}
-    for mtype, df_etype in df_mtype_etype.groupby("mtype"):
+    for mtype, df_etype in df_mtype_etype.groupby("mtype", observed=True):
         url = mtype_urls.get(mtype)
         if url is None:
             L.info("Missing: %s", mtype)
@@ -197,19 +197,19 @@ def _density_summary_stats_mtype(mtype_urls, etype_urls, df_mtype_etype):
 
 def _density_summary_stats_etype(etype_urls, df_etype):
     ret = {}
-    for etype, df in df_etype.groupby("etype"):
-        assert len(df) == 1
+    for etype, df in df_etype.groupby("etype", observed=True):
+        assert len(df) == 1, df
         url = etype_urls.get(etype)
         if url is None:
             L.info("Missing: %s", etype)
             continue
 
         neuron = {
-            "density": float(df.density),
+            "density": float(df["density"].iloc[0]),
         }
 
         if "count" in df_etype:
-            neuron["count"] = int(df["count"])
+            neuron["count"] = int(df["count"].iloc[0])
 
         ret[url] = {
             "label": etype,
