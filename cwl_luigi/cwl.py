@@ -191,7 +191,6 @@ class CommandLineTool:
         positional_arguments: List[Tuple[int, str]] = []
 
         for cmd_input in self.inputs.values():
-
             name = cmd_input.id
             binding = cmd_input.inputBinding
 

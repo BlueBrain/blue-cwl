@@ -84,7 +84,6 @@ class GroupedDataset:
 
 
 def _jsonld_to_json(data):
-
     if isinstance(data, dict):
         keys_to_change = set()
         for k, v in data.items():

@@ -69,13 +69,11 @@ def test_parse_baseCommand(cmd, expected):
 
 
 def test_parse_baseCommand__unknown_type():
-
     with pytest.raises(CWLError, match="Unknown format type 'set' for baseCommand."):
         tested._parse_baseCommand({"cat", "X"}, base_dir=None)
 
 
 def test_resolve_paths():
-
     base_dir = "/my/basedir"
 
     data = {

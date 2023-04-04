@@ -4,7 +4,6 @@ from cwl_luigi import cwl_types as tested
 
 
 def test_cwltype__from_string():
-
     res = tested.CWLType.from_string("File")
     assert res == tested.CWLType.FILE
 

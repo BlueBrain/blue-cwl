@@ -38,13 +38,11 @@ def _test_dataclass_instance(obj, expected_attributes):
     ],
 )
 def test_ConfigInput(data, expected):
-
     obj = tested.ConfigInput.from_cwl(data)
     _test_dataclass_instance(obj, expected)
 
 
 def test_Config():
-
     config_file = DATA_DIR / "config.yml"
 
     obj = tested.Config.from_cwl(config_file)
@@ -62,7 +60,6 @@ def test_Config():
 
 
 def test_CommandLineToolInput():
-
     data = {"type": "File", "inputBinding": {"prefix": "--region"}}
     obj = tested.CommandLineToolInput.from_cwl(name="John", data=data)
 
@@ -76,7 +73,6 @@ def test_CommandLineToolInput():
 
 
 def test_CommandLineToolOutput():
-
     data = {
         "type": "Directory",
         "outputBinding": {"glob": "some/path"},
@@ -140,7 +136,6 @@ def test_CommandLineTool__attributes(tool_cat, attribute, expected_value):
 
 
 def test_CommandLineTool__assort_inputs():
-
     tool = tested.CommandLineTool(
         cwlVersion=None,
         id=None,
@@ -181,7 +176,6 @@ def test_CommandLineTool__assort_inputs():
 
 
 def test_WorkflowInput():
-
     data = {"type": "string", "label": "Some label"}
     obj = tested.WorkflowInput.from_cwl(name="John", data=data)
 
@@ -190,7 +184,6 @@ def test_WorkflowInput():
 
 
 def test_WorkflowOutput():
-
     data = {"type": "File", "outputSource": "A/file"}
     obj = tested.WorkflowOutput.from_cwl(name="John", data=data)
 
@@ -201,7 +194,6 @@ def test_WorkflowOutput():
 
 
 def test_workflowStep():
-
     data = {
         "id": "John",
         "in": {
@@ -238,7 +230,6 @@ def workflow_cat_echo():
 
 
 def test_workflow__attributes():
-
     workflow = workflow_cat_echo()
 
     assert workflow.cwlVersion == "v1.2"
@@ -258,7 +249,6 @@ def test_workflow__methods():
 
 
 def test_workflow__inputs():
-
     workflow = workflow_cat_echo()
 
     expected_outputs = {
@@ -276,7 +266,6 @@ def test_workflow__inputs():
 
 
 def test_workflow__outputs():
-
     workflow = workflow_cat_echo()
 
     expected_outputs = [
@@ -293,13 +282,11 @@ def test_workflow__outputs():
 
 def test_workflow__steps():
     def _test_step_inputs(inputs, expected_inputs):
-
         for name, obj in inputs.items():
             assert isinstance(obj, tested.CommandLineToolInput)
             _test_dataclass_instance(obj, expected_inputs[name])
 
     def _test_step_outputs(outputs, expected_outputs):
-
         for name, obj in outputs.items():
             expected_output = expected_outputs[name]
 
@@ -310,7 +297,6 @@ def test_workflow__steps():
                 _test_dataclass_instance(obj, expected_output)
 
     def _test_CommandLineTool(step, expected_run):
-
         assert isinstance(step.run, tested.CommandLineTool)
         assert step.run.cwlVersion == expected_run["cwlVersion"]
         assert step.run.id == expected_run["id"]

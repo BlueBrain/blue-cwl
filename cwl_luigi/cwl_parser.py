@@ -89,7 +89,6 @@ def _parse_io_parameters(data: Union[List[Dict[str, Any]], Dict[str, Any]]) -> D
 
 
 def _parse_baseCommand(raw: Union[str, List[str]], base_dir: Path) -> List[str]:
-
     base_command = raw
 
     if isinstance(base_command, str):

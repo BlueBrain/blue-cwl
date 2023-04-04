@@ -28,7 +28,6 @@ def log(function, logger=L):
 
     @functools.wraps(function)
     def wrapper(*args, **kwargs):
-
         signature = inspect.signature(function)
 
         params = [

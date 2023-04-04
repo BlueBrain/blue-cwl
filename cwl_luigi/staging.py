@@ -144,7 +144,6 @@ def stage_mtype_densities(
 
     mtype_groups = {}
     for identifier, group in grouped_dataset.groups.items():
-
         distribution = group.members[0].resource.distribution
         mtype_groups[identifier] = {
             "label": group.label,
@@ -163,11 +162,9 @@ def stage_me_type_densities(forge, resource_id: str, output_file: Path):
     mtype_groups = {}
 
     for mtype_part in dataset["hasPart"]:
-
         etype_groups = {}
 
         for etype_part in mtype_part["hasPart"]:
-
             me_resource = get_resource(forge=forge, resource_id=etype_part["hasPart"][0]["@id"])
             etype_groups[etype_part["@id"]] = {
                 "label": etype_part["label"],
@@ -191,13 +188,10 @@ def stage_dataset_groups(forge, dataset_resource_id, staging_function):
     existing: Dict[str, str] = {}
 
     for identifier, group in dataset.items():
-
         # sometimes the entries start with @context for example
         if identifier not in {"@context", "@type", "@id"}:
-
             entries = []
             for part in group["hasPart"]:
-
                 entry_id = part["@id"]
                 if entry_id in existing:
                     value = existing[entry_id]
@@ -246,7 +240,6 @@ def stage_etype_ratios(
     """Stage etype ratios resource."""
 
     def _get_etype_ratio_from_resource(resource):
-
         mtype, etype = None, None
         for e in resource.annotation:
             if e.type == ["Annotation", "ETypeAnnotation"]:
@@ -266,7 +259,6 @@ def stage_etype_ratios(
 
     mtype_groups = {}
     for identifier, group in grouped_dataset.groups.items():
-
         etype_ratios = [_get_etype_ratio_from_resource(m.resource) for m in group.members]
 
         mtype_groups[identifier] = {"label": group.label, "etype_ratios": etype_ratios}
