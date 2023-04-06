@@ -1,4 +1,5 @@
 """Registering utilities."""
+import os
 from pathlib import Path
 
 from kgforge.core import Resource
@@ -56,9 +57,21 @@ def register_partial_circuit(
         atlasRelease=_as_reference(forge, atlas_release_id),
         circuitConfigPath=_circuit_config_path(sonata_config_path),
     )
+
+    _add_workflow_influence(circuit)
+
     forge.register(circuit)
 
     return circuit
+
+
+def _add_workflow_influence(resource):
+    """Add influence from bbp-workflow execution if any."""
+    if "NEXUS_WORKFLOW" in os.environ:
+        resource.wasInfluencedBy = Resource(
+            id=os.environ["NEXUS_WORKFLOW"],
+            type="WorkflowExecution",
+        )
 
 
 def _as_derivation(forge, entity_id, properties=("id", "type")):
@@ -83,6 +96,8 @@ def register_cell_composition_summary(
             "derivation": _as_derivation(forge, derivation_entity_id),
         }
     )
+
+    _add_workflow_influence(summary)
 
     forge.register(summary)
     return summary

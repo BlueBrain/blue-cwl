@@ -4,6 +4,7 @@ from cwl_registry import registering as test_module
 from kgforge.core import Resource
 
 from tests.unit.mocking import LocalForge
+from tests.unit.utils import patchenv
 
 
 def test_as_reference():
@@ -158,3 +159,21 @@ def test_register_cell_composition_summary():
         assert res.derivation.type == "Derivation"
         assert res.derivation.entity.id == "circuit-id"
         assert res.derivation.entity.type == "DetailedCircuit"
+
+
+@patchenv(NEXUS_WORKFLOW="my-id")
+def test_add_workflow_influence():
+    res = Resource()
+    test_module._add_workflow_influence(res)
+
+    assert hasattr(res, "wasInfluencedBy")
+    assert res.wasInfluencedBy.id == "my-id"
+    assert res.wasInfluencedBy.type == "WorkflowExecution"
+
+
+@patchenv()
+def test_add_workflow_influeces__no_workflow():
+    res = Resource()
+    test_module._add_workflow_influence(res)
+
+    assert not hasattr(res, "wasInfluencedBy")
