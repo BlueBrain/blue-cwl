@@ -97,8 +97,10 @@ def test_check_directory_names():
 def test_sorted_versions():
     versions = [
         "v0.0.1",
+        "v2",
         "v0.0.10",
         "v10.0.0",
+        "v1.2",
         "v0.1.0",
         "v1.0.0",
         "v0.10.0",
@@ -116,6 +118,8 @@ def test_sorted_versions():
         "v0.1.0",
         "v0.10.0",
         "v1.0.0",
+        "v1.2",
+        "v2",
         "v10.0.0",
     ]
 
@@ -123,8 +127,8 @@ def test_sorted_versions():
 @pytest.mark.parametrize(
     "version, expected",
     [
-        ("v0", False),
-        ("v0.1", False),
+        ("v0", True),
+        ("v0.1", True),
         ("v0.1.dev0", False),
         ("v0.3.1", True),
         ("v0.3.1.dev0", False),

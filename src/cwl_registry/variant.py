@@ -157,14 +157,17 @@ def _get_latest_release_dir(variant_dir: Path):
 def _sorted_versions(version_paths):
     def as_int_tuple(version_dir: Path):
         tup = version_dir.name[1:].split(".")
-        return int(tup[0]), int(tup[1]), int(tup[2])
+        res = [0, 0, 0]
+        for i, t in enumerate(tup):
+            res[i] = int(t)
+        return res
 
     return sorted(version_paths, key=as_int_tuple)
 
 
 def _is_release(version_string):
     """Return True for a release, e.g. v0.3.1 but not v.0.3.1.dev0"""
-    return re.match(r"^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$", version_string) is not None
+    return re.match(r"^v(0|[1-9]\d*)?\.?(0|[1-9]\d*)?\.?(0|[1-9]\d*)$", version_string) is not None
 
 
 def _check_directory_names(directory: Path):
