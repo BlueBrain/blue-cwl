@@ -89,7 +89,7 @@ def app(configuration, variant_config, partial_circuit, output_dir):
     L.info("Functionalized edges generated at %s", output_edges_file)
 
     output_config_file = output_dir / "circuit_config.json"
-    _write_partial_config(config, output_edges_file, edge_population_name, output_config_file)
+    _write_partial_config(config, output_edges_file, output_config_file)
 
     forge = get_forge(force_refresh=True)
     partial_circuit = get_resource(forge, partial_circuit)
@@ -113,7 +113,7 @@ def app(configuration, variant_config, partial_circuit, output_dir):
     )
 
 
-def _write_partial_config(config, edges_file, population_name, output_file):
+def _write_partial_config(config, edges_file, output_file):
     config = copy.deepcopy(config)
 
     edges = config["networks"]["edges"]
@@ -121,7 +121,6 @@ def _write_partial_config(config, edges_file, population_name, output_file):
     if len(edges) == 0:
         raise CWLWorkflowError(f"Only one edge population is supported. Found: {len(edges)}")
 
-    edge_population = edges[0]["populations"][population_name]
-    edge_population["edges_file"] = str(edges_file)
+    edges[0]["edges_file"] = str(edges_file)
 
     utils.write_json(filepath=output_file, data=config)

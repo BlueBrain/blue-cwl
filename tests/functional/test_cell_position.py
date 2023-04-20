@@ -22,6 +22,7 @@ def cell_position(output_dir):
         "output-dir": str(output_dir),
     }
     command = [
+        "cwl-registry",
         "-vv",
         "execute",
         "neurons-cell-position",

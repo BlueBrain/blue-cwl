@@ -14,6 +14,7 @@ def cell_composition(tmpdir_factory):
         "output-dir": tmpdir_factory.mktemp("cell-composition"),
     }
     command = [
+        "cwl-registry",
         "-vv",
         "execute",
         "cell-composition-manipulation",

@@ -15,6 +15,7 @@ def emodel_assignment(tmpdir_factory):
         "output-dir": tmpdir_factory.mktemp("placeholder-emodel-assignment"),
     }
     command = [
+        "cwl-registry",
         "-vv",
         "execute",
         "placeholder-emodel-assignment",

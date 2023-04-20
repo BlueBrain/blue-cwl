@@ -24,7 +24,7 @@ def dd_connectome(output_dir):
         "variant-config": "https://bbp.epfl.ch/neurosciencegraph/data/65ee5ee9-c640-421c-a618-484489c90d82?rev=1",
         "output-dir": str(output_dir),
     }
-    command = ["-vv", "execute", "connectome-distance-dependent"]
+    command = ["cwl-registry", "-vv", "execute", "connectome-distance-dependent"]
     return WrapperBuild(command=command, inputs=inputs)
 
 

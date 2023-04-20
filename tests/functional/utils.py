@@ -1,5 +1,6 @@
 import os
 import json
+import subprocess
 
 from click.testing import CliRunner
 from cwl_registry.cli import main
@@ -38,12 +39,12 @@ def _print_details(command, inputs):
 
 
 class WrapperBuild:
-    def __init__(self, command, inputs):
+    def __init__(self, command, inputs, salloc_cmd=None):
         self.command = command
         self.inputs = inputs
 
         self.forge = get_forge()
-        self._run()
+        self._run(salloc_cmd=salloc_cmd)
 
     @property
     def tool_definition(self):
@@ -71,13 +72,36 @@ class WrapperBuild:
     def retrieve_input(self, name):
         return self.forge.retrieve(self.inputs[name])
 
-    def _run(self):
+    def _run(self, salloc_cmd=None):
         arguments = [f"--{key}={value}" for key, value in self.inputs.items()]
 
         full_command = self.command + arguments
 
         _print_details(full_command, self.inputs)
-        result = CliRunner().invoke(
-            main, full_command, env=os.environ, catch_exceptions=False, color=True
+
+        cmd = " ".join(full_command)
+
+        if salloc_cmd:
+            cmd = salloc_cmd.format(cmd=cmd)
+
+        print("Final Command:", cmd)
+
+        process = subprocess.Popen(
+            ["bash", "-l"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-        assert result.exit_code == 0, result.output
+
+        try:
+            stdout, stderr = process.communicate(cmd.encode())
+        except TimeoutExpired as exc:
+            process.kill()
+            process.wait()
+            raise
+        except:
+            process.kill()
+            raise
+
+        retcode = process.poll()
+        if retcode:
+            print(stdout)
+            print(stderr)
+            raise subprocess.CalledProcessError(retcode, process.args, output=stdout, stderr=stderr)

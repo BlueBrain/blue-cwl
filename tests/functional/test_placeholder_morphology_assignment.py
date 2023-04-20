@@ -15,6 +15,7 @@ def morphology_assignment(tmpdir_factory):
         "output-dir": tmpdir_factory.mktemp("placeholder-morphology-assignment"),
     }
     command = [
+        "cwl-registry",
         "-vv",
         "execute",
         "placeholder-morphology-assignment",
