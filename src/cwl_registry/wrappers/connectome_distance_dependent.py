@@ -4,6 +4,8 @@ import logging
 import subprocess
 
 import click
+import h5py
+import numpy as np
 
 from cwl_registry import recipes, registering, staging, utils
 from cwl_registry.exceptions import CWLWorkflowError
@@ -112,9 +114,26 @@ def _run_connectome_manipulator(recipe_file, output_dir):
 
     edge_population_name = utils.get_edge_population_name(edges_file)
 
+    # Fix for spykfunc, This should not be needed in general.
+    _add_efferent_section_type(edges_file, edge_population_name)
+
     L.debug("Edge population %s generated at %s", edge_population_name, edges_file)
 
     return edges_file, edge_population_name
+
+
+def _add_efferent_section_type(edges_file, population_name):
+    """Add efferent section type until spykfunc is fixed to not depend on it."""
+    with h5py.File(edges_file, "r+") as fd:
+        edge_population = fd["edges"][population_name]
+
+        shape = len(edge_population["target_node_id"])
+
+        edge_population["0"].create_dataset(
+            "efferent_section_type",
+            data=np.full(fill_value=2, shape=shape),
+            dtype=np.uint32,
+        )
 
 
 def _write_partial_config(config, edges_file, population_name, output_file):

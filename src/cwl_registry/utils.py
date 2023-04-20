@@ -222,6 +222,23 @@ def get_biophysical_partial_population_from_config(circuit_config):
     return nodes_file, population_name
 
 
+def get_first_edge_population_from_config(circuit_config):
+    """Return first edges file and population name from config."""
+    edges = circuit_config["networks"]["edges"]
+
+    assert len(edges) == 1, f"Expected a single edges file. Got {len(edges)}"
+
+    edges_file = edges[0]["edges_file"]
+
+    populations = edges[0]["populations"]
+
+    assert len(populations) == 1, f"Expected a signle edge population. Got {len(populations)}"
+
+    edge_population_name = next(iter(populations))
+
+    return edges_file, edge_population_name
+
+
 def get_edge_population_name(edges_file):
     """Return population name from file."""
     storage = libsonata.EdgeStorage(edges_file)

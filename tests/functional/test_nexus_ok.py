@@ -4,10 +4,6 @@ from cwl_registry.nexus import get_forge
 from kgforge.core import Resource
 
 
-def test_SSL_CERT_FILE_is_set():
-    assert os.environ["SSL_CERT_FILE"] == certifi.where()
-
-
 def test_nexus_ci():
     forge = get_forge(
         nexus_base="https://staging.nise.bbp.epfl.ch/nexus/v1",

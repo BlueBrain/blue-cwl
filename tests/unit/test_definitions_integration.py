@@ -10,6 +10,7 @@ def test_pipeline_definitions_inputs_outputs():
         ("placeholder", "emodel_assignment"),
         ("placeholder", "morphology_assignment"),
         ("connectome", "distance"),
+        ("connectome_filtering", "synapses"),
     ]
 
     tools = [Variant.from_registry(g, v).tool_definition for g, v in tools]

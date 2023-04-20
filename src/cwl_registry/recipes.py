@@ -1,4 +1,6 @@
 """Construction of recipes for circuit building."""
+import importlib.resources
+import shutil
 from typing import Any, Dict, List
 
 import pandas as pd
@@ -169,3 +171,12 @@ def build_connectome_distance_dependent_recipe(config_path, configuration, outpu
             }
         )
     return res
+
+
+def write_functionalizer_recipe(output_file):
+    """Copy an existing xml recipe."""
+    path = importlib.resources.files("cwl_registry") / "data" / "builderRecipeAllPathways.xml"
+
+    shutil.copyfile(path, output_file)
+
+    return output_file

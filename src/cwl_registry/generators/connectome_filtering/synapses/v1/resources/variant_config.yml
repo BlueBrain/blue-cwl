@@ -1,0 +1,8 @@
+
+resources:
+    default:
+        partition: prod
+        nodes: 5
+        exclusive: true
+        time: '8:00:00'
+        constraint: nvme

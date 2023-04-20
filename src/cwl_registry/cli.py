@@ -9,6 +9,7 @@ from cwl_registry.wrappers import (
     cell_composition_manipulation,
     cell_composition_summary,
     connectome_distance_dependent,
+    connectome_filtering_synapses,
     density_calculation,
     density_manipulation,
     neurons_cell_position,
@@ -60,6 +61,7 @@ execute.add_command(
 )
 execute.add_command(name="placeholder-emodel-assignment", cmd=placeholder_emodel_assignment.app)
 execute.add_command(name="connectome-distance-dependent", cmd=connectome_distance_dependent.app)
+execute.add_command(name="connectome-filtering-synapses", cmd=connectome_filtering_synapses.app)
 
 
 if __name__ == "__main__":
