@@ -12,7 +12,7 @@ environment:
   env_type: MODULE
   modules:
     - unstable
-    - py-cwl-registry/0.3.6
+    - py-cwl-registry
   enable_internet: true
 
 

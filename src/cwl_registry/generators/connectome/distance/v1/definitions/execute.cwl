@@ -1,37 +1,33 @@
 cwlVersion: v1.2
 class: CommandLineTool
 
-id: placeholder_emodel_assignment
-label: EModel assignment
+id: connectome_distance_dependent
+label: Distance dependent connectome manipulation with parallel execution
 stdout: stdout.txt
 
-baseCommand: ['cwl-registry', 'execute', 'placeholder-emodel-assignment']
+baseCommand: ['cwl-registry', 'execute', 'connectome-distance-dependent']
 
 
 environment:
   env_type: MODULE
   modules:
     - unstable
-    - py-cwl-registry
+    - py-connectome-manipulator/0.0.4
+    - py-cwl-registry/0.3.7
   enable_internet: true
 
 
 inputs:
 
-    - id: region
-      type: string
+    - id: configuration
+      type: NexusType
       inputBinding:
-        prefix: --region
+        prefix: --configuration
 
     - id: partial_circuit
       type: NexusType
       inputBinding:
         prefix: --partial-circuit
-
-    - id: etype_emodels
-      type: NexusType
-      inputBinding:
-        prefix: --etype-emodels
 
     - id: variant_config
       type: NexusType
@@ -47,6 +43,6 @@ outputs:
 
     - id: partial_circuit
       type: NexusType
-      doc: Circuit bundle with emodels.
+      doc: Circuit bundle with connectivity.
       outputBinding:
-        glob: "circuit_emodels_bundle.json"
+        glob: "circuit_connectome_bundle.json"

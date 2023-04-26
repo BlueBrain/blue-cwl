@@ -12,8 +12,8 @@ environment:
   env_type: MODULE
   modules:
     - unstable
-    - brainbuilder/0.18.4
-    - py-cwl-registry/0.3.6
+    - brainbuilder
+    - py-cwl-registry
   enable_internet: true
 
 inputs:

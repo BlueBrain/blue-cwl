@@ -14,7 +14,7 @@ environment:
     - unstable
     - spykfunc
     - parquet-converters
-    - cwl-registry
+    - py-cwl-registry
   enable_internet: true
 
 
