@@ -5,7 +5,6 @@ from unittest.mock import Mock, patch
 from copy import deepcopy
 import voxcell
 import tempfile
-import h5py
 import pytest
 from numpy import testing as npt
 from pathlib import Path
