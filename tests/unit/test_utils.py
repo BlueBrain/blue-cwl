@@ -1,16 +1,21 @@
 import os
 import filecmp
 import shutil
+from pathlib import Path
 from unittest.mock import Mock, patch
 from copy import deepcopy
+
 import voxcell
 import tempfile
 import pytest
+import pandas as pd
+from pandas import testing as pdt
 from numpy import testing as npt
-from pathlib import Path
+
 from cwl_registry import utils as tested
 from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry import constants
+
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -168,38 +173,6 @@ def teste_add_properties_to_node_population():
         npt.assert_array_equal(population.properties["p1"], property1)
         npt.assert_array_equal(population.properties["p2"], property2)
         npt.assert_array_equal(population.properties["p3"], property3)
-
-
-def test_get_config_path_from_circuit_resource__direct_path():
-    forge = Mock()
-    forge.retrieve.return_value = Mock(circuitConfigPath="file:///some-path")
-
-    path = tested.get_config_path_from_circuit_resource(forge, None)
-    assert path == Path("/some-path")
-
-    forge.retrieve.return_value = Mock(circuitConfigPath="/some-path")
-
-    path = tested.get_config_path_from_circuit_resource(forge, None)
-    assert path == Path("/some-path")
-
-
-def test_get_config_path_from_circuit_resource__data_download():
-    resource = Mock()
-    resource.circuitConfigPath = Mock(type="DataDownload", url="file:///some-path")
-
-    forge = Mock()
-    forge.retrieve.return_value = resource
-
-    path = tested.get_config_path_from_circuit_resource(forge, None)
-    assert path == Path("/some-path")
-
-    resource.circuitConfigPath = Mock(type="DataDownload", url="/some-path")
-
-    forge = Mock()
-    forge.retrieve.return_value = resource
-
-    path = tested.get_config_path_from_circuit_resource(forge, None)
-    assert path == Path("/some-path")
 
 
 @pytest.fixture
@@ -398,3 +371,13 @@ def test_update_circuit_config_population__node_population__add_emodels__3(confi
             "biophysical_models_dir": "new-emodels-dir",
         },
     )
+
+
+def test_arrow_io():
+    df = pd.DataFrame({"a": [1, 2, 3], "b": pd.Categorical(["a", "b", "b"]), "c": [0.1, 0.2, 0.3]})
+    with tempfile.NamedTemporaryFile(suffix=".arrow") as tfile:
+        filepath = tfile.name
+        tested.write_arrow(filepath=filepath, dataframe=df)
+        new_df = tested.load_arrow(filepath=filepath)
+
+    pdt.assert_frame_equal(df, new_df)

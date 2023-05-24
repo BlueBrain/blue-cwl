@@ -11,8 +11,12 @@ import pandas as pd
 from entity_management.nexus import get_file_location
 from kgforge.core import Resource
 
-from cwl_registry.nexus import get_resource, read_json_file_from_resource
-from cwl_registry.utils import write_json
+from cwl_registry import utils
+from cwl_registry.nexus import (
+    get_resource,
+    read_json_file_from_resource,
+    read_json_file_from_resource_id,
+)
 
 ENCODING_FORMATS = {
     "json": "application/json",
@@ -149,7 +153,7 @@ def materialize_json_file_from_resource(resource, output_file: Path) -> None:
     data = read_json_file_from_resource(resource)
 
     if output_file:
-        write_json(filepath=output_file, data=data)
+        utils.write_json(filepath=output_file, data=data)
 
     return data
 
@@ -166,7 +170,7 @@ def materialize_density_distribution(
     )
 
     if output_file:
-        write_json(filepath=output_file, data=groups)
+        utils.write_json(filepath=output_file, data=groups)
 
     return groups
 
@@ -422,3 +426,124 @@ def stage_file(source: Path, target: Path, symbolic: bool = True) -> None:
     else:
         shutil.copyfile(source, target)
         L.debug("Copy %s -> %s", source, target)
+
+
+def _url_from_config(config: dict) -> str:
+    """Return a url from a dictionary config entry.
+
+    Examples:
+        {"id": my-id, "rev": 2} -> my-id?rev=2
+        {"id": "my-id"} -> my-id
+    """
+    assert "id" in config, config
+    return utils.url_with_revision(
+        url=config["id"],
+        rev=config.get("rev", None),
+    )
+
+
+def _config_to_path(forge, config: dict) -> str:
+    """Return gpfs path of arrow file from config entry."""
+    resource_id = _url_from_config(config)
+    return get_distribution_path_from_resource(forge, resource_id)["path"]
+
+
+def materialize_macro_connectome_config(
+    forge, resource_id: str, output_file: Optional[Path] = None
+) -> dict:
+    """Materialize the macro connectome config.
+
+    Args:
+        resource_id: Id of KG resource.
+        output_file: Optional path to write the result to a file. Default is None.
+
+    Returns:
+        The materialized dictionary of the macro connectome configuration. Example:
+            {
+                "initial": {"connection_strength": path/to/initial/arrow/file},
+                "overrides": {"connection_strength": path/to/overrides/arrow/file}
+            }
+
+    Note: overrides key is mandatory but can be empty.
+    """
+    data = read_json_file_from_resource_id(forge, resource_id)
+
+    # make it similar to micro config
+    if "bases" in data:
+        data["initial"] = data["bases"]
+        del data["bases"]
+        L.warning("Legacy 'bases' key found and was converted to 'initial'.")
+
+    data["initial"]["connection_strength"] = _config_to_path(
+        forge, data["initial"]["connection_strength"]
+    )
+
+    if "connection_strength" in data["overrides"]:
+        data["overrides"]["connection_strength"] = _config_to_path(
+            forge, data["overrides"]["connection_strength"]
+        )
+    else:
+        L.warning("No overrides found for resource: %s", resource_id)
+
+    if output_file:
+        utils.write_json(filepath=output_file, data=data)
+
+    return data
+
+
+def materialize_micro_connectome_config(
+    forge, resource_id: str, output_file: Optional[pd.DataFrame] = None
+) -> dict:
+    """Materialize micro connectome config.
+
+    Args:
+        forge: KnowledgeGraphForge instance.
+        resource_id: KG resource id.
+        output_file: Optional output file to write the dictionary.
+
+    Returns:
+        Materialized dictionary of the micro connectome configuration. Example:
+            {
+                "variants": {
+                    "var1": {
+                        "params": {
+                            "weight": {
+                                "default": 1.0
+                            }
+                        }
+                    }
+                },
+                "initial": {
+                    "variants": path/to/variants/arrow/file,
+                    "var1": path/to/var1-parameters/arrow/file,
+                },
+                "overrides": {
+                    "variants": path/to/variants-overrides/arrow/file,
+                    "var1": path/to/var1-parameters-overrides/arrow/file,
+                },
+
+            }
+
+    Note: overrides key is mandatory but can be empty or include subset of keys in 'initial'.
+    """
+
+    def convert_section(section):
+        """Convert a config section to pointing to gpfs paths instead of KG resources."""
+        resolved_section = {}
+        for entry_name, entry_data in section.items():
+            if entry_name == "configuration":
+                for variant_name, variant_data in entry_data.items():
+                    resolved_section[variant_name] = _config_to_path(forge, variant_data)
+            else:
+                resolved_section[entry_name] = _config_to_path(forge, entry_data)
+        return resolved_section
+
+    data = read_json_file_from_resource_id(forge, resource_id)
+
+    for section in ("initial", "overrides"):
+        data[section] = convert_section(data[section])
+
+    if output_file:
+        utils.write_json(filepath=output_file, data=data)
+
+    return data

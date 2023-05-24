@@ -1,6 +1,8 @@
 import json
+import tempfile
 import pandas
 import pandas.testing
+from unittest.mock import patch
 from cwl_registry import staging as test_module
 from pathlib import Path
 import pytest
@@ -163,3 +165,296 @@ def test_materialize_connectome_dataset(tmp_path):
         }
     )
     pandas.testing.assert_frame_equal(expected, data)
+
+
+def _materialize_connectome_config(config):
+    with patch("cwl_registry.staging.read_json_file_from_resource_id") as mock1, patch(
+        "cwl_registry.staging._config_to_path"
+    ) as mock2:
+        mock1.return_value = config
+        mock2.return_value = "foo"
+
+        with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
+            out_file = Path(tfile.name)
+
+            res = test_module.materialize_macro_connectome_config(None, "bar", output_file=out_file)
+            return res, json.loads(Path(out_file).read_bytes())
+
+
+def test_materialize_macro_connectome_config():
+    config = {
+        "initial": {
+            "connection_strength": {
+                "id": "cs-id",
+                "type": ["Entity", "Dataset", "BrainConnectomeStrength"],
+            }
+        },
+        "overrides": {
+            "connection_strength": {
+                "id": "cs-overrides-id",
+                "type": ["Entity", "Dataset", "BrainConnectomeStrengthOverrides"],
+            }
+        },
+    }
+
+    res1, res2 = _materialize_connectome_config(config)
+
+    assert (
+        res1
+        == res2
+        == {
+            "initial": {"connection_strength": "foo"},
+            "overrides": {"connection_strength": "foo"},
+        }
+    )
+
+
+def test_materialize_macro_connectome_config_old():
+    config = {
+        "bases": {
+            "connection_strength": {
+                "id": "cs-id",
+                "type": ["Entity", "Dataset", "BrainConnectomeStrength"],
+            }
+        },
+        "overrides": {
+            "connection_strength": {
+                "id": "cs-overrides-id",
+                "type": ["Entity", "Dataset", "BrainConnectomeStrengthOverrides"],
+            }
+        },
+    }
+
+    res1, res2 = _materialize_connectome_config(config)
+
+    assert (
+        res1
+        == res2
+        == {
+            "initial": {"connection_strength": "foo"},
+            "overrides": {"connection_strength": "foo"},
+        }
+    )
+
+
+def test_materialize_macro_connectome_config__empty_overrides():
+    config = {
+        "bases": {
+            "connection_strength": {
+                "id": "cs-id",
+                "type": ["Entity", "Dataset", "BrainConnectomeStrength"],
+            }
+        },
+        "overrides": {},
+    }
+
+    res1, res2 = _materialize_connectome_config(config)
+
+    assert (
+        res1
+        == res2
+        == {
+            "initial": {"connection_strength": "foo"},
+            "overrides": {},
+        }
+    )
+
+
+def _materialize_micro_config(config):
+    with patch("cwl_registry.staging.read_json_file_from_resource_id") as mock1, patch(
+        "cwl_registry.staging._config_to_path"
+    ) as mock2:
+        mock1.return_value = config
+        mock2.return_value = "foo"
+
+        with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
+            out_file = Path(tfile.name)
+
+            res = test_module.materialize_micro_connectome_config(None, "bar", output_file=out_file)
+            return res, json.loads(Path(out_file).read_bytes())
+
+
+def test_materialize_micro_connectome_config():
+    config = {
+        "variants": {
+            "placeholder__erdos_renyi": {},
+            "placeholder__distance_dependent": {},
+        },
+        "initial": {
+            "variants": {
+                "id": "v-id",
+                "rev": 5,
+                "type": ["Entity", "Dataset", "MicroConnectomeVariantSelection"],
+            },
+            "configuration": {
+                "placeholder__erdos_renyi": {
+                    "id": "er-id",
+                    "rev": 2,
+                    "type": ["Entity", "Dataset", "MicroConnectomeData"],
+                },
+                "placeholder__distance_dependent": {
+                    "id": "dd-id",
+                    "rev": 2,
+                    "type": ["Entity", "Dataset", "MicroConnectomeData"],
+                },
+            },
+        },
+        "overrides": {
+            "variants": {
+                "id": "v-overrides-id",
+                "type": ["Entity", "Dataset", "MicroConnectomeVariantSelectionOverrides"],
+                "rev": 1,
+            },
+            "configuration": {
+                "placeholder__erdos_renyi": {
+                    "id": "er-overrides-id",
+                    "type": ["Entity", "Dataset", "MicroConnectomeDataOverrides"],
+                    "rev": 1,
+                },
+                "placeholder__distance_dependent": {
+                    "id": "dd-overrides-id",
+                    "type": ["Entity", "Dataset", "MicroConnectomeDataOverrides"],
+                    "rev": 1,
+                },
+            },
+        },
+    }
+
+    res1, res2 = _materialize_micro_config(config)
+
+    assert (
+        res1
+        == res2
+        == {
+            "variants": {"placeholder__erdos_renyi": {}, "placeholder__distance_dependent": {}},
+            "initial": {
+                "variants": "foo",
+                "placeholder__erdos_renyi": "foo",
+                "placeholder__distance_dependent": "foo",
+            },
+            "overrides": {
+                "variants": "foo",
+                "placeholder__erdos_renyi": "foo",
+                "placeholder__distance_dependent": "foo",
+            },
+        }
+    )
+
+
+def test_materialize_micro_connectome_config__no_variant_overrides():
+    config = {
+        "variants": {
+            "placeholder__erdos_renyi": {},
+            "placeholder__distance_dependent": {},
+        },
+        "initial": {
+            "variants": {
+                "id": "v-id",
+                "rev": 5,
+                "type": ["Entity", "Dataset", "MicroConnectomeVariantSelection"],
+            },
+            "configuration": {
+                "placeholder__erdos_renyi": {
+                    "id": "er-id",
+                    "rev": 2,
+                    "type": ["Entity", "Dataset", "MicroConnectomeData"],
+                },
+                "placeholder__distance_dependent": {
+                    "id": "dd-id",
+                    "rev": 2,
+                    "type": ["Entity", "Dataset", "MicroConnectomeData"],
+                },
+            },
+        },
+        "overrides": {
+            "configuration": {
+                "placeholder__erdos_renyi": {
+                    "id": "er-overrides-id",
+                    "type": ["Entity", "Dataset", "MicroConnectomeDataOverrides"],
+                    "rev": 1,
+                },
+                "placeholder__distance_dependent": {
+                    "id": "dd-overrides-id",
+                    "type": ["Entity", "Dataset", "MicroConnectomeDataOverrides"],
+                    "rev": 1,
+                },
+            }
+        },
+    }
+
+    res1, res2 = _materialize_micro_config(config)
+
+    assert (
+        res1
+        == res2
+        == {
+            "variants": {"placeholder__erdos_renyi": {}, "placeholder__distance_dependent": {}},
+            "initial": {
+                "variants": "foo",
+                "placeholder__erdos_renyi": "foo",
+                "placeholder__distance_dependent": "foo",
+            },
+            "overrides": {
+                "placeholder__erdos_renyi": "foo",
+                "placeholder__distance_dependent": "foo",
+            },
+        }
+    )
+
+
+def test_materialize_micro_connectome_config__no_er_overrides():
+    config = {
+        "variants": {
+            "placeholder__erdos_renyi": {},
+            "placeholder__distance_dependent": {},
+        },
+        "initial": {
+            "variants": {
+                "id": "v-id",
+                "rev": 5,
+                "type": ["Entity", "Dataset", "MicroConnectomeVariantSelection"],
+            },
+            "configuration": {
+                "placeholder__erdos_renyi": {
+                    "id": "er-id",
+                    "rev": 2,
+                    "type": ["Entity", "Dataset", "MicroConnectomeData"],
+                },
+                "placeholder__distance_dependent": {
+                    "id": "dd-id",
+                    "rev": 2,
+                    "type": ["Entity", "Dataset", "MicroConnectomeData"],
+                },
+            },
+        },
+        "overrides": {
+            "variants": {
+                "id": "v-overrides-id",
+                "type": ["Entity", "Dataset", "MicroConnectomeVariantSelectionOverrides"],
+                "rev": 1,
+            },
+            "configuration": {
+                "placeholder__distance_dependent": {
+                    "id": "dd-overrides-id",
+                    "type": ["Entity", "Dataset", "MicroConnectomeDataOverrides"],
+                    "rev": 1,
+                }
+            },
+        },
+    }
+
+    res1, res2 = _materialize_micro_config(config)
+
+    assert (
+        res1
+        == res2
+        == {
+            "variants": {"placeholder__erdos_renyi": {}, "placeholder__distance_dependent": {}},
+            "initial": {
+                "variants": "foo",
+                "placeholder__erdos_renyi": "foo",
+                "placeholder__distance_dependent": "foo",
+            },
+            "overrides": {"variants": "foo", "placeholder__distance_dependent": "foo"},
+        }
+    )

@@ -9,10 +9,11 @@ from typing import Dict, Optional
 import jwt
 import requests
 from entity_management import state
-from entity_management.nexus import _print_nexus_error, file_as_dict
+from entity_management.nexus import _print_nexus_error, file_as_dict, get_file_location
 from kgforge.core import KnowledgeGraphForge, Resource
 
 from cwl_registry.exceptions import CWLRegistryError
+from cwl_registry.utils import load_arrow
 
 ext_to_format = {
     ".json": "application/json",
@@ -139,15 +140,36 @@ def _remove_prefix(prefix, path):
     return path
 
 
-def read_json_file_from_resource(resource):
-    """Read json file from kg resource."""
+def _without_file_prefix(path):
+    return _remove_prefix("file://", path)
+
+
+def _get_distribution(resource):
     if isinstance(resource.distribution, list):
         assert len(resource.distribution) == 1
         distribution = resource.distribution[0]
     else:
         distribution = resource.distribution
 
+    return distribution
+
+
+def read_json_file_from_resource_id(forge, resource_id: str) -> dict:
+    """Read json file from kg resource id."""
+    return read_json_file_from_resource(get_resource(forge, resource_id))
+
+
+def read_json_file_from_resource(resource) -> dict:
+    """Read json file from kg resource."""
+    distribution = _get_distribution(resource)
     return file_as_dict(distribution.contentUrl)
+
+
+def read_arrow_file_from_resource(resource):
+    """Read arrow file from kg resource."""
+    distribution = _get_distribution(resource)
+    gpfs_location = _without_file_prefix(get_file_location(distribution.contentUrl))
+    return load_arrow(gpfs_location)
 
 
 def register_variant(forge: KnowledgeGraphForge, variant, update=False):
@@ -292,3 +314,32 @@ def _get_files(resource):
             files[filename] = Path(path)
 
     return files
+
+
+def get_config_path_from_circuit_resource(forge, resource_id: str) -> Path:
+    """Get config path from resource.
+
+    Note:
+        It supports the following representations of circuitConfigPath:
+            - A single string with or without a file prefix.
+            - A DataDownload resource with the config path as a url with or without file prefix.
+    """
+    partial_circuit_resource = get_resource(forge, resource_id)
+
+    config_path = partial_circuit_resource.circuitConfigPath
+
+    # DataDownload resource with a url
+    try:
+        path = config_path.url
+    # A single string
+    except AttributeError:
+        path = config_path
+
+    if path.startswith("file://"):
+        return Path(path[7:])
+    return Path(path)
+
+
+def get_region_resource_acronym(forge, resource_id: str) -> str:
+    """Retrieve the hierarchy acronym from a KG registered region."""
+    return get_resource(forge, resource_id).notation

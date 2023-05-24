@@ -10,8 +10,7 @@ import libsonata
 import voxcell
 from voxcell.nexus.voxelbrain import Atlas
 
-from cwl_registry import Variant, recipes, registering, staging, utils, validation
-from cwl_registry.nexus import get_forge, get_resource
+from cwl_registry import Variant, nexus, recipes, registering, staging, utils, validation
 from cwl_registry.statistics import mtype_etype_url_mapping, node_population_composition_summary
 
 STAGE_DIR_NAME = "stage"
@@ -62,13 +61,13 @@ def _extract(
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     me_type_densities_file = staging_dir / "mtype-densities.json"
 
-    forge = get_forge()
+    forge = nexus.get_forge()
 
     variant = Variant.from_resource_id(forge, variant_config_id, staging_dir=variant_dir)
 
-    region = utils.get_region_resource_acronym(forge, brain_region_id)
+    region = nexus.get_region_resource_acronym(forge, brain_region_id)
 
-    cell_composition = get_resource(forge, cell_compositions_id)
+    cell_composition = nexus.get_resource(forge, cell_compositions_id)
 
     staging.stage_atlas(
         forge=forge,
@@ -306,7 +305,7 @@ def _register(
     output_dir,
 ):
     """Register outputs to nexus."""
-    forge = get_forge()
+    forge = nexus.get_forge()
 
     circuit_resource = registering.register_partial_circuit(
         forge,
@@ -318,8 +317,7 @@ def _register(
     )
     # write the circuit resource to the respective output file specified by the definition
     utils.write_resource_to_definition_output(
-        forge=forge,
-        resource=circuit_resource,
+        json_resource=forge.as_json(circuit_resource),
         variant=generated_data["variant"],
         output_dir=output_dir,
     )

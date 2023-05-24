@@ -143,8 +143,7 @@ def app(  # pylint: disable=too-many-arguments
     forge = get_forge(force_refresh=True)
     resource = get_resource(forge, cell_composition_id)
     utils.write_resource_to_definition_output(
-        forge=forge,
-        resource=resource,
+        json_resource=forge.as_json(resource),
         variant=Variant.from_resource_id(forge, variant_config),
         output_dir=output_dir,
     )

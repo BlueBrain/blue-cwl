@@ -7,9 +7,8 @@ from pathlib import Path
 
 import click
 
-from cwl_registry import Variant, recipes, registering, utils
+from cwl_registry import Variant, nexus, recipes, registering, utils
 from cwl_registry.exceptions import CWLWorkflowError
-from cwl_registry.nexus import get_forge, get_resource
 
 L = logging.getLogger(__name__)
 
@@ -27,9 +26,9 @@ def app(configuration, variant_config, partial_circuit, output_dir):
     output_dir = utils.create_dir(Path(output_dir).resolve())
     build_dir = utils.create_dir(output_dir / "build")
 
-    forge = get_forge()
+    forge = nexus.get_forge()
 
-    config = utils.load_json(utils.get_config_path_from_circuit_resource(forge, partial_circuit))
+    config = utils.load_json(nexus.get_config_path_from_circuit_resource(forge, partial_circuit))
 
     nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(config)
     edges_file, edge_population_name = utils.get_first_edge_population_from_config(config)
@@ -91,8 +90,8 @@ def app(configuration, variant_config, partial_circuit, output_dir):
     output_config_file = output_dir / "circuit_config.json"
     _write_partial_config(config, output_edges_file, output_config_file)
 
-    forge = get_forge(force_refresh=True)
-    partial_circuit = get_resource(forge, partial_circuit)
+    forge = nexus.get_forge(force_refresh=True)
+    partial_circuit = nexus.get_resource(forge, partial_circuit)
 
     # output circuit
     L.info("Registering partial circuit...")
@@ -106,8 +105,7 @@ def app(configuration, variant_config, partial_circuit, output_dir):
     )
 
     utils.write_resource_to_definition_output(
-        forge=forge,
-        resource=circuit_resource,
+        json_resource=forge.as_json(circuit_resource),
         variant=Variant.from_resource_id(forge, variant_config),
         output_dir=output_dir,
     )

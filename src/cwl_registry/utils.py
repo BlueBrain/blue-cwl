@@ -16,12 +16,14 @@ from typing import Any, Dict, Optional
 import click
 import libsonata
 import numpy as np
+import pandas as pd
+import pyarrow
+import pyarrow.fs
 import voxcell
 import yaml
 
 from cwl_registry.constants import DEFAULT_CIRCUIT_BUILD_PARAMETERS
 from cwl_registry.exceptions import CWLWorkflowError
-from cwl_registry.nexus import get_resource
 
 ExistingFile = click.Path(
     exists=True, readable=True, dir_okay=False, resolve_path=True, path_type=str
@@ -131,6 +133,29 @@ def write_yaml(filepath: os.PathLike, data: dict) -> None:
 
 
 @log
+def load_arrow(filepath: os.PathLike) -> pd.DataFrame:
+    """Load an arrow file as a pandas dataframe."""
+    with pyarrow.fs.LocalFileSystem().open_input_file(str(filepath)) as fd:
+        return pyarrow.RecordBatchFileReader(fd).read_pandas()
+
+
+@log
+def write_arrow(filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = False) -> None:
+    """Write dataframe as an arrow file."""
+    table = pyarrow.Table.from_pandas(dataframe, preserve_index=index)
+
+    with pyarrow.fs.LocalFileSystem().open_output_stream(str(filepath)) as fd:
+        with pyarrow.RecordBatchFileWriter(fd, table.schema) as writer:
+            writer.write_table(table)
+
+
+@log
+def write_parquet(filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = False) -> None:
+    """Write pandas dataframe as an arrow file with gzip compression."""
+    dataframe.to_parquet(path=filepath, index=index, engine="pyarrow", compression="gzip")
+
+
+@log
 def run_circuit_build_phase(
     *, bioname_dir: Path, cluster_config_file: Path, phase: str, output_dir: Path
 ):
@@ -179,30 +204,6 @@ def build_manifest(
         },
         **(parameters or DEFAULT_CIRCUIT_BUILD_PARAMETERS),
     }
-
-
-def get_config_path_from_circuit_resource(forge, resource_id: str) -> Path:
-    """Get config path from resource.
-
-    Note:
-        It supports the following representations of circuitConfigPath:
-            - A single string with or without a file prefix.
-            - A DataDownload resource with the config path as a url with or without file prefix.
-    """
-    partial_circuit_resource = get_resource(forge, resource_id)
-
-    config_path = partial_circuit_resource.circuitConfigPath
-
-    # DataDownload resource with a url
-    try:
-        path = config_path.url
-    # A single string
-    except AttributeError:
-        path = config_path
-
-    if path.startswith("file://"):
-        return Path(path[7:])
-    return Path(path)
 
 
 def get_biophysical_partial_population_from_config(circuit_config):
@@ -310,13 +311,8 @@ def get_directory_contents(directory_path: Path) -> Dict[str, Path]:
     return {}
 
 
-def get_region_resource_acronym(forge, resource_id: str) -> str:
-    """Retrieve the hierarchy acronym from a KG registered region."""
-    return get_resource(forge, resource_id).notation
-
-
 def write_resource_to_definition_output(
-    forge, resource, variant, output_dir: os.PathLike, output_name: str = None
+    json_resource, variant, output_dir: os.PathLike, output_name: str = None
 ):
     """Write a resource to the filepath determined by the tool output path definition.
 
@@ -332,7 +328,7 @@ def write_resource_to_definition_output(
 
     out_filepath = Path(output_dir, out_filename)
 
-    write_json(filepath=out_filepath, data=forge.as_json(resource))
+    write_json(filepath=out_filepath, data=json_resource)
 
 
 @log
@@ -340,3 +336,22 @@ def url_without_revision(url: str) -> str:
     """Return the url without the revision query."""
     url = urllib.parse.urlparse(url)
     return url._replace(query="").geturl()
+
+
+@log
+def url_with_revision(url: str, rev: Optional[str]) -> str:
+    """Return the url with revision.
+
+    Args:
+        url: The url string.
+        rev: Optional revision number. Default is None.
+
+    Returns:
+        The url with revision if rev is not None, the url as is otherwise.
+    """
+    if rev is None:
+        return url
+
+    assert "?rev=" not in url
+
+    return f"{url}?rev={rev}"

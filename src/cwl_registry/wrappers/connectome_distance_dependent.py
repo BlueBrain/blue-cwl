@@ -7,9 +7,8 @@ import click
 import h5py
 import numpy as np
 
-from cwl_registry import recipes, registering, staging, utils
+from cwl_registry import nexus, recipes, registering, staging, utils
 from cwl_registry.exceptions import CWLWorkflowError
-from cwl_registry.nexus import get_forge, get_resource
 from cwl_registry.variant import Variant
 
 L = logging.getLogger(__name__)
@@ -27,13 +26,13 @@ def app(configuration, partial_circuit, variant_config, output_dir):
 
 
 def _app(configuration, partial_circuit, variant_config, output_dir):
-    forge = get_forge()
+    forge = nexus.get_forge()
 
     staging_dir = utils.create_dir(output_dir / "stage")
 
     L.debug("Staging connectome dataset configuration...")
     configuration = staging.materialize_json_file_from_resource(
-        resource=get_resource(forge, configuration),
+        resource=nexus.get_resource(forge, configuration),
         output_file=staging_dir / "configuration.json",
     )
     configuration_df = staging.materialize_connectome_dataset(
@@ -42,7 +41,7 @@ def _app(configuration, partial_circuit, variant_config, output_dir):
         output_file=staging_dir / "materialized_configuration.json",
     )
 
-    config_path = utils.get_config_path_from_circuit_resource(forge, partial_circuit)
+    config_path = nexus.get_config_path_from_circuit_resource(forge, partial_circuit)
     staging.stage_file(
         source=config_path,
         target=staging_dir / config_path.name,
@@ -70,10 +69,10 @@ def _app(configuration, partial_circuit, variant_config, output_dir):
         output_file=sonata_config_file,
     )
 
-    forge = get_forge(force_refresh=True)
+    forge = nexus.get_forge(force_refresh=True)
 
     # input circuit
-    partial_circuit = get_resource(forge, partial_circuit)
+    partial_circuit = nexus.get_resource(forge, partial_circuit)
 
     # output circuit
     L.info("Registering partial circuit...")
@@ -87,8 +86,7 @@ def _app(configuration, partial_circuit, variant_config, output_dir):
     )
 
     utils.write_resource_to_definition_output(
-        forge=forge,
-        resource=circuit_resource,
+        json_resource=forge.as_json(circuit_resource),
         variant=Variant.from_resource_id(forge, variant_config),
         output_dir=output_dir,
     )

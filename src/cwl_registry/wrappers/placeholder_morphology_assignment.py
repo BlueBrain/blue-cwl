@@ -6,8 +6,7 @@ import libsonata
 import numpy as np
 from voxcell.math_utils import angles_to_matrices
 
-from cwl_registry import registering, staging, utils, validation
-from cwl_registry.nexus import get_forge
+from cwl_registry import nexus, registering, staging, utils, validation
 from cwl_registry.variant import Variant
 
 # these values where found by examining the proj83/Bio_M circuit, and find the
@@ -36,17 +35,17 @@ def app(
     """Morphoelectrical type generator cli entry."""
     output_dir = utils.create_dir(Path(output_dir).resolve())
 
-    forge = get_forge()
+    forge = nexus.get_forge()
 
     morphologies_dir = utils.create_dir(output_dir / "morphologies")
     mtype_to_morphologies = staging.stage_mtype_morphologies(
         forge, mtype_morphologies, morphologies_dir
     )
 
-    config = utils.load_json(utils.get_config_path_from_circuit_resource(forge, partial_circuit))
+    config = utils.load_json(nexus.get_config_path_from_circuit_resource(forge, partial_circuit))
     nodes_file, population_name = utils.get_biophysical_partial_population_from_config(config)
 
-    region_acronym = utils.get_region_resource_acronym(forge, region)
+    region_acronym = nexus.get_region_resource_acronym(forge, region)
     validation.check_population_name_consistent_with_region(population_name, region_acronym)
 
     output_nodes_file = output_dir / "nodes.h5"
@@ -79,8 +78,7 @@ def app(
         sonata_config_path=sonata_config_file,
     )
     utils.write_resource_to_definition_output(
-        forge=forge,
-        resource=circuit_resource,
+        json_resource=forge.as_json(circuit_resource),
         variant=Variant.from_resource_id(forge, variant_config),
         output_dir=output_dir,
     )

@@ -39,6 +39,7 @@ setup(
         "bba_data_push>=1.0.4",
         "cwl-luigi>=0.3.1",
         "entity_management>=1.2.0",
+        "pyarrow",
     ],
     packages=find_packages(where="src"),
     package_dir={"": "src"},
