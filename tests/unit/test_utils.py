@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 from copy import deepcopy
 
 import voxcell
+import libsonata
 import tempfile
 import pytest
 import pandas as pd

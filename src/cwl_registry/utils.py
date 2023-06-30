@@ -65,7 +65,9 @@ def log(function, logger=L):
         str_function_repr = f" Name: {function.__name__}\n" f" Args: \n{str_v}\n"
         logger.debug("Executed function:\n%s\n", str_function_repr)
 
-        return function(*args, **kwargs)
+        res = function(*args, **kwargs)
+
+        return res
 
     return wrapper
 

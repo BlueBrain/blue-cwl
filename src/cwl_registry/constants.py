@@ -30,3 +30,6 @@ DEFAULT_CIRCUIT_BUILD_PARAMETERS = {
     },
     "assign_emodels": {"seed": 0},
 }
+
+HR = ["hemisphere", "region"]
+HRM = HR + ["mtype"]

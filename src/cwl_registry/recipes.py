@@ -1,9 +1,13 @@
 """Construction of recipes for circuit building."""
 import importlib.resources
 import shutil
+from pathlib import Path
 from typing import Any, Dict, List
 
+import numpy as np
 import pandas as pd
+
+from cwl_registry import utils
 
 
 def build_cell_composition_from_me_densities(region: str, me_type_densities: Dict[str, Any]):
@@ -105,6 +109,85 @@ def build_mtype_taxonomy(mtypes: List[str]):
     per_mtype_df = df.loc[available_mtypes_mask]
 
     return per_mtype_df.reset_index(drop=True)
+
+
+def build_connectome_manipulator_recipe(
+    circuit_config_path: str, micro_matrices, output_dir: Path
+) -> dict:
+    """Build connectome manipulator recipe."""
+    key_mapping = {
+        "source_hemisphere": "src_hemisphere",
+        "target_hemisphere": "dst_hemisphere",
+        "source_region": "src_region",
+        "target_region": "dst_region",
+        "source_mtype": "src_type",
+        "target_mtype": "dst_type",
+        "pconn": "connprob_coeff_a",
+        "scale": "connprob_coeff_a",
+        "exponent": "connprob_coeff_b",
+        "delay_velocity": "lindelay_delay_mean_coeff_a",
+        "delay_offset": "lindelay_delay_mean_coeff_b",
+    }
+
+    def reset_multi_index(df):
+        if isinstance(df.index, pd.MultiIndex):
+            return df.reset_index()
+        return df
+
+    def build_pathways(algo, df):
+        df = reset_multi_index(df)
+
+        # remove zero probabilities of connection
+        if "pconn" in df.columns:
+            df = df[~np.isclose(df["pconn"], 0.0)]
+
+        # remove zero or infinite scales
+        if "scale" in df.columns:
+            df = df[~np.isclose(df["scale"], 0.0)]
+
+        df = df.reset_index(drop=True).rename(columns=key_mapping)
+
+        if algo == "placeholder__erdos_renyi":
+            df["connprob_order"] = 1
+        elif algo == "placeholder__distance_dependent":
+            df["connprob_order"] = 2
+        else:
+            raise ValueError(algo)
+
+        return df
+
+    frames = [build_pathways(name, df) for name, df in micro_matrices.items()]
+    merged_frame = pd.concat(frames, ignore_index=True)
+
+    merged_frame = merged_frame.set_index(
+        ["src_hemisphere", "dst_hemisphere", "src_region", "dst_region"]
+    )
+    merged_frame = merged_frame.sort_index()
+    output_file = output_dir / "pathways.parquet"
+
+    utils.write_parquet(filepath=output_file, dataframe=merged_frame, index=True)
+
+    config = {
+        "circuit_config": str(circuit_config_path),
+        "seed": 0,
+        "N_split_nodes": 1000,
+        "manip": {
+            "name": "WholeBrainMacroMicroWiring",
+            "fcts": [
+                {
+                    "source": "conn_wiring",
+                    "model_pathways": str(output_file),
+                    "model_config": {
+                        "prob_model_spec": {"model": "ConnProbModel"},
+                        "nsynconn_model_spec": {"model": "NSynConnModel"},
+                        "delay_model_spec": {"model": "LinDelayModel"},
+                    },
+                }
+            ],
+        },
+    }
+
+    return config
 
 
 def build_connectome_distance_dependent_recipe(config_path, configuration, output_dir):

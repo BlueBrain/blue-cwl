@@ -19,11 +19,15 @@ def _print_details(command, inputs):
             input_details[key] = str(value)
         else:
             r = forge.retrieve(value, cross_bucket=True)
-            input_details[key] = {
-                "id": value,
-                "type": r.type,
-                "url": r._store_metadata._self,
-            }
+
+            try:
+                input_details[key] = {
+                    "id": value,
+                    "type": r.type,
+                    "url": r._store_metadata._self,
+                }
+            except Exception as e:
+                raise RuntimeError(f"Failed to print details for ({key}: {value}):\n{r}") from e
 
     details = {
         "inputs": input_details,
