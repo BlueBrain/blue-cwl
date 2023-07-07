@@ -8,8 +8,10 @@ import pathlib
 import shutil
 import subprocess
 import urllib
+from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -357,3 +359,105 @@ def url_with_revision(url: str, rev: Optional[str]) -> str:
     assert "?rev=" not in url
 
     return f"{url}?rev={rev}"
+
+
+def _cell_collection_from_frame(df: pd.DataFrame, population_name: str, orientation_format: str):
+    # CellCollection.from_dataframe needs the index to start at 1
+    df = df.reset_index(drop=True)
+    df.index += 1
+
+    cells = voxcell.CellCollection.from_dataframe(df)
+    cells.population_name = population_name
+    cells.orientation_format = orientation_format
+
+    return cells
+
+
+@dataclass
+class SplitCollectionInfo:
+    """Dataclass for CellCollection splits."""
+
+    cells: voxcell.CellCollection
+    reverse_indices: np.ndarray
+
+    def as_dataframe(self) -> pd.DataFrame:
+        """Return split as dataframe."""
+        return self.cells.as_dataframe().set_index(self.reverse_indices)
+
+
+def bisect_cell_collection_by_properties(
+    cell_collection: voxcell.CellCollection,
+    properties: dict[str, list[str]],
+) -> list[SplitCollectionInfo | None]:
+    """Split cell collection in two based on properties mask.
+
+    The mask to split is constructed in two steps:
+        1. For each property find the union of rows that match the property values.
+        2. Intersect all property masks from (1).
+
+    Args:
+        cell_collection: The cells collection to split.
+        properties:
+            A dictionary the keys of which are property names and the values are property values.
+            Example:
+                {
+                    'mtype': ['L3_TPC:A', 'L23_SBC'],
+                    'region': ['SSp-bfd3', "CA3"]
+                }
+
+        nodes_file: Path to node file.
+        node_population_name: Name of node population.
+
+    Returns:
+        A tuple with two elements of type SplitCellCollectionInfo or None.
+    """
+
+    def split(df: pd.DataFrame, mask: np.ndarray) -> SplitCollectionInfo | None:
+        """Create a CellCollection from the masked dataframe.
+
+        Returns:
+            A tuple of the selected CellCollection and the reverse indices.
+        """
+        if not mask.any():
+            return None
+
+        masked_df = df[mask]
+
+        cells = _cell_collection_from_frame(
+            df=masked_df,
+            population_name=cell_collection.population_name,
+            orientation_format=cell_collection.orientation_format,
+        )
+        return SplitCollectionInfo(
+            cells=cells,
+            reverse_indices=masked_df.index.values,
+        )
+
+    # reset index because dataframe starts at 1
+    df = cell_collection.as_dataframe().reset_index(drop=True)
+
+    mask = np.logical_and.reduce(
+        [df[name].isin(values).values for name, values in properties.items()]
+    )
+
+    if not mask.any():
+        raise CWLWorkflowError("The mask resulting from the given properties is empty.")
+
+    return (split(df, mask), split(df, ~mask))
+
+
+def merge_cell_collections(
+    splits: Sequence[SplitCollectionInfo | None],
+    population_name: str,
+    orientation_format: str = "quaternions",
+) -> voxcell.CellCollection:
+    """Merge cell collections using their reverse indices."""
+    filtered = list(filter(lambda s: s is not None, splits))
+
+    if len(filtered) == 1:
+        return filtered[0].cells
+
+    dataframes = [split.as_dataframe() for split in splits]
+
+    result = pd.concat(dataframes, ignore_index=False, join="outer").sort_index()
+    return _cell_collection_from_frame(result, population_name, orientation_format)

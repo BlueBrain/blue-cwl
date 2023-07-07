@@ -11,6 +11,7 @@ import tempfile
 import pytest
 import pandas as pd
 from pandas import testing as pdt
+import numpy as np
 from numpy import testing as npt
 
 from cwl_registry import utils as tested
@@ -382,3 +383,50 @@ def test_arrow_io():
         new_df = tested.load_arrow(filepath=filepath)
 
     pdt.assert_frame_equal(df, new_df)
+
+
+@pytest.fixture
+def cells_100():
+    nodes_file = DATA_DIR / "nodes_100.h5"
+    return voxcell.CellCollection.load_sonata(nodes_file, "root__neurons")
+
+
+def test_bisect_cell_collection_by_properties__empty_mask(cells_100):
+    with pytest.raises(
+        CWLWorkflowError, match="The mask resulting from the given properties is empty."
+    ):
+        tested.bisect_cell_collection_by_properties(cells_100, {"mtype": ["non-existent"]})
+
+
+def test_bisect_cell_collection_by_properties(cells_100):
+    properties = {"mtype": ["GEN_mtype"], "region": ["CA3", "MMl", "VPL", "BLAa"]}
+
+    splits = tested.bisect_cell_collection_by_properties(cells_100, properties)
+
+    actual_indices = np.sort(np.concatenate([s.reverse_indices for s in splits]))
+    npt.assert_array_equal(actual_indices, cells_100.properties.index.values)
+
+
+def test_bisect_cell_collection_by_properties__one_split(cells_100):
+    properties = {
+        "mtype": cells_100.properties.mtype.unique().tolist(),
+        "region": cells_100.properties.region.unique().tolist(),
+    }
+
+    splits = tested.bisect_cell_collection_by_properties(cells_100, properties)
+
+    npt.assert_array_equal(splits[0].reverse_indices, cells_100.properties.index.values)
+    assert splits[1] is None
+
+
+def test_bisect_recombine_cycle(cells_100):
+    properties = {"mtype": ["GEN_mtype"], "region": ["CA3", "MMl", "VPL", "BLAa"]}
+
+    splits = tested.bisect_cell_collection_by_properties(cells_100, properties)
+
+    res = tested.merge_cell_collections(splits, population_name=cells_100.population_name)
+
+    assert cells_100.population_name == res.population_name
+    assert cells_100.orientation_format == res.orientation_format
+    npt.assert_allclose(cells_100.positions, res.positions)
+    pdt.assert_frame_equal(cells_100.properties, res.properties)
