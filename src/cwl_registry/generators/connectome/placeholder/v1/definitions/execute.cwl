@@ -11,7 +11,7 @@ baseCommand: ['cwl-registry', 'execute', 'connectome-generation-placeholder']
 environment:
   env_type: MODULE
   modules:
-    - unstable
+    - archive/2023-05
     - py-connectome-manipulator/0.0.4
     - py-cwl-registry/0.3.7
   enable_internet: true
