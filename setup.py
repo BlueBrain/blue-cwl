@@ -31,7 +31,7 @@ setup(
     install_requires=[
         "click>=8.0",
         "libsonata",
-        "nexusforge",
+        "nexusforge>=0.8.1",
         "numpy",
         "pandas",
         "voxcell",
