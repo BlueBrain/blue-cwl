@@ -40,6 +40,8 @@ setup(
         "cwl-luigi>=0.3.1",
         "entity_management>=1.2.0",
         "pyarrow",
+        "lxml",
+        "fz_td_recipe",
     ],
     packages=find_packages(where="src"),
     package_dir={"": "src"},

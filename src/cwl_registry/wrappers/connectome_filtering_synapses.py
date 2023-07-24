@@ -6,8 +6,19 @@ import subprocess
 from pathlib import Path
 
 import click
+import libsonata
+import voxcell
 
-from cwl_registry import Variant, nexus, recipes, registering, utils
+from cwl_registry import (
+    Variant,
+    nexus,
+    population_utils,
+    recipes,
+    registering,
+    staging,
+    utils,
+    validation,
+)
 from cwl_registry.exceptions import CWLWorkflowError
 
 L = logging.getLogger(__name__)
@@ -23,50 +34,101 @@ L = logging.getLogger(__name__)
 @click.option("--output-dir", required=True)
 def app(configuration, variant_config, partial_circuit, output_dir):
     """Synapse filtering."""
+    connectome_filtering_synapses(configuration, variant_config, partial_circuit, output_dir)
+
+
+def connectome_filtering_synapses(
+    configuration: str, variant_config: str, partial_circuit: str, output_dir: os.PathLike
+):
+    """Synapse filtering."""
     output_dir = utils.create_dir(Path(output_dir).resolve())
+    staging_dir = utils.create_dir(output_dir / "stage")
     build_dir = utils.create_dir(output_dir / "build")
 
     forge = nexus.get_forge()
 
     config = utils.load_json(nexus.get_config_path_from_circuit_resource(forge, partial_circuit))
+    partial_circuit = nexus.get_resource(forge, partial_circuit)
 
     nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(config)
+
+    validation.check_properties_in_population(
+        population_name=node_population_name,
+        nodes_file=nodes_file,
+        property_names=["hemisphere", "region", "mtype", "etype", "synapse_class"],
+    )
+
     edges_file, edge_population_name = utils.get_first_edge_population_from_config(config)
 
     morphologies_dir = config["networks"]["nodes"][0]["populations"][node_population_name][
         "morphologies_dir"
     ]
 
-    recipe_file = recipes.write_functionalizer_recipe(output_file=build_dir / "recipe.xml")
-    subprocess.run(
-        [
-            "env",
-            f"SPARK_USER={os.environ['USER']}",
-            "dplace",
-            "functionalizer",
-            "-p",
-            "spark.driver.memory=60g",
-            str(edges_file),
-            edge_population_name,
-            "--work-dir",
-            str(build_dir),
-            "--output-dir",
-            str(build_dir),
-            "--from",
-            str(nodes_file),
-            node_population_name,
-            "--to",
-            str(nodes_file),
-            node_population_name,
-            "--filters",
-            "SynapseProperties",
-            "--recipe",
-            str(recipe_file),
-            "--morphologies",
-            str(morphologies_dir),
-        ],
-        check=True,
+    atlas_dir = utils.create_dir(staging_dir / "atlas")
+    L.info("Staging atlas to  %s", atlas_dir)
+    hierarchy_path, annotation_path, *_ = staging.stage_atlas(
+        forge=forge,
+        resource_id=partial_circuit.atlasRelease.id,
+        output_dir=atlas_dir,
+        parcellation_ontology_basename="hierarchy.json",
     )
+
+    L.info("Staging configuration...")
+    configuration = staging.materialize_synapse_config(forge, configuration, staging_dir)[
+        "configuration"
+    ]
+    if configuration:
+        configuration = {name: utils.load_json(path) for name, path in configuration.items()}
+
+        L.info("Building functionalizer xml recipe...")
+        recipe_file = recipes.write_functionalizer_xml_recipe(
+            synapse_config=configuration,
+            circuit_pathways=_get_connectome_pathways(
+                edges_file, edge_population_name, nodes_file, node_population_name
+            ),
+            region_map=voxcell.RegionMap.load_json(hierarchy_path),
+            annotation=voxcell.VoxelData.load_nrrd(annotation_path),
+            output_file=build_dir / "recipe.xml",
+        )
+    else:
+        L.warning(
+            "Empty placeholder SynapseConfig was encountered. "
+            "A default xml recipe will be created for backwards compatibility."
+        )
+        recipe_file = recipes.write_default_functionalizer_xml_recipe(
+            output_file=build_dir / "recipe.xml"
+        )
+
+    L.info("Running functionalizer...")
+    command = [
+        "env",
+        f"SPARK_USER={os.environ['USER']}",
+        "dplace",
+        "functionalizer",
+        "-p",
+        "spark.driver.memory=60g",
+        str(edges_file),
+        edge_population_name,
+        "--work-dir",
+        str(build_dir),
+        "--output-dir",
+        str(build_dir),
+        "--from",
+        str(nodes_file),
+        node_population_name,
+        "--to",
+        str(nodes_file),
+        node_population_name,
+        "--filters",
+        "SynapseProperties",
+        "--recipe",
+        str(recipe_file),
+        "--morphologies",
+        str(morphologies_dir),
+    ]
+    L.debug("Tool command: %s", " ".join(command))
+
+    subprocess.run(command, check=True)
 
     parquet_dir = build_dir / "circuit.parquet"
     assert parquet_dir.exists()
@@ -75,15 +137,17 @@ def app(configuration, variant_config, partial_circuit, output_dir):
 
     output_edges_file = build_dir / "edges.h5"
 
-    subprocess.run(
-        [
-            "parquet2hdf5",
-            str(parquet_dir),
-            str(output_edges_file),
-            edge_population_name,
-        ],
-        check=True,
-    )
+    L.info("Running parquet conversion to sonata...")
+
+    command = [
+        "parquet2hdf5",
+        str(parquet_dir),
+        str(output_edges_file),
+        edge_population_name,
+    ]
+    L.debug("Tool command: %s", " ".join(command))
+
+    subprocess.run(command, check=True)
 
     L.info("Functionalized edges generated at %s", output_edges_file)
 
@@ -91,7 +155,6 @@ def app(configuration, variant_config, partial_circuit, output_dir):
     _write_partial_config(config, output_edges_file, output_config_file)
 
     forge = nexus.get_forge(force_refresh=True)
-    partial_circuit = nexus.get_resource(forge, partial_circuit)
 
     # output circuit
     L.info("Registering partial circuit...")
@@ -108,6 +171,17 @@ def app(configuration, variant_config, partial_circuit, output_dir):
         json_resource=forge.as_json(circuit_resource),
         variant=Variant.from_resource_id(forge, variant_config),
         output_dir=output_dir,
+    )
+
+
+def _get_connectome_pathways(edges_file, edge_population_name, nodes_file, node_population_name):
+    node_population = libsonata.NodeStorage(nodes_file).open_population(node_population_name)
+    edge_population = libsonata.EdgeStorage(edges_file).open_population(edge_population_name)
+    return population_utils.get_pathways(
+        edge_population=edge_population,
+        source_node_population=node_population,
+        target_node_population=node_population,
+        properties=["hemisphere", "region", "mtype", "etype", "synapse_class"],
     )
 
 

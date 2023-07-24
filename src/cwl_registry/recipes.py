@@ -1,11 +1,15 @@
 """Construction of recipes for circuit building."""
 import importlib.resources
+import itertools
 import shutil
 from pathlib import Path
 from typing import Any, Dict, List
 
+import fz_td_recipe
+import lxml.etree as ET
 import numpy as np
 import pandas as pd
+import voxcell
 
 from cwl_registry import utils
 
@@ -256,10 +260,250 @@ def build_connectome_distance_dependent_recipe(config_path, configuration, outpu
     return res
 
 
-def write_functionalizer_recipe(output_file):
+def write_functionalizer_xml_recipe(
+    synapse_config: dict,
+    region_map: voxcell.RegionMap,
+    annotation: voxcell.VoxelData,
+    output_file: Path,
+    circuit_pathways: pd.DataFrame | None = None,
+):
+    """Build functionalizer xml recipe.
+
+    Args:
+        synapse_config: Config for the recipe.
+        region_map: voxcell.RegionMap
+        output_file: Output file to write the xml recipe.
+        circuit_pathways: Dataframe with the following columns
+            - source_hemisphere
+            - target_hemisphere
+            - source_region
+            - target_region
+            - source_mtype
+            - target_mtype
+            - source_etype
+            - target_etype
+            - source_synaptic_class
+            - target_synaptic_class
+    """
+    synapse_properties_generator = _generate_tailored_properties(
+        synapse_properties=synapse_config["synapse_properties"],
+        region_map=region_map,
+        annotation=annotation,
+        pathways=circuit_pathways,
+    )
+
+    _write_xml_tree(
+        synapse_properties_generator, synapse_config["synapses_classification"], output_file
+    )
+
+    r = fz_td_recipe.Recipe(output_file.as_posix(), strict=True)
+    assert r.synapse_properties.validate(), f"Rule validation failed for {output_file}"
+
+    return output_file
+
+
+def _write_xml_tree(synapse_properties, synapse_classification, output_file):
+    tree = _build_xml_tree(synapse_properties, synapse_classification)
+    with open(output_file, "wb") as fp:
+        tree.write(fp, pretty_print=True, xml_declaration=True, encoding="utf-8")
+
+
+def write_default_functionalizer_xml_recipe(output_file):
     """Copy an existing xml recipe."""
     path = importlib.resources.files("cwl_registry") / "data" / "builderRecipeAllPathways.xml"
 
     shutil.copyfile(path, output_file)
 
     return output_file
+
+
+def _generate_tailored_properties(
+    synapse_properties: dict,
+    region_map: voxcell.RegionMap,
+    annotation: voxcell.VoxelData,
+    pathways: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Generate properties tailored to a circuit if its pathways are passed."""
+    if pathways is not None:
+        available = {
+            "fromSClass": set(pathways["source_synapse_class"]),
+            "toSClass": set(pathways["target_synapse_class"]),
+            "fromHemisphere": set(pathways["source_hemisphere"]),
+            "toHemisphere": set(pathways["target_hemisphere"]),
+            "fromRegion": set(pathways["source_region"]),
+            "toRegion": set(pathways["target_region"]),
+            "fromMType": set(pathways["source_mtype"]),
+            "toMType": set(pathways["target_mtype"]),
+            "fromEType": set(pathways["source_etype"]),
+            "toEType": set(pathways["target_etype"]),
+        }
+
+        def in_pathways(entry: dict) -> bool:
+            """Check that a synapse entry is in the circuit pathways.
+
+            Note: Missing or None entries will not be filtered out.
+            """
+            for prop_name, available_values in available.items():
+                value = entry.get(prop_name, None)
+                if value is not None and value not in available_values:
+                    return False
+            return True
+
+    else:
+
+        def in_pathways(_: dict) -> bool:
+            return True
+
+    annotation_ids = set(annotation.raw.flatten())
+
+    cache = {}
+    entries = (
+        entry
+        for prop in synapse_properties
+        for entry in _expand_properties(
+            prop, region_map, annotation_ids, include_null=False, cache=cache
+        )
+        if in_pathways(entry)
+    )
+    yield from entries
+
+
+def _expand_properties(prop, region_map, annotation_ids: set[int], include_null=True, cache=None):
+    """Return a list of properties matching the leaf regions.
+
+    Args:
+        prop : Synapse property rule that needs to be expanded
+        region_map : brain region map
+        incldue_null : if True, retain the attributes even if they are null. Else remove them
+
+    Returns:
+        A list of synapse properties at the leaf region level.
+    """
+    exp_props = []
+
+    source_region = prop.get("fromRegion", None)
+    target_region = prop.get("toRegion", None)
+
+    if source_region:
+        from_leaf_regions = _get_leaf_regions(source_region, region_map, annotation_ids, cache)
+    else:
+        from_leaf_regions = [None]
+
+    if target_region:
+        to_leaf_regions = _get_leaf_regions(target_region, region_map, annotation_ids, cache)
+    else:
+        to_leaf_regions = [None]
+
+    for from_reg, to_reg in itertools.product(from_leaf_regions, to_leaf_regions):
+        # Construct the individual dicts for each leaf region pairs
+
+        from_reg = region_map.get(from_reg, "acronym") if from_reg is not None else None
+
+        to_reg = region_map.get(to_reg, "acronym") if to_reg is not None else None
+
+        prop_up = dict(prop, fromRegion=from_reg, toRegion=to_reg)
+
+        if not include_null:
+            exp_props.append({k: v for k, v in prop_up.items() if bool(v)})
+        else:
+            exp_props.append(prop_up)
+
+    return exp_props
+
+
+def _get_leaf_regions(
+    acronym: str,
+    region_map: voxcell.RegionMap,
+    annotation_ids: set[int] | None = None,
+    cache: dict[str, set[int]] | None = None,
+) -> set[int]:
+    """Get leaf regions as a list.
+
+    Args:
+        acronym: The region acronym
+        region_map: The voxcell RegionMap
+        annotation_ids: Optional ids to intersect with the leaf ids
+        cache: Optional cache to speed up already visited entries.
+    """
+    if cache and acronym in cache:
+        return cache[acronym]
+
+    ids = region_map.find(acronym, "acronym", with_descendants=True)
+
+    result = {rid for rid in ids if region_map.is_leaf_id(rid)}
+
+    if annotation_ids:
+        result &= annotation_ids
+
+    return result
+
+
+def _build_xml_tree(synapse_properties, synapses_classification):
+    """Concatenate the recipes and return the resulting xml tree.
+
+    Args:
+        synapse_properties(list): ordered list of synapse properties
+        synapses_classification(dict): synapse classifications
+        region_map (voxcell.RegionMap) : brain region hierarchy map
+
+    Returns:
+        ET.ElementTree: the resulting xml tree.
+    """
+    root = ET.Element("blueColumn")
+    root.addprevious(ET.Comment("Generated by SBO Workflow."))
+
+    root.append(
+        ET.Element(
+            "InterBoutonInterval",
+            attrib={"minDistance": "5.0", "maxDistance": "7.0", "regionGap": "5.0"},
+        )
+    )
+    root.append(
+        ET.Element(
+            "InitialBoutonDistance",
+            attrib={"defaultInhSynapsesDistance": "5.0", "defaultExcSynapsesDistance": "25.0"},
+        )
+    )
+
+    properties = ET.Element(
+        "SynapsesProperties",
+        attrib={
+            "neuralTransmitterReleaseDelay": "0.1",
+            "axonalConductionVelocity": "300.0",
+        },
+    )
+
+    synaptic_types = set()
+    for prop in synapse_properties:
+        xml_prop = {k: (str(v) if bool(v) else "") for k, v in prop.items()}
+
+        # Remove the synaptic model info as it is not used by functionalizer
+        del xml_prop["synapticModel"]
+
+        synaptic_type = xml_prop.pop("synapticType")
+        xml_prop["type"] = synaptic_type
+        synaptic_types.add(synaptic_type)
+
+        properties.append(ET.Element("synapse", attrib=xml_prop))
+
+    root.append(properties)
+
+    classes = ET.Element("SynapsesClassification")
+    for synaptic_type in synaptic_types:
+        class_data = {k: str(v) for k, v in synapses_classification[synaptic_type].items()}
+        classes.append(ET.Element("class", attrib={"id": synaptic_type, **class_data}))
+
+    root.append(classes)
+
+    empty_names = [
+        "SynapsesReposition",
+        "NeuronTypes",
+        "ConnectionRules",
+        "SpineLengths",
+        "TouchReduction",
+        "TouchRules",
+    ]
+    for name in empty_names:
+        root.append(ET.Element(name))
+
+    return ET.ElementTree(root)

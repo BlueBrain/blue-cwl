@@ -23,3 +23,25 @@ def test_get_HRM_counts(population):
 
     assert sum(res == 0) == 0
     assert sum(res) == 100
+
+
+def test_get_pathways():
+    node_population = libsonata.NodeStorage(DATA_DIR / "circuit/nodes.h5").open_population(
+        "SSp__neurons"
+    )
+    edge_population = libsonata.EdgeStorage(DATA_DIR / "circuit/edges.h5").open_population(
+        "SSp__neurons__SSp__neurons__chemical"
+    )
+
+    res = test_module.get_pathways(
+        edge_population, node_population, node_population, ["hemisphere", "region", "mtype"]
+    )
+
+    assert res.columns.tolist() == [
+        "source_hemisphere",
+        "source_region",
+        "source_mtype",
+        "target_hemisphere",
+        "target_region",
+        "target_mtype",
+    ]

@@ -6,7 +6,6 @@ from pathlib import Path
 from tests.functional.utils import WrapperBuild
 from entity_management.simulation import DetailedCircuit
 
-
 import subprocess
 
 GPFS_DIR = Path("/gpfs/bbp.cscs.ch/project/proj12/NSE/cwl-registry/data/")
@@ -20,7 +19,7 @@ def output_dir(tmpdir_factory):
 @pytest.fixture(scope="module")
 def connectome_filtering(output_dir):
     inputs = {
-        "configuration": "https://bbp.epfl.ch/neurosciencegraph/data/91f750ff-3281-4e98-8ee4-5102c6aa0090?rev=6",
+        "configuration": "https://bbp.epfl.ch/neurosciencegraph/data/991cb27f-61c3-42ce-9848-74d2d76a6357?rev=2",
         "partial-circuit": "https://bbp.epfl.ch/neurosciencegraph/data/93e2a8de-073e-4fb9-93f1-629af0fcf2a1",
         "variant-config": "https://bbp.epfl.ch/neurosciencegraph/data/8fa64bf6-90e3-491d-98ff-18552510b3d2",
         "output-dir": str(output_dir),
@@ -35,7 +34,7 @@ def connectome_filtering(output_dir):
         "source /etc/profile.d/modules.sh && "
         "module load unstable spykfunc parquet-converters && "
         f"salloc --account={os.environ['SALLOC_ACCOUNT']} --partition=prod --nodes=1 "
-        "--constraint=nvme --exclusive --time=0:10:00 srun --mpi=none sh -c '{cmd}'"
+        "--constraint=nvme --exclusive --time=1:00:00 srun --mpi=none sh -c '{cmd}'"
     )
     return WrapperBuild(command=base_command_list, inputs=inputs, salloc_cmd=salloc_cmd)
 

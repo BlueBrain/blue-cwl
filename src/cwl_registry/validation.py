@@ -2,7 +2,7 @@
 import libsonata
 
 from cwl_registry import utils
-from cwl_registry.exceptions import CWLRegistryError
+from cwl_registry.exceptions import CWLRegistryError, CWLWorkflowError
 
 
 def check_population_name_consistent_with_region(population_name, region_acronym):
@@ -42,4 +42,18 @@ def check_population_name_in_nodes(population_name, nodes_file):
     if population_name not in available_names:
         raise CWLRegistryError(
             f"Population name '{population_name}' not found in nodes file {nodes_file}"
+        )
+
+
+def check_properties_in_population(population_name, nodes_file, property_names):
+    """Raise if properties not in population."""
+    pop = libsonata.NodeStorage(nodes_file).open_population(population_name)
+
+    pop_attributes = pop.attribute_names
+
+    not_existing = [name for name in property_names if name not in pop_attributes]
+
+    if not_existing:
+        raise CWLWorkflowError(
+            f"{not_existing} are not contained in {population_name} in {nodes_file}."
         )

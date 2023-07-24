@@ -6,7 +6,7 @@ from click.testing import CliRunner
 from cwl_registry.cli import main
 import subprocess
 from pathlib import Path
-from cwl_registry.nexus import get_forge
+from cwl_registry.nexus import get_forge, get_resource
 from cwl_registry.variant import Variant
 
 
@@ -18,7 +18,7 @@ def _print_details(command, inputs):
         if key == "output-dir":
             input_details[key] = str(value)
         else:
-            r = forge.retrieve(value, cross_bucket=True)
+            r = get_resource(forge, value)
 
             try:
                 input_details[key] = {
@@ -106,6 +106,6 @@ class WrapperBuild:
 
         retcode = process.poll()
         if retcode:
-            print(stdout)
-            print(stderr)
+            print(stdout.decode())
+            print(stderr.decode())
             raise subprocess.CalledProcessError(retcode, process.args, output=stdout, stderr=stderr)

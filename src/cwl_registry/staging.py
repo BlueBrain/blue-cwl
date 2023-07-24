@@ -20,6 +20,7 @@ from cwl_registry.nexus import (
 
 ENCODING_FORMATS = {
     "json": "application/json",
+    "yaml": "application/yaml",
     "jsonld": "application/ld+json",
     "nrrd": "application/nrrd",
     None: "application/octet-stream",
@@ -386,14 +387,18 @@ def stage_atlas(
         symbolic=symbolic,
     )
 
-    hemisphere_path = stage_resource_distribution_file(
-        forge,
-        atlas.hemisphereVolume.id,
-        output_dir=output_dir,
-        encoding_type="nrrd",
-        basename=parcellation_hemisphere_basename,
-        symbolic=symbolic,
-    )
+    try:
+        hemisphere_path = stage_resource_distribution_file(
+            forge,
+            atlas.hemisphereVolume.id,
+            output_dir=output_dir,
+            encoding_type="nrrd",
+            basename=parcellation_hemisphere_basename,
+            symbolic=symbolic,
+        )
+    except AttributeError:
+        L.warning("Atlas Release %s has no hemisphereVolume.", resource_id)
+        hemisphere_path = None
 
     return ontology_path, volume_path, hemisphere_path
 
@@ -547,3 +552,47 @@ def materialize_micro_connectome_config(
         utils.write_json(filepath=output_file, data=data)
 
     return data
+
+
+def get_entry_id(entry: dict) -> str:
+    """Get entry id."""
+    if "@id" in entry:
+        resource_id = entry["@id"]
+    else:
+        resource_id = entry["id"]
+
+    if "_rev" in entry:
+        rev = entry["_rev"]
+    elif "rev" in entry:
+        rev = entry["rev"]
+    else:
+        rev = None
+
+    if rev:
+        assert "?rev=" not in resource_id
+        resource_id = f"{resource_id}?rev={rev}"
+
+    return resource_id
+
+
+def materialize_synapse_config(forge, resource_id, output_dir):
+    """Materialize a synapse editor config."""
+    data = read_json_file_from_resource_id(forge, resource_id)
+
+    # backwards compatibility with placeholder empty configs
+    if not data:
+        return {}
+
+    return {
+        section_name: {
+            dset_name: stage_resource_distribution_file(
+                forge,
+                get_entry_id(dset_data),
+                output_dir=output_dir,
+                encoding_type="json",
+                symbolic=False,
+            )
+            for dset_name, dset_data in section_data.items()
+        }
+        for section_name, section_data in data.items()
+    }
