@@ -236,7 +236,12 @@ def materialize_connectome_dataset(forge, dataset: dict, output_file: Optional[o
 def get_distribution_path_from_resource(forge, resource_id):
     """Get json file path from resource's distribution."""
     resource = get_resource(forge=forge, resource_id=resource_id)
-    return {"path": get_file_location(resource.distribution.contentUrl).removeprefix("file://")}
+    # pylint: disable=protected-access
+    return {
+        "path": get_file_location(
+            url=resource.distribution.contentUrl, token=forge._store.token
+        ).removeprefix("file://")
+    }
 
 
 def apply_to_grouped_dataset(

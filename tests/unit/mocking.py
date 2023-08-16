@@ -34,6 +34,8 @@ class LocalForge:
         else:
             self._output_dir = Path(output_dir).resolve()
 
+        self._store = Mock()
+
     def as_json(self, resource):
         return {}
 

@@ -7,6 +7,8 @@ from entity_management.simulation import DetailedCircuit
 
 import pytest
 
+DATA_DIR = Path(__file__).parent / "data"
+
 
 @pytest.fixture(scope="module")
 def output_dir(tmpdir_factory):
@@ -77,49 +79,9 @@ def circuit_config(circuit_config_path):
 
 def test_node_sets(circuit_config):
     data = json.loads(Path(circuit_config.node_sets_path).read_bytes())
-    assert data == {
-        "All": {"population": "SSp__neurons"},
-        "Excitatory": {"synapse_class": "EXC"},
-        "Inhibitory": {"synapse_class": "INH"},
-        "L23_LBC": {"mtype": "L23_LBC"},
-        "bAC": {"etype": "bAC"},
-        "SSp-bfd2": {"region": "SSp-bfd2"},
-        "SSp-bfd3": {"region": "SSp-bfd3"},
-        "SSp-ll2": {"region": "SSp-ll2"},
-        "SSp-ll3": {"region": "SSp-ll3"},
-        "SSp-m2": {"region": "SSp-m2"},
-        "SSp-m3": {"region": "SSp-m3"},
-        "SSp-n2": {"region": "SSp-n2"},
-        "SSp-n3": {"region": "SSp-n3"},
-        "SSp-tr2": {"region": "SSp-tr2"},
-        "SSp-tr3": {"region": "SSp-tr3"},
-        "SSp-ul2": {"region": "SSp-ul2"},
-        "SSp-ul3": {"region": "SSp-ul3"},
-        "SSp-un2": {"region": "SSp-un2"},
-        "SSp-un3": {"region": "SSp-un3"},
-        "SSp-ll2/3": ["SSp-ll2", "SSp-ll3"],
-        "SSp-ll": ["SSp-ll2/3"],
-        "SSp": ["SSp-bfd", "SSp-ll", "SSp-m", "SSp-n", "SSp-tr", "SSp-ul", "SSp-un"],
-        "SS": ["SSp"],
-        "Isocortex": ["SS"],
-        "CTXpl": ["Isocortex"],
-        "CTX": ["CTXpl"],
-        "CH": ["CTX"],
-        "grey": ["CH"],
-        "root": ["grey"],
-        "SSp-m2/3": ["SSp-m2", "SSp-m3"],
-        "SSp-m": ["SSp-m2/3"],
-        "SSp-un2/3": ["SSp-un2", "SSp-un3"],
-        "SSp-un": ["SSp-un2/3"],
-        "SSp-n2/3": ["SSp-n2", "SSp-n3"],
-        "SSp-n": ["SSp-n2/3"],
-        "SSp-tr2/3": ["SSp-tr2", "SSp-tr3"],
-        "SSp-tr": ["SSp-tr2/3"],
-        "SSp-ul2/3": ["SSp-ul2", "SSp-ul3"],
-        "SSp-ul": ["SSp-ul2/3"],
-        "SSp-bfd2/3": ["SSp-bfd2", "SSp-bfd3"],
-        "SSp-bfd": ["SSp-bfd2/3"],
-    }
+    expected_data = json.loads(Path(DATA_DIR / "expected_node_sets.json").read_bytes())
+
+    assert data == expected_data
 
 
 @pytest.fixture(scope="module")

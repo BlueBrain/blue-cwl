@@ -1,0 +1,596 @@
+{
+  "All": {
+    "population": "SSp__neurons"
+  },
+  "Excitatory": {
+    "synapse_class": "EXC"
+  },
+  "Inhibitory": {
+    "synapse_class": "INH"
+  },
+  "L23_LBC": {
+    "mtype": "L23_LBC"
+  },
+  "bAC": {
+    "etype": "bAC"
+  },
+  "SSp-bfd-A1-2": {
+    "region": "SSp-bfd-A1-2"
+  },
+  "SSp-bfd-A1-3": {
+    "region": "SSp-bfd-A1-3"
+  },
+  "SSp-bfd-A2-2": {
+    "region": "SSp-bfd-A2-2"
+  },
+  "SSp-bfd-A2-3": {
+    "region": "SSp-bfd-A2-3"
+  },
+  "SSp-bfd-A3-2": {
+    "region": "SSp-bfd-A3-2"
+  },
+  "SSp-bfd-A3-3": {
+    "region": "SSp-bfd-A3-3"
+  },
+  "SSp-bfd-Alpha-2": {
+    "region": "SSp-bfd-Alpha-2"
+  },
+  "SSp-bfd-Alpha-3": {
+    "region": "SSp-bfd-Alpha-3"
+  },
+  "SSp-bfd-B1-2": {
+    "region": "SSp-bfd-B1-2"
+  },
+  "SSp-bfd-B1-3": {
+    "region": "SSp-bfd-B1-3"
+  },
+  "SSp-bfd-B2-2": {
+    "region": "SSp-bfd-B2-2"
+  },
+  "SSp-bfd-B2-3": {
+    "region": "SSp-bfd-B2-3"
+  },
+  "SSp-bfd-B3-2": {
+    "region": "SSp-bfd-B3-2"
+  },
+  "SSp-bfd-B3-3": {
+    "region": "SSp-bfd-B3-3"
+  },
+  "SSp-bfd-B4-2": {
+    "region": "SSp-bfd-B4-2"
+  },
+  "SSp-bfd-B4-3": {
+    "region": "SSp-bfd-B4-3"
+  },
+  "SSp-bfd-Beta-2": {
+    "region": "SSp-bfd-Beta-2"
+  },
+  "SSp-bfd-Beta-3": {
+    "region": "SSp-bfd-Beta-3"
+  },
+  "SSp-bfd-C1-2": {
+    "region": "SSp-bfd-C1-2"
+  },
+  "SSp-bfd-C1-3": {
+    "region": "SSp-bfd-C1-3"
+  },
+  "SSp-bfd-C2-2": {
+    "region": "SSp-bfd-C2-2"
+  },
+  "SSp-bfd-C2-3": {
+    "region": "SSp-bfd-C2-3"
+  },
+  "SSp-bfd-C3-2": {
+    "region": "SSp-bfd-C3-2"
+  },
+  "SSp-bfd-C3-3": {
+    "region": "SSp-bfd-C3-3"
+  },
+  "SSp-bfd-C4-2": {
+    "region": "SSp-bfd-C4-2"
+  },
+  "SSp-bfd-C4-3": {
+    "region": "SSp-bfd-C4-3"
+  },
+  "SSp-bfd-C5-2": {
+    "region": "SSp-bfd-C5-2"
+  },
+  "SSp-bfd-C5-3": {
+    "region": "SSp-bfd-C5-3"
+  },
+  "SSp-bfd-C6-2": {
+    "region": "SSp-bfd-C6-2"
+  },
+  "SSp-bfd-D1-2": {
+    "region": "SSp-bfd-D1-2"
+  },
+  "SSp-bfd-D1-3": {
+    "region": "SSp-bfd-D1-3"
+  },
+  "SSp-bfd-D2-2": {
+    "region": "SSp-bfd-D2-2"
+  },
+  "SSp-bfd-D2-3": {
+    "region": "SSp-bfd-D2-3"
+  },
+  "SSp-bfd-D3-2": {
+    "region": "SSp-bfd-D3-2"
+  },
+  "SSp-bfd-D3-3": {
+    "region": "SSp-bfd-D3-3"
+  },
+  "SSp-bfd-D4-2": {
+    "region": "SSp-bfd-D4-2"
+  },
+  "SSp-bfd-D4-3": {
+    "region": "SSp-bfd-D4-3"
+  },
+  "SSp-bfd-D5-2": {
+    "region": "SSp-bfd-D5-2"
+  },
+  "SSp-bfd-D5-3": {
+    "region": "SSp-bfd-D5-3"
+  },
+  "SSp-bfd-D6-2": {
+    "region": "SSp-bfd-D6-2"
+  },
+  "SSp-bfd-D6-3": {
+    "region": "SSp-bfd-D6-3"
+  },
+  "SSp-bfd-D7-2": {
+    "region": "SSp-bfd-D7-2"
+  },
+  "SSp-bfd-D7-3": {
+    "region": "SSp-bfd-D7-3"
+  },
+  "SSp-bfd-D8-2": {
+    "region": "SSp-bfd-D8-2"
+  },
+  "SSp-bfd-D8-3": {
+    "region": "SSp-bfd-D8-3"
+  },
+  "SSp-bfd-Delta-2": {
+    "region": "SSp-bfd-Delta-2"
+  },
+  "SSp-bfd-Delta-3": {
+    "region": "SSp-bfd-Delta-3"
+  },
+  "SSp-bfd-E1-2": {
+    "region": "SSp-bfd-E1-2"
+  },
+  "SSp-bfd-E1-3": {
+    "region": "SSp-bfd-E1-3"
+  },
+  "SSp-bfd-E2-2": {
+    "region": "SSp-bfd-E2-2"
+  },
+  "SSp-bfd-E2-3": {
+    "region": "SSp-bfd-E2-3"
+  },
+  "SSp-bfd-E3-2": {
+    "region": "SSp-bfd-E3-2"
+  },
+  "SSp-bfd-E3-3": {
+    "region": "SSp-bfd-E3-3"
+  },
+  "SSp-bfd-E4-2": {
+    "region": "SSp-bfd-E4-2"
+  },
+  "SSp-bfd-E4-3": {
+    "region": "SSp-bfd-E4-3"
+  },
+  "SSp-bfd-E5-2": {
+    "region": "SSp-bfd-E5-2"
+  },
+  "SSp-bfd-E5-3": {
+    "region": "SSp-bfd-E5-3"
+  },
+  "SSp-bfd-E6-2": {
+    "region": "SSp-bfd-E6-2"
+  },
+  "SSp-bfd-E6-3": {
+    "region": "SSp-bfd-E6-3"
+  },
+  "SSp-bfd-E7-2": {
+    "region": "SSp-bfd-E7-2"
+  },
+  "SSp-bfd-E7-3": {
+    "region": "SSp-bfd-E7-3"
+  },
+  "SSp-bfd-E8-2": {
+    "region": "SSp-bfd-E8-2"
+  },
+  "SSp-bfd-E8-3": {
+    "region": "SSp-bfd-E8-3"
+  },
+  "SSp-bfd-Gamma-2": {
+    "region": "SSp-bfd-Gamma-2"
+  },
+  "SSp-bfd-Gamma-3": {
+    "region": "SSp-bfd-Gamma-3"
+  },
+  "SSp-bfd2": {
+    "region": "SSp-bfd2"
+  },
+  "SSp-bfd3": {
+    "region": "SSp-bfd3"
+  },
+  "SSp-ll2": {
+    "region": "SSp-ll2"
+  },
+  "SSp-ll3": {
+    "region": "SSp-ll3"
+  },
+  "SSp-m2": {
+    "region": "SSp-m2"
+  },
+  "SSp-m3": {
+    "region": "SSp-m3"
+  },
+  "SSp-n2": {
+    "region": "SSp-n2"
+  },
+  "SSp-n3": {
+    "region": "SSp-n3"
+  },
+  "SSp-tr2": {
+    "region": "SSp-tr2"
+  },
+  "SSp-tr3": {
+    "region": "SSp-tr3"
+  },
+  "SSp-ul2": {
+    "region": "SSp-ul2"
+  },
+  "SSp-ul3": {
+    "region": "SSp-ul3"
+  },
+  "SSp-un2": {
+    "region": "SSp-un2"
+  },
+  "SSp-un3": {
+    "region": "SSp-un3"
+  },
+  "SSp-bfd-E5-2/3": [
+    "SSp-bfd-E5-2",
+    "SSp-bfd-E5-3"
+  ],
+  "SSp-bfd-E5": [
+    "SSp-bfd-E5-2/3"
+  ],
+  "SSp-bfd": [
+    "SSp-bfd-A1",
+    "SSp-bfd-A2",
+    "SSp-bfd-A3",
+    "SSp-bfd-Alpha",
+    "SSp-bfd-B1",
+    "SSp-bfd-B2",
+    "SSp-bfd-B3",
+    "SSp-bfd-B4",
+    "SSp-bfd-Beta",
+    "SSp-bfd-C1",
+    "SSp-bfd-C2",
+    "SSp-bfd-C3",
+    "SSp-bfd-C4",
+    "SSp-bfd-C5",
+    "SSp-bfd-C6",
+    "SSp-bfd-D1",
+    "SSp-bfd-D2",
+    "SSp-bfd-D3",
+    "SSp-bfd-D4",
+    "SSp-bfd-D5",
+    "SSp-bfd-D6",
+    "SSp-bfd-D7",
+    "SSp-bfd-D8",
+    "SSp-bfd-Delta",
+    "SSp-bfd-E1",
+    "SSp-bfd-E2",
+    "SSp-bfd-E3",
+    "SSp-bfd-E4",
+    "SSp-bfd-E5",
+    "SSp-bfd-E6",
+    "SSp-bfd-E7",
+    "SSp-bfd-E8",
+    "SSp-bfd-Gamma",
+    "SSp-bfd2/3"
+  ],
+  "SSp": [
+    "SSp-bfd",
+    "SSp-ll",
+    "SSp-m",
+    "SSp-n",
+    "SSp-tr",
+    "SSp-ul",
+    "SSp-un"
+  ],
+  "SS": [
+    "SSp"
+  ],
+  "Isocortex": [
+    "SS"
+  ],
+  "CTXpl": [
+    "Isocortex"
+  ],
+  "CTX": [
+    "CTXpl"
+  ],
+  "CH": [
+    "CTX"
+  ],
+  "grey": [
+    "CH"
+  ],
+  "root": [
+    "grey"
+  ],
+  "SSp-bfd-A1-2/3": [
+    "SSp-bfd-A1-2",
+    "SSp-bfd-A1-3"
+  ],
+  "SSp-bfd-A1": [
+    "SSp-bfd-A1-2/3"
+  ],
+  "SSp-bfd-E8-2/3": [
+    "SSp-bfd-E8-2",
+    "SSp-bfd-E8-3"
+  ],
+  "SSp-bfd-E8": [
+    "SSp-bfd-E8-2/3"
+  ],
+  "SSp-bfd-Delta-2/3": [
+    "SSp-bfd-Delta-2",
+    "SSp-bfd-Delta-3"
+  ],
+  "SSp-bfd-Delta": [
+    "SSp-bfd-Delta-2/3"
+  ],
+  "SSp-bfd2/3": [
+    "SSp-bfd2",
+    "SSp-bfd3"
+  ],
+  "SSp-bfd-E4-2/3": [
+    "SSp-bfd-E4-2",
+    "SSp-bfd-E4-3"
+  ],
+  "SSp-bfd-E4": [
+    "SSp-bfd-E4-2/3"
+  ],
+  "SSp-bfd-C1-2/3": [
+    "SSp-bfd-C1-2",
+    "SSp-bfd-C1-3"
+  ],
+  "SSp-bfd-C1": [
+    "SSp-bfd-C1-2/3"
+  ],
+  "SSp-bfd-C2-2/3": [
+    "SSp-bfd-C2-2",
+    "SSp-bfd-C2-3"
+  ],
+  "SSp-bfd-C2": [
+    "SSp-bfd-C2-2/3"
+  ],
+  "SSp-bfd-D4-2/3": [
+    "SSp-bfd-D4-2",
+    "SSp-bfd-D4-3"
+  ],
+  "SSp-bfd-D4": [
+    "SSp-bfd-D4-2/3"
+  ],
+  "SSp-bfd-E3-2/3": [
+    "SSp-bfd-E3-2",
+    "SSp-bfd-E3-3"
+  ],
+  "SSp-bfd-E3": [
+    "SSp-bfd-E3-2/3"
+  ],
+  "SSp-bfd-Gamma-2/3": [
+    "SSp-bfd-Gamma-2",
+    "SSp-bfd-Gamma-3"
+  ],
+  "SSp-bfd-Gamma": [
+    "SSp-bfd-Gamma-2/3"
+  ],
+  "SSp-bfd-D2-2/3": [
+    "SSp-bfd-D2-2",
+    "SSp-bfd-D2-3"
+  ],
+  "SSp-bfd-D2": [
+    "SSp-bfd-D2-2/3"
+  ],
+  "SSp-bfd-C4-2/3": [
+    "SSp-bfd-C4-2",
+    "SSp-bfd-C4-3"
+  ],
+  "SSp-bfd-C4": [
+    "SSp-bfd-C4-2/3"
+  ],
+  "SSp-bfd-D5-2/3": [
+    "SSp-bfd-D5-2",
+    "SSp-bfd-D5-3"
+  ],
+  "SSp-bfd-D5": [
+    "SSp-bfd-D5-2/3"
+  ],
+  "SSp-bfd-Beta-2/3": [
+    "SSp-bfd-Beta-2",
+    "SSp-bfd-Beta-3"
+  ],
+  "SSp-bfd-Beta": [
+    "SSp-bfd-Beta-2/3"
+  ],
+  "SSp-bfd-E7-2/3": [
+    "SSp-bfd-E7-2",
+    "SSp-bfd-E7-3"
+  ],
+  "SSp-bfd-E7": [
+    "SSp-bfd-E7-2/3"
+  ],
+  "SSp-un2/3": [
+    "SSp-un2",
+    "SSp-un3"
+  ],
+  "SSp-un": [
+    "SSp-un2/3"
+  ],
+  "SSp-bfd-B2-2/3": [
+    "SSp-bfd-B2-2",
+    "SSp-bfd-B2-3"
+  ],
+  "SSp-bfd-B2": [
+    "SSp-bfd-B2-2/3"
+  ],
+  "SSp-bfd-C5-2/3": [
+    "SSp-bfd-C5-2",
+    "SSp-bfd-C5-3"
+  ],
+  "SSp-bfd-C5": [
+    "SSp-bfd-C5-2/3"
+  ],
+  "SSp-bfd-C3-2/3": [
+    "SSp-bfd-C3-2",
+    "SSp-bfd-C3-3"
+  ],
+  "SSp-bfd-C3": [
+    "SSp-bfd-C3-2/3"
+  ],
+  "SSp-bfd-E2-2/3": [
+    "SSp-bfd-E2-2",
+    "SSp-bfd-E2-3"
+  ],
+  "SSp-bfd-E2": [
+    "SSp-bfd-E2-2/3"
+  ],
+  "SSp-bfd-E6-2/3": [
+    "SSp-bfd-E6-2",
+    "SSp-bfd-E6-3"
+  ],
+  "SSp-bfd-E6": [
+    "SSp-bfd-E6-2/3"
+  ],
+  "SSp-tr2/3": [
+    "SSp-tr2",
+    "SSp-tr3"
+  ],
+  "SSp-tr": [
+    "SSp-tr2/3"
+  ],
+  "SSp-bfd-A2-2/3": [
+    "SSp-bfd-A2-2",
+    "SSp-bfd-A2-3"
+  ],
+  "SSp-bfd-A2": [
+    "SSp-bfd-A2-2/3"
+  ],
+  "SSp-bfd-D3-2/3": [
+    "SSp-bfd-D3-2",
+    "SSp-bfd-D3-3"
+  ],
+  "SSp-bfd-D3": [
+    "SSp-bfd-D3-2/3"
+  ],
+  "SSp-m2/3": [
+    "SSp-m2",
+    "SSp-m3"
+  ],
+  "SSp-m": [
+    "SSp-m2/3"
+  ],
+  "SSp-bfd-A3-2/3": [
+    "SSp-bfd-A3-2",
+    "SSp-bfd-A3-3"
+  ],
+  "SSp-bfd-A3": [
+    "SSp-bfd-A3-2/3"
+  ],
+  "SSp-bfd-E1-2/3": [
+    "SSp-bfd-E1-2",
+    "SSp-bfd-E1-3"
+  ],
+  "SSp-bfd-E1": [
+    "SSp-bfd-E1-2/3"
+  ],
+  "SSp-ll2/3": [
+    "SSp-ll2",
+    "SSp-ll3"
+  ],
+  "SSp-ll": [
+    "SSp-ll2/3"
+  ],
+  "SSp-bfd-D1-2/3": [
+    "SSp-bfd-D1-2",
+    "SSp-bfd-D1-3"
+  ],
+  "SSp-bfd-D1": [
+    "SSp-bfd-D1-2/3"
+  ],
+  "SSp-n2/3": [
+    "SSp-n2",
+    "SSp-n3"
+  ],
+  "SSp-n": [
+    "SSp-n2/3"
+  ],
+  "SSp-bfd-D7-2/3": [
+    "SSp-bfd-D7-2",
+    "SSp-bfd-D7-3"
+  ],
+  "SSp-bfd-D7": [
+    "SSp-bfd-D7-2/3"
+  ],
+  "SSp-bfd-Alpha-2/3": [
+    "SSp-bfd-Alpha-2",
+    "SSp-bfd-Alpha-3"
+  ],
+  "SSp-bfd-Alpha": [
+    "SSp-bfd-Alpha-2/3"
+  ],
+  "SSp-bfd-B1-2/3": [
+    "SSp-bfd-B1-2",
+    "SSp-bfd-B1-3"
+  ],
+  "SSp-bfd-B1": [
+    "SSp-bfd-B1-2/3"
+  ],
+  "SSp-bfd-D6-2/3": [
+    "SSp-bfd-D6-2",
+    "SSp-bfd-D6-3"
+  ],
+  "SSp-bfd-D6": [
+    "SSp-bfd-D6-2/3"
+  ],
+  "SSp-ul2/3": [
+    "SSp-ul2",
+    "SSp-ul3"
+  ],
+  "SSp-ul": [
+    "SSp-ul2/3"
+  ],
+  "SSp-bfd-B3-2/3": [
+    "SSp-bfd-B3-2",
+    "SSp-bfd-B3-3"
+  ],
+  "SSp-bfd-B3": [
+    "SSp-bfd-B3-2/3"
+  ],
+  "SSp-bfd-C6-2/3": [
+    "SSp-bfd-C6-2"
+  ],
+  "SSp-bfd-C6": [
+    "SSp-bfd-C6-2/3"
+  ],
+  "SSp-bfd-B4-2/3": [
+    "SSp-bfd-B4-2",
+    "SSp-bfd-B4-3"
+  ],
+  "SSp-bfd-B4": [
+    "SSp-bfd-B4-2/3"
+  ],
+  "SSp-bfd-D8-2/3": [
+    "SSp-bfd-D8-2",
+    "SSp-bfd-D8-3"
+  ],
+  "SSp-bfd-D8": [
+    "SSp-bfd-D8-2/3"
+  ]
+}
