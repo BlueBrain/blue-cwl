@@ -4,6 +4,7 @@ from pathlib import Path
 import click
 import libsonata
 import numpy as np
+from entity_management.nexus import load_by_id
 
 from cwl_registry import nexus, registering, staging, utils, validation
 from cwl_registry.variant import Variant
@@ -55,7 +56,6 @@ def app(
 
     partial_circuit_resource = forge.retrieve(partial_circuit, cross_bucket=True)
     circuit_resource = registering.register_partial_circuit(
-        forge,
         name="Partial circuit with emodels",
         brain_region_id=region,
         atlas_release_id=partial_circuit_resource.atlasRelease.id,
@@ -63,7 +63,7 @@ def app(
         sonata_config_path=sonata_config_file,
     )
     utils.write_resource_to_definition_output(
-        json_resource=forge.as_json(circuit_resource),
+        json_resource=load_by_id(circuit_resource.get_id()),
         variant=Variant.from_resource_id(forge, variant_config),
         output_dir=output_dir,
     )

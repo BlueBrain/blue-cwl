@@ -1,6 +1,7 @@
 """Nexus stuff."""
 import logging
 import os
+from dataclasses import dataclass
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
@@ -24,6 +25,25 @@ ext_to_format = {
 
 
 L = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class NexusConfig:
+    """Nexus configuration dataclass."""
+
+    base: str
+    org: str
+    proj: str
+
+    @property
+    def bucket(self):
+        """Get nexus bucket."""
+        return f"{self.org}/{self.proj}"
+
+
+DEFAULT_NEXUS_CONFIG = NexusConfig(
+    base=state.get_base(), org=state.get_org(), proj=state.get_proj()
+)
 
 
 # Renew the token if it expires in 5 minutes from now

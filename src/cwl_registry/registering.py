@@ -2,6 +2,10 @@
 import os
 from pathlib import Path
 
+from entity_management.atlas import AtlasBrainRegion, AtlasRelease
+from entity_management.base import BrainLocation, OntologyTerm
+from entity_management.core import DataDownload, Subject
+from entity_management.simulation import DetailedCircuit
 from kgforge.core import Resource
 
 
@@ -17,6 +21,15 @@ def _subject(forge, species_id):
     return forge.reshape(resource, ["id", "type", "species"])
 
 
+def _subject_2(species_id: str | None):
+    if not species_id:
+        species_id = "http://purl.obolibrary.org/obo/NCBITaxon_10090"
+
+    subject = Subject(species=OntologyTerm(url=species_id))
+    subject.publish()
+    return subject
+
+
 def _circuit_config_path(path):
     return Resource.from_json(
         {
@@ -26,10 +39,18 @@ def _circuit_config_path(path):
     )
 
 
-def _brain_location(forge, brain_region_id):
-    return Resource(
-        brainRegion=_as_reference(forge, brain_region_id, properties=["id", "label", "notation"]),
-        type="BrainLocation",
+def _circuit_config_path_2(path):
+    path = Path(path).resolve()
+    return DataDownload(url=f"file://{path}")
+
+
+def _brain_location(brain_region_id):
+    region = AtlasBrainRegion.from_id(brain_region_id)
+    return BrainLocation(
+        brainRegion=OntologyTerm(
+            url=region.get_id(),
+            label=region.label,
+        )
     )
 
 
@@ -39,7 +60,6 @@ def _as_reference(forge, entity_id, properties=("id", "type")):
 
 
 def register_partial_circuit(
-    forge,
     name,
     brain_region_id,
     atlas_release_id,
@@ -48,20 +68,15 @@ def register_partial_circuit(
     species_id=None,
 ):
     """Register a partial circuit."""
-    circuit = Resource(
-        type="DetailedCircuit",
+    circuit = DetailedCircuit(
         name=name,
-        subject=_subject(forge, species_id),
+        subject=_subject_2(species_id),
         description=description,
-        brainLocation=_brain_location(forge, brain_region_id),
-        atlasRelease=_as_reference(forge, atlas_release_id),
-        circuitConfigPath=_circuit_config_path(sonata_config_path),
+        brainLocation=_brain_location(brain_region_id),
+        atlasRelease=AtlasRelease.from_id(atlas_release_id),
+        circuitConfigPath=_circuit_config_path_2(sonata_config_path),
     )
-
-    _add_workflow_influence(circuit)
-
-    forge.register(circuit)
-
+    circuit.publish()
     return circuit
 
 

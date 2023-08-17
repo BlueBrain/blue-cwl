@@ -67,7 +67,14 @@ class WrapperBuild:
 
     @property
     def output_id(self):
-        return json.loads(self.output_file.read_bytes())["id"]
+        data = json.loads(self.output_file.read_bytes())
+        if "id" in data:
+            return data["id"]
+
+        try:
+            return data["@id"]
+        except KeyError as e:
+            raise KeyError(f"No @id in {data}") from e
 
     @property
     def output(self):

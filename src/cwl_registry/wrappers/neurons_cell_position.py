@@ -8,6 +8,7 @@ from typing import Any, Dict
 import click
 import libsonata
 import voxcell
+from entity_management.nexus import load_by_id
 from voxcell.nexus.voxelbrain import Atlas
 
 from cwl_registry import Variant, nexus, recipes, registering, staging, utils, validation
@@ -308,7 +309,6 @@ def _register(
     forge = nexus.get_forge()
 
     circuit_resource = registering.register_partial_circuit(
-        forge,
         name="Cell properties partial circuit",
         brain_region_id=region_id,
         atlas_release_id=generated_data["atlas-id"],
@@ -317,7 +317,7 @@ def _register(
     )
     # write the circuit resource to the respective output file specified by the definition
     utils.write_resource_to_definition_output(
-        json_resource=forge.as_json(circuit_resource),
+        json_resource=load_by_id(circuit_resource.get_id()),
         variant=generated_data["variant"],
         output_dir=output_dir,
     )
@@ -327,5 +327,5 @@ def _register(
         name="Cell composition summary",
         summary_file=generated_data["composition-summary-file"],
         atlas_release_id=generated_data["atlas-id"],
-        derivation_entity_id=circuit_resource.id,
+        derivation_entity_id=circuit_resource.get_id(),
     )

@@ -1,8 +1,14 @@
 import tempfile
 from pathlib import Path
+from unittest.mock import patch, Mock
+
 from cwl_registry import registering as test_module
 from kgforge.core import Resource
 
+from entity_management import nexus
+from entity_management.atlas import AtlasBrainRegion, AtlasRelease
+from entity_management.base import BrainLocation
+from entity_management.core import DataDownload
 from tests.unit.mocking import LocalForge
 from tests.unit.utils import patchenv
 
@@ -36,17 +42,18 @@ def test_circuit_config_path():
     assert res.url == f"file://{expected_path}"
 
 
-def test_brain_location():
-    forge = LocalForge()
-    forge.storage["entity-id"] = Resource.from_json(
-        {"id": "entity-id", "type": "MyType", "label": "my-label"}
-    )
+def test_brain_location(monkeypatch):
+    mock_region = Mock()
+    mock_region.get_id.return_value = "foo"
+    mock_region.label = "bar"
 
-    res = test_module._brain_location(forge, "entity-id")
+    monkeypatch.setattr(AtlasBrainRegion, "from_id", lambda *args, **kwargs: mock_region)
 
-    assert res.type == "BrainLocation"
-    assert res.brainRegion.id == "entity-id"
-    assert res.brainRegion.label == "my-label"
+    res = test_module._brain_location(None)
+
+    assert isinstance(res, BrainLocation)
+    assert res.brainRegion.url == "foo"
+    assert res.brainRegion.label == "bar"
 
 
 def test_subject():
@@ -66,25 +73,40 @@ def test_subject():
     assert res.species.label == "my-label"
 
 
-def test_register_partial_circuit():
-    forge = LocalForge()
-    forge.storage["brain-region-id"] = Resource.from_json(
-        {
-            "id": "brain-region-id",
-            "type": "Class",
-            "label": "my-region",
-            "notation": "myr",
-        }
-    )
-    forge.storage["atlas-release-id"] = Resource.from_json(
-        {
-            "id": "atlas-release-id",
-            "type": "AtlasRelease",
-            "label": "my-atlas",
-        }
-    )
+def test_register_partial_circuit(monkeypatch):
+    def load_by_url(url, *args, **kwargs):
+        if "brain-region-id" in url:
+            return {
+                "@id": "brain-region-id",
+                "@type": "Class",
+                "label": "my-region",
+                "notation": "myr",
+                "identifier": 420,
+                "prefLabel": "my-region",
+            }
+        if "atlas-release-id" in url:
+            return {
+                "@id": "atlas-release-id",
+                "@type": "AtlasRelease",
+                "label": "my-atlas",
+                "name": "foo",
+                "brainTemplateDataLayer": {"@id": "template-id", "@type": "BrainTemplateDataLayer"},
+                "parcellationOntology": {"@id": "ontology-id", "@type": "ParcellationOntology"},
+                "parcellationVolume": {"@id": "volume-id", "@type": "ParcellationVolume"},
+                "subject": {"@id": "subject-id", "@type": "Subject"},
+                "spatialReferenceSystem": {"@id": "ref-id", "@type": "SpatialReferenceSystem"},
+            }
+        if "foo" in url:
+            breakpoint()
+        raise
+
+    def create(base_url, payload, *args, **kwargs):
+        return payload
+
+    monkeypatch.setattr(nexus, "load_by_url", load_by_url)
+    monkeypatch.setattr(nexus, "create", create)
+
     res = test_module.register_partial_circuit(
-        forge,
         name="my-circuit",
         brain_region_id="brain-region-id",
         atlas_release_id="atlas-release-id",
@@ -92,15 +114,14 @@ def test_register_partial_circuit():
         description="my-description",
     )
 
-    assert res.brainLocation.type == "BrainLocation"
-    assert res.brainLocation.brainRegion.id == "brain-region-id"
+    assert isinstance(res.brainLocation, BrainLocation)
+    assert res.brainLocation.brainRegion.url == "brain-region-id"
     assert res.brainLocation.brainRegion.label == "my-region"
-    assert res.brainLocation.brainRegion.notation == "myr"
 
-    assert res.atlasRelease.id == "atlas-release-id"
-    assert res.atlasRelease.type == "AtlasRelease"
+    assert isinstance(res.atlasRelease, AtlasRelease)
+    assert res.atlasRelease.get_id() == "atlas-release-id"
 
-    assert res.circuitConfigPath.type == "DataDownload"
+    assert isinstance(res.circuitConfigPath, DataDownload)
     assert res.circuitConfigPath.url == f"file://{Path('my-sonata-path').resolve()}"
 
 
@@ -123,6 +144,11 @@ def test_register_cell_composition_summary():
                 "id": "atlas-release-id",
                 "type": "AtlasRelease",
                 "label": "my-atlas",
+                "name": "foo",
+                "brainTemplateDataLayer": "foo",
+                "parcellationOntology": "bar",
+                "parcellationVolume": "zoo",
+                "spatialReferenceSystem": "tak",
             }
         )
         forge.storage["circuit-id"] = Resource.from_json(

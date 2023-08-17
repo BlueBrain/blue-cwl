@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 import libsonata
 import voxcell
+from entity_management.nexus import load_by_id
 
 from cwl_registry import (
     Variant,
@@ -159,7 +160,6 @@ def connectome_filtering_synapses(
     # output circuit
     L.info("Registering partial circuit...")
     circuit_resource = registering.register_partial_circuit(
-        forge,
         name="Partial circuit with functional connectivity",
         brain_region_id=partial_circuit.brainLocation.brainRegion.id,
         atlas_release_id=partial_circuit.atlasRelease.id,
@@ -168,7 +168,7 @@ def connectome_filtering_synapses(
     )
 
     utils.write_resource_to_definition_output(
-        json_resource=forge.as_json(circuit_resource),
+        json_resource=load_by_id(circuit_resource.get_id()),
         variant=Variant.from_resource_id(forge, variant_config),
         output_dir=output_dir,
     )
