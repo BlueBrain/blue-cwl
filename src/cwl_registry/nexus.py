@@ -132,7 +132,7 @@ def find_variants(forge, generator_name, variant_name, version):
     """Return variants from KG."""
     return forge.search(
         {
-            "type": "VariantConfig",
+            "type": "Variant",
             "generator_name": generator_name,
             "variant_name": variant_name,
             "version": version,
@@ -202,7 +202,7 @@ def register_variant(forge: KnowledgeGraphForge, variant, update=False):
     variant_spec = f"{variant.generator_name}|{variant.name}|{variant.version}"
 
     configs = Resource(
-        name=f"Task Variant Parameters: {variant_spec}",
+        name=f"Variant Parameters: {variant_spec}",
         type="VariantParameters",
         generator_name=variant.generator_name,
         variant_name=variant.name,
@@ -212,7 +212,7 @@ def register_variant(forge: KnowledgeGraphForge, variant, update=False):
     forge.register(configs)
 
     definitions = Resource(
-        name=f"Task Variant Definitions: {variant_spec}",
+        name=f"Variant Definitions: {variant_spec}",
         type="VariantDefinitions",
         generator_name=variant.generator_name,
         variant_name=variant.name,
@@ -222,7 +222,7 @@ def register_variant(forge: KnowledgeGraphForge, variant, update=False):
     forge.register(definitions)
 
     resources = Resource(
-        name=f"Task Variant Allocation Resources: {variant_spec}",
+        name=f"Variant Allocation Resources: {variant_spec}",
         type="VariantResources",
         generator_name=variant.generator_name,
         variant_name=variant.name,
@@ -244,11 +244,11 @@ def register_variant(forge: KnowledgeGraphForge, variant, update=False):
         forge.update(resource)
     else:
         resource = Resource(
-            name=f"Task Variant Configuration: {variant_spec}",
+            name=f"Variant: {variant_spec}",
             variant_name=variant.name,
             generator_name=variant.generator_name,
             version=variant.version,
-            type="VariantConfig",
+            type="Variant",
             configs=configs,
             definitions=definitions,
             allocation_resources=resources,
