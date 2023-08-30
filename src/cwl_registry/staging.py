@@ -586,7 +586,7 @@ def materialize_synapse_config(forge, resource_id, output_dir):
 
     # backwards compatibility with placeholder empty configs
     if not data:
-        return {}
+        return {"configuration": {}}
 
     return {
         section_name: {
