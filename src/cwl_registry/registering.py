@@ -68,12 +68,15 @@ def register_partial_circuit(
     species_id=None,
 ):
     """Register a partial circuit."""
+    atlas_release = AtlasRelease.from_id(atlas_release_id, cross_bucket=True)
+    assert atlas_release is not None, atlas_release_id
+
     return DetailedCircuit(
         name=name,
         subject=_subject_2(species_id),
         description=description,
         brainLocation=_brain_location(brain_region_id),
-        atlasRelease=AtlasRelease.from_id(atlas_release_id),
+        atlasRelease=atlas_release,
         circuitConfigPath=_circuit_config_path_2(sonata_config_path),
     ).publish()
 
