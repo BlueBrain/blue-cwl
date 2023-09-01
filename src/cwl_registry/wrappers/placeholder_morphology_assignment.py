@@ -69,7 +69,7 @@ def app(
     )
     validation.check_population_name_in_config(population_name, sonata_config_file)
 
-    partial_circuit = forge.retrieve(partial_circuit, cross_bucket=True)
+    partial_circuit = nexus.get_resource(forge, partial_circuit)
     circuit_resource = registering.register_partial_circuit(
         name="Partial circuit with morphologies",
         brain_region_id=region,

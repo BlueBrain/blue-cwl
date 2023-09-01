@@ -8,6 +8,8 @@ from entity_management.core import DataDownload, Subject
 from entity_management.simulation import DetailedCircuit
 from kgforge.core import Resource
 
+from cwl_registry.nexus import get_resource
+
 
 def _subject(forge, species_id):
     if species_id:
@@ -25,9 +27,7 @@ def _subject_2(species_id: str | None):
     if not species_id:
         species_id = "http://purl.obolibrary.org/obo/NCBITaxon_10090"
 
-    subject = Subject(species=OntologyTerm(url=species_id))
-    subject.publish()
-    return subject
+    return Subject(species=OntologyTerm(url=species_id)).publish()
 
 
 def _circuit_config_path(path):
@@ -55,7 +55,7 @@ def _brain_location(brain_region_id):
 
 
 def _as_reference(forge, entity_id, properties=("id", "type")):
-    entity = forge.retrieve(entity_id, cross_bucket=True)
+    entity = get_resource(forge, entity_id)
     return forge.reshape(entity, properties)
 
 
@@ -68,16 +68,14 @@ def register_partial_circuit(
     species_id=None,
 ):
     """Register a partial circuit."""
-    circuit = DetailedCircuit(
+    return DetailedCircuit(
         name=name,
         subject=_subject_2(species_id),
         description=description,
         brainLocation=_brain_location(brain_region_id),
         atlasRelease=AtlasRelease.from_id(atlas_release_id),
         circuitConfigPath=_circuit_config_path_2(sonata_config_path),
-    )
-    circuit.publish()
-    return circuit
+    ).publish()
 
 
 def _add_workflow_influence(resource):
