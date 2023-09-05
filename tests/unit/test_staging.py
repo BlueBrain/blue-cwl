@@ -9,6 +9,8 @@ import pytest
 
 from unittest.mock import patch, Mock
 
+from cwl_registry.utils import load_json
+
 from tests.unit.mocking import LocalForge
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -458,3 +460,113 @@ def test_materialize_micro_connectome_config__no_er_overrides():
             "overrides": {"variants": "foo", "placeholder__distance_dependent": "foo"},
         }
     )
+
+
+@pytest.fixture
+def json_ph_catalog():
+    return load_json(DATA_DIR / "placement_hints_catalog.json")
+
+
+def test_materialize_placement_hints_catalog(json_ph_catalog):
+    with patch(
+        "cwl_registry.staging.read_json_file_from_resource_id", return_value=json_ph_catalog
+    ):
+        res = test_module.materialize_ph_catalog(None, None)
+
+    expected = {
+        "placement_hints": [
+            {
+                "path": "/[PH]layer_1.nrrd",
+                "regions": {
+                    "Isocortex": {"hasLeafRegionPart": ["SSp-ll1", "AUDd1"], "layer": "L1"}
+                },
+            },
+            {
+                "path": "/[PH]layer_2.nrrd",
+                "regions": {
+                    "Isocortex": {
+                        "hasLeafRegionPart": ["PL2", "ILA2", "ORBm2", "RSPv2"],
+                        "layer": "L2",
+                    }
+                },
+            },
+            {
+                "path": "/[PH]layer_3.nrrd",
+                "regions": {"Isocortex": {"hasLeafRegionPart": ["FRP3", "MOp3"], "layer": "L3"}},
+            },
+            {
+                "path": "/[PH]layer_4.nrrd",
+                "regions": {
+                    "Isocortex": {"hasLeafRegionPart": ["AUDp4", "SSp-ul4"], "layer": "L4"}
+                },
+            },
+            {
+                "path": "/[PH]layer_5.nrrd",
+                "regions": {
+                    "Isocortex": {"hasLeafRegionPart": ["VISpor5", "ORBm5"], "layer": "L5"}
+                },
+            },
+            {
+                "path": "/[PH]layer_6.nrrd",
+                "regions": {"Isocortex": {"hasLeafRegionPart": ["ACA6b", "AUDp6a"], "layer": "L6"}},
+            },
+        ],
+        "voxel_distance_to_region_bottom": {"path": "/[PH]y.nrrd"},
+    }
+
+    assert res == expected
+
+
+def test_materialize_placement_hints_catalog__output_dir(json_ph_catalog):
+    with (
+        patch("cwl_registry.staging.read_json_file_from_resource_id", return_value=json_ph_catalog),
+        patch("cwl_registry.staging.stage_file"),
+    ):
+        res = test_module.materialize_ph_catalog(None, None, output_dir="/my-dir")
+
+        expected = {
+            "placement_hints": [
+                {
+                    "path": "/my-dir/[PH]1.nrrd",
+                    "regions": {
+                        "Isocortex": {"hasLeafRegionPart": ["SSp-ll1", "AUDd1"], "layer": "L1"}
+                    },
+                },
+                {
+                    "path": "/my-dir/[PH]2.nrrd",
+                    "regions": {
+                        "Isocortex": {
+                            "hasLeafRegionPart": ["PL2", "ILA2", "ORBm2", "RSPv2"],
+                            "layer": "L2",
+                        }
+                    },
+                },
+                {
+                    "path": "/my-dir/[PH]3.nrrd",
+                    "regions": {
+                        "Isocortex": {"hasLeafRegionPart": ["FRP3", "MOp3"], "layer": "L3"}
+                    },
+                },
+                {
+                    "path": "/my-dir/[PH]4.nrrd",
+                    "regions": {
+                        "Isocortex": {"hasLeafRegionPart": ["AUDp4", "SSp-ul4"], "layer": "L4"}
+                    },
+                },
+                {
+                    "path": "/my-dir/[PH]5.nrrd",
+                    "regions": {
+                        "Isocortex": {"hasLeafRegionPart": ["VISpor5", "ORBm5"], "layer": "L5"}
+                    },
+                },
+                {
+                    "path": "/my-dir/[PH]6.nrrd",
+                    "regions": {
+                        "Isocortex": {"hasLeafRegionPart": ["ACA6b", "AUDp6a"], "layer": "L6"}
+                    },
+                },
+            ],
+            "voxel_distance_to_region_bottom": {"path": "/my-dir/[PH]y.nrrd"},
+        }
+
+        assert res == expected

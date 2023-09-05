@@ -1,0 +1,145 @@
+{
+    "placementHints": [
+        {
+            "id": "https://bbp.epfl.ch/neurosciencegraph/data/f7fbc585-748e-4f3d-b21a-4b88d84b9b99",
+            "_rev": 6,
+            "distribution": {
+                "atLocation": {
+                    "location": "file:///%5BPH%5Dlayer_1.nrrd"
+                },
+                "name": "%5BPH%5Dlayer_1.nrrd"
+            },
+            "regions": {
+                "Isocortex": {
+                    "hasLeafRegionPart": [
+                        "SSp-ll1",
+                        "AUDd1"
+                    ],
+                    "layer": {
+                        "@id": "http://purl.obolibrary.org/obo/UBERON_0005390",
+                        "label": "L1"
+                    }
+                }
+            }
+        },
+        {
+            "@id": "https://bbp.epfl.ch/neurosciencegraph/data/44ac988d-76b1-4e48-be25-3d5b234346d5",
+            "_rev": 6,
+            "distribution": {
+                "atLocation": {
+                    "location": "file:///%5BPH%5Dlayer_2.nrrd"
+                },
+                "name": "%5BPH%5Dlayer_2.nrrd"
+            },
+            "regions": {
+                "Isocortex": {
+                     "hasLeafRegionPart":   [
+                        "PL2", "ILA2", "ORBm2", "RSPv2"
+                    ],
+                    "layer": {
+                        "@id": "http://purl.obolibrary.org/obo/UBERON_0005391",
+                        "label": "L2"
+                    }
+                }
+            }
+        },
+        {
+            "@id": "https://bbp.epfl.ch/neurosciencegraph/data/fa7c4fe2-f59b-47a1-98e7-74a1823da754",
+            "_rev": 6,
+            "distribution": {
+                "atLocation": {
+                    "location": "file:///%5BPH%5Dlayer_3.nrrd"
+                },
+                "name": "%5BPH%5Dlayer_3.nrrd"
+            },
+            "regions": {
+                "Isocortex": {
+                     "hasLeafRegionPart": [
+                        "FRP3",
+                        "MOp3"
+                    ],
+                    "layer": {
+                        "@id": "http://purl.obolibrary.org/obo/UBERON_0005392",
+                        "label": "L3"
+                    }
+                }
+            }
+        },
+        {
+            "@id": "https://bbp.epfl.ch/neurosciencegraph/data/478bffc7-0082-4140-bf88-9c46e867acee",
+            "_rev": 6,
+            "distribution": {
+                "atLocation": {
+                    "location": "file:///%5BPH%5Dlayer_4.nrrd"
+                },
+                "name": "%5BPH%5Dlayer_4.nrrd"
+            },
+            "regions": {
+                "Isocortex": {
+                     "hasLeafRegionPart": [
+                       "AUDp4",
+                      "SSp-ul4"
+                    ],
+                    "layer": {
+                        "@id": "http://purl.obolibrary.org/obo/UBERON_0005393",
+                        "label": "L4"
+                    }
+                }
+            }
+        },
+        {
+            "@id": "https://bbp.epfl.ch/neurosciencegraph/data/3fd0c15f-2839-4ef1-b276-21632b80b748",
+            "_rev": 6,
+            "distribution": {
+                "atLocation": {
+                    "location": "file:///%5BPH%5Dlayer_5.nrrd"
+                },
+                "name": "%5BPH%5Dlayer_5.nrrd"
+            },
+            "regions": {
+                "Isocortex": {
+                     "hasLeafRegionPart": [
+                      "VISpor5",
+                      "ORBm5"
+                    ],
+                    "layer": {
+                        "@id": "http://purl.obolibrary.org/obo/UBERON_0005394",
+                        "label": "L5"
+                    }
+                }
+            }
+        },
+        {
+            "@id": "https://bbp.epfl.ch/neurosciencegraph/data/1a122c73-6c83-4ad7-a634-b77fed4267b9",
+            "distribution": {
+                "atLocation": {
+                    "location": "file:///%5BPH%5Dlayer_6.nrrd"
+                },
+                "name": "%5BPH%5Dlayer_6.nrrd"
+            },
+            "_rev": 6,
+            "regions": {
+                "Isocortex": {
+                    "hasLeafRegionPart": [
+                      "ACA6b",
+                      "AUDp6a"
+                    ],
+                    "layer": {
+                        "@id": "http://purl.obolibrary.org/obo/UBERON_0005395",
+                        "label": "L6"
+                    }
+                }
+            }
+        }
+    ],
+    "voxelDistanceToRegionBottom":{
+        "id": "https://bbp.epfl.ch/neurosciencegraph/data/e87699f3-0d5b-4021-b8b3-2c916b3e77a0",
+        "_rev": 5,
+        "distribution": {
+            "atLocation": {
+                "location": "file:///%5BPH%5Dy.nrrd"
+            },
+            "name": "%5BPH%5Dy.nrrd"
+        }
+    }
+}

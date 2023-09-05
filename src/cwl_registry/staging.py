@@ -3,12 +3,14 @@ import logging
 import os
 import shutil
 from collections.abc import Sequence
+from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import pandas as pd
 from entity_management.nexus import get_file_location
+from entity_management.util import file_uri_to_path
 from kgforge.core import Resource
 
 from cwl_registry import utils
@@ -351,13 +353,25 @@ def stage_etype_emodels(forge, resource_id: str, output_dir: Path):
     return stage_dataset_groups(forge, resource_id, staging_function)
 
 
+@dataclass
+class AtlasInfo:
+    """Atlas paths information."""
+
+    ontology_path: str
+    annotation_path: str
+    hemisphere_path: str | None
+    ph_catalog: dict | None
+    cell_orientation_field_path: str | None
+
+
 def stage_atlas(
     forge,
     resource_id: str,
     output_dir: Path,
-    parcellation_ontology_basename: Optional[str] = "hierarchy.json",
-    parcellation_volume_basename: Optional[str] = "brain_regions.nrrd",
-    parcellation_hemisphere_basename: Optional[str] = "hemisphere.nrrd",
+    parcellation_ontology_basename: str = "hierarchy.json",
+    parcellation_volume_basename: str = "brain_regions.nrrd",
+    parcellation_hemisphere_basename: str = "hemisphere.nrrd",
+    cell_orientation_field_basename: str = "orientation.nrrd",
     symbolic=True,
 ):
     """Stage an atlas to the given output_dir.
@@ -383,7 +397,7 @@ def stage_atlas(
         basename=parcellation_ontology_basename,
         symbolic=symbolic,
     )
-    volume_path = stage_resource_distribution_file(
+    annotation_path = stage_resource_distribution_file(
         forge,
         atlas.parcellationVolume.id,
         output_dir=output_dir,
@@ -405,7 +419,41 @@ def stage_atlas(
         L.warning("Atlas Release %s has no hemisphereVolume.", resource_id)
         hemisphere_path = None
 
-    return ontology_path, volume_path, hemisphere_path
+    try:
+        ph_catalog = materialize_ph_catalog(
+            forge,
+            atlas.placementHintsDataCatalog.id,
+            output_dir=output_dir,
+            output_filenames={
+                "placement_hints": ["[PH]1", "[PH]2", "[PH]3", "[PH]4", "[PH]5", "[PH]6"],
+                "voxel_distance_to_region_bottom": "[PH]y",
+            },
+            symbolic=symbolic,
+        )
+    except AttributeError:
+        L.warning("Atlas Release %s has no placementHintsDataCatalog", resource_id)
+        ph_catalog = None
+
+    try:
+        cell_orientation_field_path = stage_resource_distribution_file(
+            forge,
+            atlas.cellOrientationField.id,
+            output_dir=output_dir,
+            encoding_type="nrrd",
+            basename=cell_orientation_field_basename,
+            symbolic=symbolic,
+        )
+    except AttributeError:
+        L.warning("Atlas Release %s has no cellOrientationField", resource_id)
+        cell_orientation_field_path = None
+
+    return AtlasInfo(
+        ontology_path=str(ontology_path),
+        annotation_path=str(annotation_path),
+        hemisphere_path=str(hemisphere_path),
+        ph_catalog=ph_catalog,
+        cell_orientation_field_path=str(cell_orientation_field_path),
+    )
 
 
 def stage_file(source: Path, target: Path, symbolic: bool = True) -> None:
@@ -601,3 +649,53 @@ def materialize_synapse_config(forge, resource_id, output_dir):
         }
         for section_name, section_data in data.items()
     }
+
+
+def materialize_ph_catalog(
+    forge,
+    resource_id,
+    output_dir=None,
+    output_filenames={
+        "placement_hints": ["[PH]1", "[PH]2", "[PH]3", "[PH]4", "[PH]5", "[PH]6"],
+        "voxel_distance_to_region_bottom": "[PH]y",
+    },
+    symbolic=True,
+):  # pylint: disable=dangerous-default-value
+    """Materialize placement hints catalog resources."""
+
+    def get_file_path(entry):
+        return file_uri_to_path(entry["distribution"]["atLocation"]["location"])
+
+    def materialize_path(entry, output_dir, output_filename):
+        path = get_file_path(entry)
+
+        if output_dir:
+            target_path = str(Path(output_dir, output_filename + ".nrrd"))
+            stage_file(source=path, target=target_path, symbolic=symbolic)
+            path = target_path
+
+        return path
+
+    def materialize_ph(i, entry):
+        path = materialize_path(entry, output_dir, output_filenames["placement_hints"][i])
+        regions = {
+            region: {
+                "hasLeafRegionPart": region_data["hasLeafRegionPart"],
+                "layer": region_data["layer"]["label"],
+            }
+            for region, region_data in entry["regions"].items()
+        }
+        return {"path": path, "regions": regions}
+
+    data = read_json_file_from_resource_id(forge, resource_id)
+
+    phs = [materialize_ph(i, p) for i, p in enumerate(data["placementHints"])]
+
+    ph_y = {
+        "path": materialize_path(
+            entry=data["voxelDistanceToRegionBottom"],
+            output_dir=output_dir,
+            output_filename=output_filenames["voxel_distance_to_region_bottom"],
+        ),
+    }
+    return {"placement_hints": phs, "voxel_distance_to_region_bottom": ph_y}

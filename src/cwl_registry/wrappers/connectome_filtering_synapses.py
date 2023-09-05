@@ -67,11 +67,10 @@ def connectome_filtering_synapses(
 
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     L.info("Staging atlas to  %s", atlas_dir)
-    hierarchy_path, annotation_path, *_ = staging.stage_atlas(
+    atlas_info = staging.stage_atlas(
         forge=forge,
         resource_id=partial_circuit.atlasRelease.id,
         output_dir=atlas_dir,
-        parcellation_ontology_basename="hierarchy.json",
     )
 
     L.info("Staging configuration...")
@@ -87,8 +86,8 @@ def connectome_filtering_synapses(
             circuit_pathways=_get_connectome_pathways(
                 edges_file, edge_population_name, nodes_file, node_population_name
             ),
-            region_map=voxcell.RegionMap.load_json(hierarchy_path),
-            annotation=voxcell.VoxelData.load_nrrd(annotation_path),
+            region_map=voxcell.RegionMap.load_json(atlas_info.ontology_path),
+            annotation=voxcell.VoxelData.load_nrrd(atlas_info.annotation_path),
             output_file=build_dir / "recipe.xml",
         )
     else:

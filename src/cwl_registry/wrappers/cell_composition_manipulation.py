@@ -54,12 +54,10 @@ def app(  # pylint: disable=too-many-arguments
     )
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     L.info("Staging atlas to  %s", atlas_dir)
-    hierarchy_path, annotations_path, _ = staging.stage_atlas(
+    atlas_info = staging.stage_atlas(
         forge=forge,
         resource_id=cell_composition.atlasRelease.id,
         output_dir=atlas_dir,
-        parcellation_ontology_basename="hierarchy.json",
-        parcellation_volume_basename="brain_regions.nrrd",
     )
 
     manipulation_recipe = read_json_file_from_resource(get_resource(forge, configuration))
@@ -88,8 +86,8 @@ def app(  # pylint: disable=too-many-arguments
         filepath=staging_dir / "original_density_release.json",
     )
 
-    region_map = voxcell.RegionMap.load_json(hierarchy_path)
-    brain_regions = voxcell.VoxelData.load_nrrd(annotations_path)
+    region_map = voxcell.RegionMap.load_json(atlas_info.ontology_path)
+    brain_regions = voxcell.VoxelData.load_nrrd(atlas_info.annotation_path)
 
     L.info("Manipulation densities...")
     updated_densities_dir = utils.create_dir(output_dir / "updated_densities_dir")

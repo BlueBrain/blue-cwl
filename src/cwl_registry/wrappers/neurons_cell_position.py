@@ -74,8 +74,6 @@ def _extract(
         forge=forge,
         resource_id=cell_composition.atlasRelease.id,
         output_dir=atlas_dir,
-        parcellation_ontology_basename="hierarchy.json",
-        parcellation_volume_basename="brain_regions.nrrd",
     )
     staging.stage_me_type_densities(
         forge=forge,

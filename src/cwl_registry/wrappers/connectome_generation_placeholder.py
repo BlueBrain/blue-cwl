@@ -106,12 +106,12 @@ def _create_recipe(
 
     population = libsonata.NodeStorage(nodes_file).open_population(node_population_name)
 
-    ontology_file, *_ = staging.stage_atlas(
-        forge, atlas_release_id, output_dir=staging_dir / "atlas"
-    )
+    atlas_info = staging.stage_atlas(forge, atlas_release_id, output_dir=staging_dir / "atlas")
 
     regions = np.unique(population.get_attribute("region", population.select_all())).tolist()
-    region_volumes = brain_regions.volumes(voxcell.RegionMap.load_json(ontology_file), regions)
+    region_volumes = brain_regions.volumes(
+        voxcell.RegionMap.load_json(atlas_info.ontology_path), regions
+    )
 
     L.debug("Assembling micro datasets...")
     micro_matrices = connectome.resolve_micro_matrices(
