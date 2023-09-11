@@ -96,8 +96,11 @@ def test_build_connectome_distance_dependent_recipe():
 
     config_path = "my-config-path"
     output_dir = "my-dir"
+    morph_ext = "h5"
 
-    res = tested.build_connectome_distance_dependent_recipe(config_path, configuration, output_dir)
+    res = tested.build_connectome_distance_dependent_recipe(
+        config_path, configuration, output_dir, morph_ext
+    )
 
     assert res == {
         "circuit_config": "my-config-path",
@@ -109,6 +112,7 @@ def test_build_connectome_distance_dependent_recipe():
                 {
                     "source": "conn_wiring",
                     "kwargs": {
+                        "morph_ext": morph_ext,
                         "sel_src": {
                             "region": "SSp-bfd2",
                             "mtype": "L23_LBC",

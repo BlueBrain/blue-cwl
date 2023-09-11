@@ -10,7 +10,7 @@ from typing import Dict, Optional
 import jwt
 import requests
 from entity_management import state
-from entity_management.nexus import _print_nexus_error, file_as_dict, get_file_location
+from entity_management.nexus import _print_nexus_error, file_as_dict, get_file_location, load_by_id
 from kgforge.core import KnowledgeGraphForge, Resource
 
 from cwl_registry.exceptions import CWLRegistryError
@@ -128,6 +128,12 @@ def get_forge(
     )
 
 
+def forge_to_config(forge):
+    """Get nexus configuration from forge instance."""
+    store = forge._store  # pylint: disable=protected-access
+    return store.endpoint, store.bucket, store.token
+
+
 def find_variants(forge, generator_name, variant_name, version):
     """Return variants from KG."""
     return forge.search(
@@ -152,6 +158,20 @@ def get_resource(forge, resource_id):
             f"bucket  : {forge._store.bucket}"
         )
     return resource
+
+
+def get_resource_json_ld(resource_id: str, forge, cross_bucket=True) -> dict:
+    """Get json-ld dictionary from resource id."""
+    endpoint, bucket, token = forge_to_config(forge)
+    org, proj = bucket.split("/")
+    return load_by_id(
+        resource_id=resource_id,
+        cross_bucket=cross_bucket,
+        base=endpoint,
+        org=org,
+        proj=proj,
+        token=token,
+    )
 
 
 def _remove_prefix(prefix, path):
@@ -362,4 +382,12 @@ def get_config_path_from_circuit_resource(forge, resource_id: str) -> Path:
 
 def get_region_resource_acronym(forge, resource_id: str) -> str:
     """Retrieve the hierarchy acronym from a KG registered region."""
-    return get_resource(forge, resource_id).notation
+    endpoint, _, token = forge_to_config(forge)
+    return load_by_id(
+        resource_id=resource_id,
+        cross_bucket=False,
+        base=endpoint,
+        org="neurosciencegraph",
+        proj="datamodels",
+        token=token,
+    )["notation"]

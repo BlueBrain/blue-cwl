@@ -13,9 +13,9 @@ from cwl_registry.wrappers import (
     connectome_generation_placeholder,
     density_calculation,
     density_manipulation,
+    mmodel,
     neurons_cell_position,
     placeholder_emodel_assignment,
-    placeholder_morphology_assignment,
 )
 
 
@@ -57,9 +57,7 @@ execute.add_command(name="density-calculation", cmd=density_calculation.app)
 execute.add_command(name="density-manipulation", cmd=density_manipulation.app)
 execute.add_command(name="cell-composition-summary", cmd=cell_composition_summary.app)
 execute.add_command(name="cell-composition-manipulation", cmd=cell_composition_manipulation.app)
-execute.add_command(
-    name="placeholder-morphology-assignment", cmd=placeholder_morphology_assignment.app
-)
+execute.add_command(name="mmodel-neurons", cmd=mmodel.app)
 execute.add_command(name="placeholder-emodel-assignment", cmd=placeholder_emodel_assignment.app)
 execute.add_command(name="connectome-distance-dependent", cmd=connectome_distance_dependent.app)
 execute.add_command(

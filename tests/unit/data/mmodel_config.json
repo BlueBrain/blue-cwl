@@ -1,0 +1,50 @@
+{
+  "variantDefinition": {
+    "topological_synthesis": {
+      "algorithm": "topological_synthesis",
+      "version": "v1"
+    },
+    "placeholder_assignment": {
+      "algorithm": "placeholder_assignment",
+      "version": "v1"
+    }
+  },
+  "defaults": {
+    "topological_synthesis": {
+      "id": "https://bbp.epfl.ch/neurosciencegraph/data/fe237780-92bb-496c-b7b7-620bede319a5",
+      "type": [
+        "CanonicalMorphologyModelConfig",
+        "Entity"
+      ]
+    },
+    "placeholder_assignment": {
+      "id": "https://bbp.epfl.ch/neurosciencegraph/data/06b340d4-ac99-4459-bab4-013ef7199c36",
+      "type": [
+        "PlaceholderMorphologyConfig",
+        "Entity"
+      ]
+    }
+  },
+  "configuration": {
+    "topological_synthesis": {
+      "http://api.brain-map.org/api/v2/data/Structure/814": {
+        "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType": {
+          "id": "https://bbp.epfl.ch/neurosciencegraph/data/b5a28383-82d2-47c8-a803-8b3707cdb44a",
+          "overrides": {
+            "apical_dendrite": {
+              "extent": 100.0,
+              "randomness": 0.17,
+              "orientation": [
+                [
+                  0.0,
+                  1.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

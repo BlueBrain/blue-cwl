@@ -1,0 +1,51 @@
+{
+  "hasPart": {
+    "http://api.brain-map.org/api/v2/data/Structure/984": {
+      "hasPart": {
+        "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType": {
+          "hasPart": {
+            "https://bbp.epfl.ch/placeholder-1": {
+              "about": "NeuronMorphology"
+            }
+          }
+        },
+        "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronMType": {
+          "hasPart": {
+            "https://bbp.epfl.ch/placeholder-2": {
+              "about": "NeuronMorphology"
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/279": {
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383230": {
+          "hasPart": {
+            "https://bbp.epfl.ch/placeholder-3": {
+              "about": "NeuronMorphology"
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0381376": {
+          "hasPart": {
+            "https://bbp.epfl.ch/placeholder-4": {
+              "about": "NeuronMorphology"
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/1035": {
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383220": {
+          "hasPart": {
+            "https://bbp.epfl.ch/placeholder-5": {
+              "about": "NeuronMorphology"
+            }
+          }
+        }
+      }
+    }
+  }
+}

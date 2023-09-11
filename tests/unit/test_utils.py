@@ -391,13 +391,6 @@ def cells_100():
     return voxcell.CellCollection.load_sonata(nodes_file, "root__neurons")
 
 
-def test_bisect_cell_collection_by_properties__empty_mask(cells_100):
-    with pytest.raises(
-        CWLWorkflowError, match="The mask resulting from the given properties is empty."
-    ):
-        tested.bisect_cell_collection_by_properties(cells_100, {"mtype": ["non-existent"]})
-
-
 def test_bisect_cell_collection_by_properties(cells_100):
     properties = {"mtype": ["GEN_mtype"], "region": ["CA3", "MMl", "VPL", "BLAa"]}
 

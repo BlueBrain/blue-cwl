@@ -194,7 +194,7 @@ def build_connectome_manipulator_recipe(
     return config
 
 
-def build_connectome_distance_dependent_recipe(config_path, configuration, output_dir):
+def build_connectome_distance_dependent_recipe(config_path, configuration, output_dir, morph_ext):
     """Build recipe for connectome manipulator."""
     res = {
         "circuit_config": str(config_path),
@@ -208,6 +208,7 @@ def build_connectome_distance_dependent_recipe(config_path, configuration, outpu
             {
                 "source": "conn_wiring",
                 "kwargs": {
+                    "morph_ext": morph_ext,
                     "sel_src": {
                         "region": row.ri,
                         "mtype": row.mi,

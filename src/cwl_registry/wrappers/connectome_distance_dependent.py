@@ -2,6 +2,7 @@
 import copy
 import logging
 import subprocess
+from pathlib import Path
 
 import click
 import h5py
@@ -51,10 +52,32 @@ def _app(configuration, partial_circuit, variant_config, output_dir):
 
     build_dir = utils.create_dir(output_dir / "build", clean_if_exists=True)
 
+    _, population_name = utils.get_biophysical_partial_population_from_config(config)
+    pop_dct = config["networks"]["nodes"][0]["populations"][population_name]
+    if "morphologies_dir" not in pop_dct:
+        if "h5v1" in pop_dct["alternate_morphologies"]:
+            morph_dir = pop_dct["alternate_morphologies"]["h5v1"]
+            morph_ext = "h5"
+        elif "neurolucida-asc" in pop_dct["alternate_morphologies"]:
+            morph_dir = pop_dct["alternate_morphologies"]["neurolucida-asc"]
+            morph_ext = "asc"
+        else:
+            raise ValueError("No valid morph directory found")
+
+        # hack because of connectome-manipulator's 0.0.4 way of acceassing morphs
+        pop_dct["morphologies_dir"] = str(Path(morph_dir).parent)
+
+        # A config is created for the manipulator for its way of loading morphs..
+        # TODO: Remove this once migrating to the latest version
+        config_path = output_dir / "hack_config.json"
+        utils.write_json(data=config, filepath=config_path)
+    else:
+        morph_ext = "swc"
+
     L.debug("Generating connectome recipe...")
     recipe_file = build_dir / "manipulation-config.json"
     recipe = recipes.build_connectome_distance_dependent_recipe(
-        config_path, configuration_df, build_dir
+        config_path, configuration_df, build_dir, morph_ext
     )
     utils.write_json(data=recipe, filepath=recipe_file)
 

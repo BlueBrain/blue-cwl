@@ -23,6 +23,7 @@ import pyarrow
 import pyarrow.fs
 import voxcell
 import yaml
+from pydantic import BaseModel
 
 from cwl_registry.constants import DEFAULT_CIRCUIT_BUILD_PARAMETERS
 from cwl_registry.exceptions import CWLWorkflowError
@@ -101,11 +102,19 @@ def load_json(filepath: os.PathLike) -> Dict[Any, Any]:
     return json.loads(Path(filepath).read_bytes())
 
 
-@log
 def write_json(filepath: os.PathLike, data: Dict[Any, Any]) -> None:
     """Write json file."""
+
+    def serializer(obj):
+        """Serialize pydantic models if they are nested inside dicts."""
+        if isinstance(obj, BaseModel):
+            return obj.dict()
+        if isinstance(obj, Path):
+            return str(obj)
+        raise TypeError(f"Unexpected type {obj.__class__.__name__}")
+
     with open(filepath, "w", encoding="utf-8") as fd:
-        json.dump(data, fd, indent=2)
+        json.dump(data, fd, indent=2, default=serializer)
 
 
 @log
@@ -439,9 +448,6 @@ def bisect_cell_collection_by_properties(
     mask = np.logical_and.reduce(
         [df[name].isin(values).values for name, values in properties.items()]
     )
-
-    if not mask.any():
-        raise CWLWorkflowError("The mask resulting from the given properties is empty.")
 
     return (split(df, mask), split(df, ~mask))
 

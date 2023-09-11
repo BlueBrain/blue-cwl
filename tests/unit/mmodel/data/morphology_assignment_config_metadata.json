@@ -1,0 +1,45 @@
+{
+  "@context": [
+    "https://bluebrain.github.io/nexus/contexts/metadata.json",
+    "https://bbp.neuroshapes.org"
+  ],
+  "@id": "https://bbp.epfl.ch/neurosciencegraph/data/165faedc-ba54-4456-a811-c1f2168d87be",
+  "@type": "MorphologyAssignmentConfig",
+  "distribution": {
+    "@type": "DataDownload",
+    "atLocation": {
+      "@type": "Location",
+      "location": "file:///gpfs/bbp.cscs.ch/data/project/proj134/nexus/bbp/mmb-point-neuron-framework-model/c/9/2/0/e/6/5/4/morphology-assignment-config.json",
+      "store": {
+        "@id": "https://bbp.epfl.ch/neurosciencegraph/data/10419671-da26-48d3-abf9-51eb54759ca4",
+        "@type": "RemoteDiskStorage",
+        "_rev": 1
+      }
+    },
+    "contentSize": {
+      "unitCode": "bytes",
+      "value": 1443
+    },
+    "contentUrl": "https://bbp.epfl.ch/nexus/v1/files/bbp/mmb-point-neuron-framework-model/https%3A%2F%2Fbbp.epfl.ch%2Fnexus%2Fv1%2Fresources%2Fbbp%2Fmmb-point-neuron-framework-model%2F_%2F5c552159-5784-4d70-b508-8544b8103c91",
+    "digest": {
+      "algorithm": "SHA-256",
+      "value": "de4d3fdaabf2d57726420788ebc8775be6f770df3a4c9e5edf41f912a3ce72b4"
+    },
+    "encodingFormat": "application/json",
+    "name": "morphology-assignment-config.json"
+  },
+  "generatorName": "mmodel",
+  "name": "Test MorphologyAssignmentConfig [DO NOT USE]",
+  "_constrainedBy": "https://bluebrain.github.io/nexus/schemas/unconstrained.json",
+  "_createdAt": "2023-07-06T15:02:55.702Z",
+  "_createdBy": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/zisis",
+  "_deprecated": false,
+  "_incoming": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fneurosciencegraph%2Fdata%2F165faedc-ba54-4456-a811-c1f2168d87be/incoming",
+  "_outgoing": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fneurosciencegraph%2Fdata%2F165faedc-ba54-4456-a811-c1f2168d87be/outgoing",
+  "_project": "https://bbp.epfl.ch/nexus/v1/projects/bbp/mmb-point-neuron-framework-model",
+  "_rev": 8,
+  "_schemaProject": "https://bbp.epfl.ch/nexus/v1/projects/bbp/mmb-point-neuron-framework-model",
+  "_self": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fneurosciencegraph%2Fdata%2F165faedc-ba54-4456-a811-c1f2168d87be",
+  "_updatedAt": "2023-07-28T12:46:47.870Z",
+  "_updatedBy": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/zisis"
+}

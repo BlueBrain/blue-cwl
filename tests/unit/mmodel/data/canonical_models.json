@@ -1,0 +1,66 @@
+{
+  "hasPart": {
+    "http://api.brain-map.org/api/v2/data/Structure/935": {
+      "about": "BrainRegion",
+      "_rev": 67,
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383192": {
+          "_rev": 34,
+          "about": "NeuronMorphologicalType",
+          "hasPart": {
+            "https://bbp.epfl.ch/model-id-1": {
+              "about": "CanonicalMorphologyModel",
+              "_rev": 6
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383194": {
+          "_rev": 38,
+          "about": "NeuronMorphologicalType",
+          "hasPart": {
+            "https://bbp.epfl.ch/model-id-2": {
+              "about": "CanonicalMorphologyModel",
+              "_rev": 6
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383196": {
+          "_rev": 34,
+          "about": "NeuronMorphologicalType",
+          "hasPart": {
+            "https://bbp.epfl.ch/model-id-3": {
+              "about": "CanonicalMorphologyModel",
+              "_rev": 6
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/927": {
+      "about": "BrainRegion",
+      "_rev": 67,
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383228": {
+          "_rev": 37,
+          "about": "NeuronMorphologicalType",
+          "hasPart": {
+            "https://bbp.epfl.ch/model-id-4": {
+              "about": "CanonicalMorphologyModel",
+              "_rev": 6
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0381376": {
+          "_rev": 35,
+          "about": "NeuronMorphologicalType",
+          "hasPart": {
+            "https://bbp.epfl.ch/model-id-5": {
+              "about": "CanonicalMorphologyModel",
+              "_rev": 6
+            }
+          }
+        }
+      }
+    }
+  }
+}

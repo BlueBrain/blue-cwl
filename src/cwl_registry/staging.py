@@ -1,19 +1,22 @@
 """Staging utils."""
+import json
 import logging
 import os
 import shutil
+from collections import deque
 from collections.abc import Sequence
+from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Union
 
 import pandas as pd
 from entity_management.nexus import get_file_location
 from entity_management.util import file_uri_to_path
 from kgforge.core import Resource
 
-from cwl_registry import utils
+from cwl_registry import nexus, utils
 from cwl_registry.nexus import (
     get_resource,
     read_json_file_from_resource,
@@ -33,12 +36,12 @@ ENCODING_FORMATS = {
 L = logging.getLogger(__name__)
 
 
-def _distribution_as_list(distribution: Union[Resource, List[Resource]]) -> List[Resource]:
+def _distribution_as_list(distribution: Union[Resource, list[Resource]]) -> list[Resource]:
     """Return the distribution always as a list."""
     return distribution if isinstance(distribution, list) else [distribution]
 
 
-def _create_target_file(source_file: Path, output_dir: Path, basename: Optional[str] = None):
+def _create_target_file(source_file: Path, output_dir: Path, basename: str | None = None):
     if basename is None:
         return output_dir / source_file.name
     return output_dir / basename
@@ -67,7 +70,7 @@ def _find_first(predicate: Callable[[Any], bool], objects: Sequence[Any]) -> Any
 
 
 def _stage_distribution_with_atLocation(
-    distributions: List[Resource],
+    distributions: list[Resource],
     output_dir: Path,
     basename: str,
     encoding_format: str,
@@ -84,7 +87,7 @@ def _stage_distribution_with_atLocation(
 def _stage_distribution_wout_atLocation(
     forge,
     resource: Resource,
-    distributions: List[Resource],
+    distributions: list[Resource],
     output_dir: Path,
     basename: str,
     encoding_format: str,
@@ -162,7 +165,7 @@ def materialize_json_file_from_resource(resource, output_file: Path) -> None:
 
 
 def materialize_density_distribution(
-    forge, dataset: dict, output_file: Optional[os.PathLike] = None
+    forge, dataset: dict, output_file: os.PathLike | None = None
 ) -> dict:
     """Materialize the me type densities distribution."""
     groups = apply_to_grouped_dataset(
@@ -178,11 +181,11 @@ def materialize_density_distribution(
     return groups
 
 
-def materialize_connectome_dataset(forge, dataset: dict, output_file: Optional[os.PathLike] = None):
+def materialize_connectome_dataset(forge, dataset: dict, output_file: os.PathLike | None = None):
     """Materialize a connectome dataset."""
     visited = {}
 
-    def get_label(resource_id):
+    def _get_label(resource_id):
         """Get label if available or fetch it from the resource."""
         if resource_id in visited:
             return visited[resource_id]
@@ -190,7 +193,7 @@ def materialize_connectome_dataset(forge, dataset: dict, output_file: Optional[o
         visited[resource_id] = label
         return label
 
-    def get_region_notation(resource_id):
+    def _get_region_notation(resource_id):
         if resource_id in visited:
             return visited[resource_id]
         label = get_resource(forge, resource_id).notation
@@ -209,13 +212,13 @@ def materialize_connectome_dataset(forge, dataset: dict, output_file: Optional[o
         for hj, hjd in hid["hasPart"].items():
             hj_label = hemispheres[int(hj)]
             for ri, rid in hjd["hasPart"].items():
-                ri_label = get_region_notation(ri)
+                ri_label = _get_region_notation(ri)
                 for rj, rjd in rid["hasPart"].items():
-                    rj_label = get_region_notation(rj)
+                    rj_label = _get_region_notation(rj)
                     for mi, mid in rjd["hasPart"].items():
-                        mi_label = get_label(mi)
+                        mi_label = _get_label(mi)
                         for mj, mjd in mid["hasPart"].items():
-                            mj_label = get_label(mj)
+                            mj_label = _get_label(mj)
 
                             if input_names is None:
                                 input_names = [inp["name"] for inp in mjd["hasPart"]["inputs"]]
@@ -246,10 +249,189 @@ def get_distribution_path_from_resource(forge, resource_id):
     }
 
 
+def get_entry_id(entry: dict) -> str:
+    """Get entry id."""
+    if "@id" in entry:
+        resource_id = entry["@id"]
+    else:
+        resource_id = entry["id"]
+
+    if "_rev" in entry:
+        rev = entry["_rev"]
+    elif "rev" in entry:
+        rev = entry["rev"]
+    else:
+        rev = None
+
+    if rev:
+        assert "?rev=" not in resource_id
+        resource_id = f"{resource_id}?rev={rev}"
+
+    return resource_id
+
+
+def _iter_dataset_children(dataset, branch_token):
+    if isinstance(dataset, dict):
+        dataset = ({**{"@id": key}, **values} for key, values in dataset.items())
+
+    for d in dataset:
+        yield _split_entry(d, branch_token)
+
+
+def transform_nested_dataset(
+    dataset: dict,
+    level_transforms: list[Callable[[dict], tuple[str, dict]]],
+    branch_token: str | None = "hasPart",
+    collapse_leaves=False,
+):
+    """Transform a nested dataset via the level transforms."""
+    if branch_token is None:
+        assert collapse_leaves is False, "Compact datasets are already collapsed."
+        return _transform_compact_dataset(dataset, level_transforms)
+
+    return _transform_expanded_dataset(dataset, level_transforms, branch_token, collapse_leaves)
+
+
+def _transform_expanded_dataset(
+    dataset: dict,
+    level_transforms: list[Callable[[dict], tuple[str, dict]]],
+    branch_token: str | None = "hasPart",
+    collapse_leaves=False,
+):
+    level = 0
+    last_level = len(level_transforms) - 1
+
+    result = {}
+
+    if branch_token not in dataset:
+        dataset = {"hasPart": dataset}
+
+    q = deque([(dataset["hasPart"], result, level)])
+
+    while q:
+        source, target, level = q.pop()
+
+        transform_func = level_transforms[level]
+
+        is_collapsible_leaf = level == last_level and collapse_leaves
+
+        if is_collapsible_leaf:
+            target_level = target
+        else:
+            target_level = target[branch_token] = {}
+
+        for child_id, child_data, child_children in _iter_dataset_children(source, branch_token):
+            target_data = transform_func(child_id, child_data)
+
+            if is_collapsible_leaf:
+                target_level.update(target_data)
+            else:
+                target_level[utils.url_without_revision(child_id)] = target_data
+
+            if child_children:
+                q.append((child_children, target_data, level + 1))
+
+    return result
+
+
+def _split_entry(entry, branch_token):
+    children = entry.get(branch_token, None)
+    entry = {k: v for k, v in entry.items() if k != branch_token}
+
+    if "@id" in entry:
+        resource_id = entry.pop("@id")
+    else:
+        resource_id = entry.pop("id")
+
+    if "_rev" in entry:
+        rev = entry.pop("_rev")
+    elif "rev" in entry:
+        rev = entry.pop("rev")
+    else:
+        rev = None
+
+    if rev is not None:
+        assert "?rev=" not in resource_id
+        resource_id = f"{resource_id}?rev={rev}"
+
+    return resource_id, entry, children
+
+
+def _transform_compact_dataset(
+    dataset: dict,
+    level_transforms: list[Callable[[dict], tuple[str, dict]]],
+):
+    level = 0
+    last_level = len(level_transforms) - 1
+    result = {}
+
+    q = deque([(dataset, result, level)])
+
+    while q:
+        source, target, level = q.pop()
+
+        transform_func = level_transforms[level]
+
+        if level == last_level:
+            source_id, source_data, _ = _split_entry(source, None)
+            target_data = transform_func(source_id, source_data)
+            target.update(target_data)
+        else:
+            target_level = target["hasPart"] = {}
+            for child_id, children in source.items():
+                target_data = transform_func(child_id, {})
+                target_level[utils.url_without_revision(child_id)] = target_data
+                q.append((children, target_data, level + 1))
+
+    return result
+
+
+_TRANSFORM_CACHE = {}
+
+
+def transform_cached(func):
+    """Cache for trasnform functions."""
+
+    def wrapped(entry_id, entry_data, *args, **kwargs):
+        key = entry_id
+
+        if entry_data:
+            key += json.dumps(entry_data, sort_keys=True)
+
+        if key in _TRANSFORM_CACHE:
+            return deepcopy(_TRANSFORM_CACHE[key])
+
+        result = func(entry_id, entry_data, *args, **kwargs)
+
+        _TRANSFORM_CACHE[key] = deepcopy(result)
+
+        return result
+
+    return wrapped
+
+
+@transform_cached
+def get_region_label(entry_id, entry_data=None, forge=None):  # pylint: disable=unused-argument
+    """Get region acronym as label."""
+    return {"label": nexus.get_region_resource_acronym(forge, entry_id)}
+
+
+@transform_cached
+def get_label(entry_id, entry_data=None, forge=None):  # pylint: disable=unused-argument
+    """Get entry resource label."""
+    return {"label": nexus.get_resource_json_ld(entry_id, forge)["label"]}
+
+
+@transform_cached
+def get_morphology_paths(entry_id, entry_data=None, forge=None):  # pylint: disable=unused-argument
+    """Get morphology paths."""
+    return {"path": get_distribution_path_from_resource(forge, entry_id)["path"]}
+
+
 def apply_to_grouped_dataset(
     forge,
     dataset,
-    group_names: Optional[list] = None,
+    group_names: list | None = None,
     apply_function=get_distribution_path_from_resource,
 ):
     """Materialize a grouped dataset with resource ids."""
@@ -264,13 +446,13 @@ def apply_to_grouped_dataset(
             contents = {}
             for entry in data["hasPart"]:
                 res = materialize(entry, index + 1)
-                contents[entry["@id"]] = {"label": get_label(entry), **res}
+                contents[entry["@id"]] = {"label": _get_label(entry), **res}
 
             level_name = "hasPart" if group_names is None else group_names[index + 1]
 
             return {level_name: contents}
 
-        resource_id = get_id(data)
+        resource_id = _get_id(data)
 
         if resource_id in visited:
             value = visited[resource_id]
@@ -280,7 +462,7 @@ def apply_to_grouped_dataset(
 
         return value
 
-    def get_id(entry):
+    def _get_id(entry):
         """Get id with revision if available."""
         resource_id = entry["@id"]
 
@@ -290,7 +472,7 @@ def apply_to_grouped_dataset(
 
         return resource_id
 
-    def get_label(entry):
+    def _get_label(entry):
         """Get label if available or fetch it from the resource."""
         if "label" not in entry:
             return get_resource(forge=forge, resource_id=entry["@id"]).label
@@ -306,7 +488,7 @@ def stage_dataset_groups(forge, dataset_resource_id, staging_function):
     resource = get_resource(forge=forge, resource_id=dataset_resource_id)
     dataset = read_json_file_from_resource(resource)
 
-    existing: Dict[str, str] = {}
+    existing: dict[str, str] = {}
 
     for identifier, group in dataset.items():
         # sometimes the entries start with @context for example
@@ -362,6 +544,7 @@ class AtlasInfo:
     hemisphere_path: str | None
     ph_catalog: dict | None
     cell_orientation_field_path: str | None
+    directory: Path
 
 
 def stage_atlas(
@@ -389,31 +572,37 @@ def stage_atlas(
     atlas = get_resource(forge=forge, resource_id=resource_id)
     assert "BrainAtlasRelease" in atlas.type
 
-    ontology_path = stage_resource_distribution_file(
-        forge,
-        atlas.parcellationOntology.id,
-        output_dir=output_dir,
-        encoding_type="json",
-        basename=parcellation_ontology_basename,
-        symbolic=symbolic,
+    ontology_path = str(
+        stage_resource_distribution_file(
+            forge,
+            atlas.parcellationOntology.id,
+            output_dir=output_dir,
+            encoding_type="json",
+            basename=parcellation_ontology_basename,
+            symbolic=symbolic,
+        )
     )
-    annotation_path = stage_resource_distribution_file(
-        forge,
-        atlas.parcellationVolume.id,
-        output_dir=output_dir,
-        encoding_type="nrrd",
-        basename=parcellation_volume_basename,
-        symbolic=symbolic,
+    annotation_path = str(
+        stage_resource_distribution_file(
+            forge,
+            atlas.parcellationVolume.id,
+            output_dir=output_dir,
+            encoding_type="nrrd",
+            basename=parcellation_volume_basename,
+            symbolic=symbolic,
+        )
     )
 
     try:
-        hemisphere_path = stage_resource_distribution_file(
-            forge,
-            atlas.hemisphereVolume.id,
-            output_dir=output_dir,
-            encoding_type="nrrd",
-            basename=parcellation_hemisphere_basename,
-            symbolic=symbolic,
+        hemisphere_path = str(
+            stage_resource_distribution_file(
+                forge,
+                atlas.hemisphereVolume.id,
+                output_dir=output_dir,
+                encoding_type="nrrd",
+                basename=parcellation_hemisphere_basename,
+                symbolic=symbolic,
+            )
         )
     except AttributeError:
         L.warning("Atlas Release %s has no hemisphereVolume.", resource_id)
@@ -435,24 +624,27 @@ def stage_atlas(
         ph_catalog = None
 
     try:
-        cell_orientation_field_path = stage_resource_distribution_file(
-            forge,
-            atlas.cellOrientationField.id,
-            output_dir=output_dir,
-            encoding_type="nrrd",
-            basename=cell_orientation_field_basename,
-            symbolic=symbolic,
+        cell_orientation_field_path = str(
+            stage_resource_distribution_file(
+                forge,
+                atlas.cellOrientationField.id,
+                output_dir=output_dir,
+                encoding_type="nrrd",
+                basename=cell_orientation_field_basename,
+                symbolic=symbolic,
+            )
         )
     except AttributeError:
         L.warning("Atlas Release %s has no cellOrientationField", resource_id)
         cell_orientation_field_path = None
 
     return AtlasInfo(
-        ontology_path=str(ontology_path),
-        annotation_path=str(annotation_path),
-        hemisphere_path=str(hemisphere_path),
+        ontology_path=ontology_path,
+        annotation_path=annotation_path,
+        hemisphere_path=hemisphere_path,
         ph_catalog=ph_catalog,
-        cell_orientation_field_path=str(cell_orientation_field_path),
+        cell_orientation_field_path=cell_orientation_field_path,
+        directory=Path(output_dir),
     )
 
 
@@ -507,7 +699,7 @@ def _config_to_path(forge, config: dict) -> str:
 
 
 def materialize_macro_connectome_config(
-    forge, resource_id: str, output_file: Optional[Path] = None
+    forge, resource_id: str, output_file: Path | None = None
 ) -> dict:
     """Materialize the macro connectome config.
 
@@ -550,7 +742,7 @@ def materialize_macro_connectome_config(
 
 
 def materialize_micro_connectome_config(
-    forge, resource_id: str, output_file: Optional[pd.DataFrame] = None
+    forge, resource_id: str, output_file: pd.DataFrame | None = None
 ) -> dict:
     """Materialize micro connectome config.
 
@@ -605,27 +797,6 @@ def materialize_micro_connectome_config(
         utils.write_json(filepath=output_file, data=data)
 
     return data
-
-
-def get_entry_id(entry: dict) -> str:
-    """Get entry id."""
-    if "@id" in entry:
-        resource_id = entry["@id"]
-    else:
-        resource_id = entry["id"]
-
-    if "_rev" in entry:
-        rev = entry["_rev"]
-    elif "rev" in entry:
-        rev = entry["rev"]
-    else:
-        rev = None
-
-    if rev:
-        assert "?rev=" not in resource_id
-        resource_id = f"{resource_id}?rev={rev}"
-
-    return resource_id
 
 
 def materialize_synapse_config(forge, resource_id, output_dir):
