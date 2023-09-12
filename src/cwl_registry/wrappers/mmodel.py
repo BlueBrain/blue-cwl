@@ -53,7 +53,7 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
     staging_dir = utils.create_dir(output_dir / "stage")
     build_dir = utils.create_dir(output_dir / "build")
     atlas_dir = utils.create_dir(staging_dir / "atlas")
-    morphologies_dir = utils.create_dir(build_dir / "morphologies/h5v1")
+    morphologies_dir = utils.create_dir(build_dir / "morphologies/h5v1", clean_if_exists=True)
 
     forge = nexus.get_forge()
     partial_circuit = nexus.get_resource(forge, partial_circuit)

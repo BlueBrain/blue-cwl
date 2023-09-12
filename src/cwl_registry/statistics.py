@@ -208,7 +208,7 @@ def _density_summary_stats_etype(etype_urls, df_etype):
             "density": float(df["density"].iloc[0]),
         }
 
-        if "count" in df_etype:
+        if "count" in df_etype and not np.isnan(df["count"].iloc[0]):
             neuron["count"] = int(df["count"].iloc[0])
 
         ret[url] = {
