@@ -24,9 +24,10 @@ def split_config(
 
             if not entry.id:
                 default = default_canonicals[region_key][mtype_key]
-                final["id"] = default["@id"]
-                if "rev" in default:
-                    final["rev"] = default["rev"]
+                default_id, default_rev = _get_canonical_entry(default)
+                final["id"] = default_id
+                if default_rev:
+                    final["rev"] = int(default_rev)
 
             if "rev" in final and not final["rev"]:
                 del final["rev"]
@@ -35,7 +36,14 @@ def split_config(
             del placeholders[region_key][mtype_key]
 
         canonicals["hasPart"][region_key] = {"hasPart": mtypes}
-        if not placeholders[region_key]:
+
+        if not placeholders[region_key].keys():
             del placeholders[region_key]
 
     return placeholders.dict(), canonicals
+
+
+def _get_canonical_entry(entry):
+    entry_id = list(entry.keys())[0]
+    entry_rev = entry[entry_id].get("_rev", None)
+    return entry_id, entry_rev
