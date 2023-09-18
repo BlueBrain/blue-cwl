@@ -44,6 +44,7 @@ setup(
         "fz_td_recipe",
         "pydantic",
         "morphio",
+        "jsonschema",
     ],
     packages=find_packages(where="src"),
     package_dir={"": "src"},

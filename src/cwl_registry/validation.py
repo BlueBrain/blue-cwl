@@ -1,8 +1,13 @@
 """Validation functions."""
-import libsonata
+from importlib import resources
+from typing import Any
 
-from cwl_registry import utils
-from cwl_registry.exceptions import CWLRegistryError, CWLWorkflowError
+import jsonschema
+import libsonata
+import yaml
+
+from cwl_registry.exceptions import CWLRegistryError, CWLWorkflowError, SchemaValidationError
+from cwl_registry.utils import load_json
 
 
 def check_population_name_consistent_with_region(population_name, region_acronym):
@@ -15,7 +20,7 @@ def check_population_name_consistent_with_region(population_name, region_acronym
 
 def check_population_name_in_config(population_name, config_file):
     """Raise if the population name is not present in the sonata config file."""
-    config = utils.load_json(config_file)
+    config = load_json(config_file)
 
     nodes = config["networks"]["nodes"]
 
@@ -57,3 +62,35 @@ def check_properties_in_population(population_name, nodes_file, property_names):
         raise CWLWorkflowError(
             f"{not_existing} are not contained in {population_name} in {nodes_file}."
         )
+
+
+def validate_schema(data: dict[str, Any], schema_name: str) -> None:
+    """Validata data against the schema with 'schema_name'."""
+    schema = _read_schema(schema_name)
+
+    cls = jsonschema.validators.validator_for(schema)
+    cls.check_schema(schema)
+    validator = cls(schema)
+    errors = validator.iter_errors(data)
+
+    messages: list[str] = []
+    for error in errors:
+        if error.context:
+            messages.extend(map(_format_error, error.context))
+        else:
+            messages.append(_format_error(error))
+
+    if messages:
+        raise SchemaValidationError("\n".join(messages))
+
+
+def _read_schema(schema_name: str) -> dict[str, Any]:
+    """Load a schema and return the result as a dictionary."""
+    resource = resources.files("cwl_registry") / "schemas" / schema_name
+    content = resource.read_text()
+    return yaml.safe_load(content)
+
+
+def _format_error(error) -> str:
+    paths = " -> ".join(map(str, error.absolute_path))
+    return f"[{paths}]: {error.message}"

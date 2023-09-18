@@ -22,6 +22,7 @@ from cwl_registry.nexus import (
     read_json_file_from_resource,
     read_json_file_from_resource_id,
 )
+from cwl_registry.validation import validate_schema
 
 ENCODING_FORMATS = {
     "json": "application/json",
@@ -168,6 +169,8 @@ def materialize_density_distribution(
     forge, dataset: dict, output_file: os.PathLike | None = None
 ) -> dict:
     """Materialize the me type densities distribution."""
+    validate_schema(data=dataset, schema_name="cell_composition_volume_distribution.yml")
+
     groups = apply_to_grouped_dataset(
         forge,
         dataset,

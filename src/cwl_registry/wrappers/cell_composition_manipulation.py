@@ -9,8 +9,9 @@ import voxcell
 from bba_data_push.bba_dataset_push import push_cellcomposition
 
 from cwl_registry import density_manipulation, staging, statistics, utils
-from cwl_registry.exceptions import CWLRegistryError
+from cwl_registry.exceptions import CWLRegistryError, CWLWorkflowError, SchemaValidationError
 from cwl_registry.nexus import get_forge, get_resource, read_json_file_from_resource
+from cwl_registry.validation import validate_schema
 from cwl_registry.variant import Variant
 
 L = logging.getLogger(__name__)
@@ -36,6 +37,7 @@ def app(  # pylint: disable=too-many-arguments
     forge = get_forge()
 
     cell_composition = get_resource(forge, base_cell_composition)
+    _validate_cell_composition_schemas(cell_composition, forge)
 
     original_cell_composition_summary = read_json_file_from_resource(
         get_resource(forge, _get_summary_id(cell_composition.cellCompositionSummary))
@@ -140,6 +142,10 @@ def app(  # pylint: disable=too-many-arguments
 
     forge = get_forge(force_refresh=True)
     resource = get_resource(forge, cell_composition_id)
+
+    # check the registered schemas
+    _validate_cell_composition_schemas(resource, forge)
+
     utils.write_resource_to_definition_output(
         json_resource=forge.as_json(resource),
         variant=Variant.from_resource_id(forge, variant_config),
@@ -153,6 +159,42 @@ def _get_summary_id(entry):
         return entry[0].id
 
     return entry.id
+
+
+def _validate_cell_composition_schemas(resource, forge):
+    volume_id = resource.cellCompositionVolume.id
+    _validate_cell_composition_volume_schema(volume_id, forge)
+
+    summary_id = _get_summary_id(resource.cellCompositionSummary)
+    _validate_cell_composition_summary_schema(summary_id, forge)
+
+
+def _validate_cell_composition_summary_schema(resource_id, forge):
+    summary_data = read_json_file_from_resource(get_resource(forge, resource_id))
+    try:
+        validate_schema(
+            data=summary_data,
+            schema_name="cell_composition_summary_distribution.yml",
+        )
+    except SchemaValidationError as e:
+        raise CWLWorkflowError(
+            "Schema validation failed for CellComposition's summary.\n"
+            f"CellCompositionSummary failing the validation: {resource_id}"
+        ) from e
+
+
+def _validate_cell_composition_volume_schema(resource_id, forge):
+    volume_data = read_json_file_from_resource(get_resource(forge, resource_id))
+    try:
+        validate_schema(
+            data=volume_data,
+            schema_name="cell_composition_volume_distribution.yml",
+        )
+    except SchemaValidationError as e:
+        raise CWLWorkflowError(
+            "Schema validation failed for CellComposition's volume distribution.\n"
+            f"CellCompositionVolume failing the validation: {resource_id}"
+        ) from e
 
 
 def _check_recipe_compatibility_with_density_distribution(density_distribution: dict, recipe: dict):

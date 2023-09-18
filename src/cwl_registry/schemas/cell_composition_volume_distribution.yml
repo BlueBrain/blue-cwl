@@ -1,0 +1,51 @@
+%YAML 1.1
+---
+"$schema": https://json-schema.org/draft/2020-12/schema
+title: CellCompositionVolume distribution schema
+'$defs':
+  uri:
+    type: string
+    format: uri
+    pattern: '^https?:\/\/[^?#]*$'  # uri without query or fragment
+type: object
+required:
+- hasPart
+properties:
+  hasPart:  # mtypes
+    type: array
+    items:
+      type: object
+      required:
+        - '@id'
+        - label
+        - hasPart
+      properties:
+        '@id':
+          '$ref': '#/$defs/uri'
+        label:
+          type: string
+        hasPart:  # etypes
+          type: array
+          items:
+            type: object
+            required:
+              - '@id'
+              - label
+              - hasPart
+            properties:
+              '@id':
+                '$ref': '#/$defs/uri'
+              label:
+                type: string
+              hasPart:  # density
+                type: array
+                items:
+                  type: object
+                  required:
+                    - '@id'
+                    - '_rev'
+                  properties:
+                    '@id':
+                      'ref': '#/$defs/uri'
+                    '_rev':
+                      type: integer

@@ -1,5 +1,6 @@
 graft tests
 graft src/cwl_registry/generators
 graft src/cwl_registry/data
+graft src/cwl_registry/schemas
 
 global-exclude *.py[co] .DS_Store

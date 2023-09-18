@@ -7,3 +7,7 @@ class CWLRegistryError(Exception):
 
 class CWLWorkflowError(CWLRegistryError):
     """CWL Workflow exception class."""
+
+
+class SchemaValidationError(Exception):
+    """Schemal validation exception class."""
