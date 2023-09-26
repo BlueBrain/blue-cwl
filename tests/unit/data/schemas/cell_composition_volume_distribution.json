@@ -1,0 +1,5217 @@
+{
+  "hasPart": [
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383198",
+      "label": "L23_BP",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738202",
+          "label": "dSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/88e12afd-6915-458f-a00f-e4c501aabddf",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/9ab7e4ba-96bf-4db8-9e97-bfdca327fd1e",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/2df93ad9-8caf-473b-89b0-7391188db1ef",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/6e222d5d-29f5-4f65-b5c7-87e15e204a10",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/a403cb4c-50ee-4385-a8a6-61de2470bd4c",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/9943f9ee-267a-44ad-ba33-c294c8e184df",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383202",
+      "label": "L23_LBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/0b0c808a-c619-4bac-818e-3cc52d054dfc",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/08f16d6d-1aec-49cf-bb58-3565b424d3cd",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/57436f87-0326-461e-9430-e2e8a3a6a817",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e265ba7a-0fdf-4eb3-82ec-dc98f60549d4",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738202",
+          "label": "dSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/bb53a594-48e2-4b08-9d71-3bc9ee131e97",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/0a657695-648a-4430-898c-85edb572449b",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e36f82ab-f83b-48c4-8c76-e79ca47759a1",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/95544a3c-84a6-4d20-be53-779645997c2f",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/79b1161b-495d-4e72-bc81-c901477284b8",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/f971c386-b2a3-4180-b002-e16a1562a77a",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383201",
+      "label": "L23_DBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/172d0d98-0981-4d47-9206-26f6b2ed3aa2",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e9af3fe7-cc75-4a2c-8a6e-6de80758bd6c",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/102d37fc-26ee-488b-bee9-2b078a48ba68",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/4dca45eb-fbd7-4111-95ff-a3c48b864c86",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/36447085-57ad-45e2-9755-3a18dbde2a7f",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/50775b30-959e-4db7-b02f-7feec8efa3d8",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/aff18039-247c-4ba4-9fd3-5be79e0f03ff",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381368",
+      "label": "L3_TPC:B",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/b275edbb-acfa-4e09-a915-ffc95573c631",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381366",
+      "label": "L3_TPC:A",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/b4a1622f-8bc4-4fda-88bc-0a8b427124ee",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383199",
+      "label": "L23_BTC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/568d264f-8216-42d2-9cfe-78e3e1394bfa",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/a1d4c1f9-21ef-428f-af8c-71b8aaa3b383",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/6a4d2c36-8002-458c-8afb-e50eba2fef76",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/f5007724-043f-4596-99cf-651eadd8ef13",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ac02fd5d-3a98-4b1c-8d71-7931e8e9d2dd",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/1cf6578a-20a8-44bb-a27b-50bb9d2ca97f",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d330360e-8d29-4d71-86ca-d948438c77ff",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383203",
+      "label": "L23_MC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/2151adf6-1a1c-4c8a-bad2-fc315bcb8868",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/438acc56-7132-458d-812c-ef2dcbecfe39",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/8ef1f079-c018-43f2-92b9-a65d0304edee",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/8c0a556e-b90b-422d-ab81-827ae8d47dbb",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/a6ecb0c2-9456-4363-b404-676f8a3a0e89",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/8650cff8-f15b-4016-a314-65ab16d461af",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/61f29ab5-6756-4cac-b985-81b607677388",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/9fa20041-5979-4f52-9fd8-67bee9a04d15",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/4a6e133b-5231-4da9-b7cb-d863317c2a5a",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383200",
+      "label": "L23_ChC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/8fd0180a-1c53-4244-a35b-b1569d2314c8",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/dd00da64-90ae-4c07-ae52-c71a932a52cc",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/31ff0395-f033-471b-b0bb-7c253d71b9a5",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383204",
+      "label": "L23_NBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/9e510717-72af-4c09-adf6-fa302200053a",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/c070600d-2775-48ab-aa05-9d6b0596acfe",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/9b0455c0-08b0-4fd0-b70e-d883bd87f874",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/18102cc4-98c7-4a9c-8ce6-b1ad369d7cc9",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738202",
+          "label": "dSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/27c0607a-f20f-49a2-9592-3e4f64705bd9",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/29472d86-8523-4c25-adf6-7ea455a234a7",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d80ea727-4970-402f-a6ba-2701b6234e8d",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/59780ef8-3a52-41b1-9990-5aaef6298ebe",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/f29a483f-511e-4ec3-992c-703c3bec39b7",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/22d316f6-8269-446b-ba71-899d5c0940bc",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383206",
+      "label": "L23_SBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d9e0eba6-bf4a-4bc3-bf50-d3d0ebba1898",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/f600deb9-246f-43cb-8f6d-99e6b407a009",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/84774e53-4084-4e4a-8aac-73dd32009133",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383205",
+      "label": "L23_NGC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/acbe1116-ac79-4cb0-8074-3c2caa4ab112",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/3c44c54d-493c-4da7-8010-cad4796dcce1",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381367",
+      "label": "L2_TPC:B",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/10ddefd8-4507-45f0-a372-b3718516b770",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383208",
+      "label": "L2_TPC:A",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/448b6a46-d105-4dc3-bd78-069c3e8da004",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383207",
+      "label": "L2_IPC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/59d0fc12-98a4-4147-b531-6d240e9fb14e",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383209",
+      "label": "L4_BP",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/6e252541-8ba2-4faf-83ac-8c90015d1a75",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/23259819-2e52-43c0-bf59-3c4f42f95d27",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/c60844f2-2087-4e27-821b-243116ec73df",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738202",
+          "label": "dSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/f305f44c-9c59-4e13-b53a-17ef205bb1d1",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/6c804536-f753-499d-83bb-120803c86f95",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/4381303c-a439-4362-832d-20c75cb71898",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383212",
+      "label": "L4_DBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/2e666042-f093-4715-894d-e320ccdb391f",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/a5577619-dce3-4d6d-ac8b-75c915ed9c75",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/1d7e2656-776c-4744-9c2e-34d8d83c22eb",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/34763317-c206-4cf8-8d17-a7d228ac2c32",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/36c320b9-d6be-4a6d-821d-5e238b8a0e95",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/7745f518-b206-41c5-94a6-22639fdba916",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/f67aec7d-1d93-4857-927a-84b353771a65",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383210",
+      "label": "L4_BTC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d29f2240-bdbe-411f-8913-33e1cd644b6f",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/7f44750c-e3a0-4484-8a68-a7381facd6d7",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/9987dd78-daaa-4f65-a623-50119de29701",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383215",
+      "label": "L4_NBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/0f72793c-e7e8-4c6e-a395-ebd5c277ec61",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738202",
+          "label": "dSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/bfb830f0-bf5c-448f-8a01-ea621328fbb4",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/087e2a4f-5307-4f30-bfde-2b73fed8943b",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/7b824588-3b21-474f-82c5-3dc796948030",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/281df7fc-c18e-4035-8065-f7d7f2f8099a",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ebcf3769-858d-4e52-a992-fa9edeed7f3e",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/5d05acc3-7a93-4c8b-b886-51d504b69a33",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/b5308f03-87a4-4d00-a423-74a4cc2c474f",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383217",
+      "label": "L4_SBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d61d7630-27cb-4b67-ae73-84f62e523ce5",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/b73cc31c-e294-4ab3-99f9-bcd073c00681",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/76c21cda-200e-449f-9463-4c2bd8d81c0d",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383213",
+      "label": "L4_LBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/b4789603-f4b9-4a04-9554-544cd06a1435",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/32c2bc7f-f78e-4933-9a44-ea96a755dce9",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738202",
+          "label": "dSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/97264383-e236-468f-a2f3-7be878b4abb8",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/3ce7627b-795e-42a2-aa2c-c20de826a957",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e5b11f4d-f61e-4f5a-95d2-da67f16764d3",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/355cf3e7-362a-44ce-95b5-378a8bff6112",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/1041c733-16cb-483b-95e2-cfd3230ebe3c",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/699af491-8ac8-4874-918e-238c594b0cf0",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/045f4f55-f634-4133-b368-af9e2ed92062",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/0cb12709-0cbf-4dc6-8b8c-94e7349237fa",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381374",
+      "label": "L6_MC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/46cc98ad-3c13-4e08-82d6-265ef5d62e40",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/472d6aad-f2b1-400a-b23d-7c22f627cf1f",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/916de86b-9eda-4268-8b5b-083e63ad4b29",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/8554ce1c-d9d3-43b3-8ba2-1a2d914464f6",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/fd27f7d5-bfea-44c7-b40e-c83276a8aa6e",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/1dc34a01-0659-477b-8150-0f578a1aefa3",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/990e917c-372b-4df8-9ec3-b6c6454762d8",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/0fa47c74-ba00-4763-85da-bcfe5d4939db",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/abb54463-3c84-44af-abc7-c6675bf325cb",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383216",
+      "label": "L4_NGC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/61bf9805-1294-437d-a7aa-25e79e84c878",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d1e8790b-5d7e-4a06-af62-331baf93bdd6",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/6807c3a9-6601-4ce1-8971-a12d724d4485",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/6eee9377-cc23-4426-b3ae-fac45153f79f",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383214",
+      "label": "L4_MC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/bd5abd2c-31bc-4c66-bf64-d141bab4a621",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/1d33f2e7-5d1d-4dd8-bcd0-4ef4aece2d52",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d5c82092-927e-45b7-82f2-de6b0cbc05c0",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/654946bc-858d-43fe-b94b-cb00b400dcf7",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/5d4f715a-fabb-47f8-bac6-c35c4fec2f43",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e75ce641-3584-4d85-bc07-8101708d1161",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/54069977-2e58-4ad8-bd70-26d96064c283",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ddd67be2-2390-495b-aee4-7a1bc83eb492",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/514a6a65-ee16-4fe6-b57f-0ebf2f026128",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383233",
+      "label": "L6_LBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/7c84a0b7-4994-493f-a359-88bbc92996be",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/f0e08318-4c83-4a31-b397-02ea9bfe65e0",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ff1c07fc-504e-4c6a-8c21-5e81d27b51af",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/3ac59b58-9700-411d-affc-6171d3299204",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/c0a62b0b-75f1-49f9-a0a8-5678dac79a1b",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/99adbdbf-1d8b-439e-a274-c771f675f3c0",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/561b5160-d328-45a4-af2d-98d7801b4846",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/690fa0f3-17eb-494b-9ca2-26cd424c2220",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/12703ca4-ac36-4176-8334-e7b94017b8a3",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383211",
+      "label": "L4_ChC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/71e76b1f-0074-47e7-b91e-f5adf9002bdf",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/67d4a545-3364-4554-9aa3-47043cc6ac09",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/635d6014-1bd9-4f40-b183-1ed26b5aa020",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383240",
+      "label": "L6_BP",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/0a4faa2c-20e1-4a45-a810-2e4b458e77b1",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/7e9cc5a4-2845-49de-b155-ad899303f3e3",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/9dee35a0-bd25-4ab8-b540-c291f46c3fbf",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/bc2374ed-6858-435c-8a04-bcaece5e5ef3",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383230",
+      "label": "L6_ChC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/88a575fa-e556-4350-b8a8-a47051a0de06",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ae778c50-202b-408e-b081-33d0f8a1e3ec",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e0677334-8e0d-4278-9617-e1a3a441c105",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383197",
+      "label": "L1_SAC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/c5323b32-a487-4e9f-baa6-9729e4c986fa",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/68208ab5-e0e0-4222-9dd8-40e56245698d",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/c3aa7428-cf57-4309-90c4-45dba6bf8c52",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383193",
+      "label": "L1_HAC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e9c4ed7a-1217-41e8-9db3-5debdb2569c7",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/f4488da9-5b47-4505-941f-1d1085d71676",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ad5abeb0-2631-42d6-8caa-b76e3d8bb753",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383224",
+      "label": "L5_DBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/26d16ca0-c834-4fab-937d-90b07d14a055",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/5cc834dd-6062-48de-b3a4-4376ba081952",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/87cfa32d-f62c-49c5-8161-3a93cc5cefab",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/30a3406a-ee93-43f9-99b9-dddc75132947",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/2975de88-b931-4630-b179-ac69ea28be91",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/86a7ff39-8bda-4765-b93a-429d81a97f04",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/f99b3d9f-979f-4d93-9b75-62db87c023b4",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383226",
+      "label": "L5_NBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738202",
+          "label": "dSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/483d7427-ec58-4f3b-b151-4f814ae27b57",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/20be4945-ebd1-4b78-8f49-53cce52138d0",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/fbebdb37-71b8-46ed-867d-f42b4ea3daae",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/823d0f63-b43f-4256-af54-5851c8451916",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/1901068f-0831-4f29-b56d-80fdf26fba3b",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/50526224-a616-4dca-a8f2-9f59d4fb74dc",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/b656748d-c213-4f6d-8d65-efe33d302d16",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/94d7b063-d1a9-4efc-88ba-05889e022839",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383239",
+      "label": "L5_NGC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e61cd26b-bff3-4a86-b29d-20caebbb60c8",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/41056050-f754-4dd6-9408-7e2677165026",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/0afa8722-fd32-4fbf-8899-494db381658e",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ccd167f7-6501-45c2-be5c-67712ac0e06d",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383234",
+      "label": "L6_NBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/72a83ab6-57f0-4ae3-85f8-95e2ade4cc9b",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e3132b05-106d-4513-9d5c-d581b475b736",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/5ed5b598-e49c-4aaf-b36c-62fa6d87d6e4",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/b41bc206-540d-4946-9ade-f0c9da511448",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/6d325c1e-4ceb-45a6-8891-a00bb97cb5f2",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/9c5e7f2b-30ce-4346-997a-bcd5c2e5cfca",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738202",
+          "label": "dSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/cb63e4cd-c33c-4a8d-9064-3f0f1dcc6133",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e883f38a-9a68-4e91-8873-13179a5235b6",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383223",
+      "label": "L5_ChC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e9245fa7-67b2-4064-a195-50dab86ccf37",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/57e9b2d3-1e89-4645-acf4-628273bcfa60",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/a81f039e-fde5-4475-8f37-96b51b540bac",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381369",
+      "label": "L5_MC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/41322c7c-c42b-4062-addf-0f02b5fb60e6",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/babfef1d-2051-4f34-b4c4-e9a556880e19",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/b79915df-2821-43c3-8b58-e68293c1a7c4",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/4ba215a2-8114-4bba-83ae-d2eda75094b0",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/89d50e0c-23d4-46e7-bb3b-274f35f99eb4",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/9d728f47-34a3-4360-8f4e-d08d7447a41b",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/9ffe5f94-9f2f-4021-b17b-fc75041218e3",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/5789cdd9-f3a4-4f04-9dee-95267515bba0",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/a450f599-c1a1-4290-9e1a-ccb8988d3f14",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383222",
+      "label": "L5_BTC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/556635ee-9472-4748-a0ca-d0f036eee1d1",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d4272171-ca6d-4013-b753-74ae3905cd95",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ecfb43b9-1584-4857-bca5-793b8ecbb38e",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383235",
+      "label": "L6_NGC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/6d346c6d-4823-4366-b306-079f664e9556",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/af50397f-f82f-4315-839e-7bc2a5019428",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ad36f750-b93c-468d-9ced-72e237e61f4a",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/471b73db-7787-4c6d-9061-cc71769ad655",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383225",
+      "label": "L5_LBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/8d98a330-b650-4377-83dc-3c970a7ac950",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/3f800ef9-0f74-4e8a-9c20-cc5fb4e15cd8",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/0b01f8b3-2daa-4460-a4db-390df0240376",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/c4ea55e2-41a7-4472-acf3-8a2c2e971d85",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738202",
+          "label": "dSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/2116c460-6e01-4682-8e48-7e1a24a80b5c",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d8edd219-ec35-4171-bfe4-bc989792ea88",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/81e6c52d-f2f7-4caa-8b1f-83660e368a3e",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/e142d39c-003a-4aef-b7d3-e826ec1046db",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d5cd8a5f-9bde-4cd0-b2dc-8bd8370565c3",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/7612e04a-c7d0-436a-8ec5-d61cbe8292ef",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383231",
+      "label": "L6_DBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/88cfbfbf-c16f-4ccd-9ba0-89ecb08eb611",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738204",
+          "label": "cIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/62050292-1888-40b6-be0f-e39127e8a578",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/22b0db9e-16c2-48e5-89f8-6643447f6969",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/83c674aa-a0ff-4104-b6c2-cfb2ada670d0",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/33ecef2c-55f8-4674-b422-460fdd4f52ef",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/83ca2317-4ae6-4bb1-9d8a-2eb088539d1d",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738200",
+          "label": "bSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/c48769f3-831b-4844-b379-eb5f573c67e5",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383195",
+      "label": "L1_NGC-DA",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ee0fb8a3-1497-492a-9f21-c536132dc562",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/19f2ceae-06de-49a6-9261-09916abc9a45",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/1d488bdd-2d80-4048-bbf4-da12b56141c5",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738198",
+          "label": "cSTUT",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/92d9062c-e0ad-413f-bd4c-0192e2890915",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383192",
+      "label": "L1_DAC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/18146aa2-f9f3-495d-b823-42239c3ed371",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d3842abb-3d63-4342-920f-d933081fc28a",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383221",
+      "label": "L5_BP",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738206",
+          "label": "bIR",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/71fb5181-59a2-44e7-be69-24b85409a0b4",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/46054c15-593d-462b-a5c8-8f037eb62c32",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/3bb52cfd-21e8-4d93-a753-752730c816e1",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/24914173-df9c-4605-8c2b-408d38c4e059",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383236",
+      "label": "L6_SBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/dc1c9573-b9ca-41d2-863b-a24229a59f81",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/147e2d15-74cd-42b0-9a54-56e124eb8e37",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/91049d3f-c29c-4a93-b23d-43ca9371b5d8",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383227",
+      "label": "L5_SBC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738203",
+          "label": "bNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/dfd03567-8338-4359-970c-d196e16ae66a",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/020d08e5-5b73-4a64-8a94-060ff56ee075",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738205",
+          "label": "dNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/76309a6f-2151-477f-98cb-e91700d855c9",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383196",
+      "label": "L1_NGC-SA",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/f656ad5b-41d6-4e24-8b72-190b6717abac",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383194",
+      "label": "L1_LAC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/82dd43ac-4ced-4687-86c7-afd6382bb4e6",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381371",
+      "label": "L5_UPC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/6420e9ce-1fe4-41c9-8989-c97de55425e8",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381365",
+      "label": "L5_TPC:A",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/2b47f9ef-6e30-4ca3-a106-0d2c84aa5148",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381364",
+      "label": "L5_TPC:B",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/3c0779d9-d813-4001-8bb3-2574e37a2320",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381370",
+      "label": "L5_TPC:C",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/1268c3e7-30e6-4bc1-95ab-8a83f992beb0",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383229",
+      "label": "L6_BTC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738197",
+          "label": "cAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/d2cd65bb-c7b2-4bb9-bbcf-59da13c006a7",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738199",
+          "label": "bAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/14116264-66e0-46f0-a16c-5d39c60bfe53",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        },
+        {
+          "@id": "http://uri.interlex.org/base/ilx_0738201",
+          "label": "cNAC",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/ea2afe3b-dd83-4608-8819-bbbcb05a38f9",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383232",
+      "label": "L6_HPC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/1714d5ac-abda-44dd-bc3c-3eb095cd6bfb",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381375",
+      "label": "L6_TPC:A",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/f5c68d87-0024-4b93-9e79-f45641a6f6c1",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383218",
+      "label": "L4_SSC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/379c2fb2-5b34-4a62-8cfc-29a3e3a3ba73",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383220",
+      "label": "L4_UPC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/eeea4daf-316f-46bf-9679-0f8bdd2974b7",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383228",
+      "label": "L6_BPC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/88375306-0605-402c-a083-c5b21912dbcc",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381376",
+      "label": "L6_TPC:C",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/089de408-c722-4d41-b409-f3e2513549dc",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0383219",
+      "label": "L4_TPC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/abfb7340-ad65-4f1c-a0d9-4c9475a341f2",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381377",
+      "label": "L6_UPC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/1e6e46f5-49a6-41cb-a484-b6c4690d21e8",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381373",
+      "label": "L6_IPC",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/9ad6e9c6-566b-4184-bf2e-0ea4301db72c",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType",
+      "label": "GEN_mtype",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronEType",
+          "label": "GEN_etype",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/4bae6fba-45bd-4492-981e-fedea64b970c",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronMType",
+      "label": "GIN_mtype",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronEType",
+          "label": "GIN_etype",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "https://bbp.epfl.ch/neurosciencegraph/data/densities/e7d246c8-abed-42bf-8290-b5fc5b624cc4",
+              "@type": [
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer",
+                "METypeDensity"
+              ],
+              "_rev": 9
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "hasPart": {
+    "http://api.brain-map.org/api/v2/data/Structure/935": {
+      "label": "Anterior cingulate area, dorsal part, layer 1",
+      "notation": "ACAd1",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383192": {
+          "label": "L1_DAC",
+          "about": "NeuronMorphologicalType",
+          "hasPart": {
+            "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/canonicalmorphologymodels/3b5e4f0a-2631-4898-b323-907522b07f2c": {
+              "about": "CanonicalMorphologyModel",
+              "_rev": 3
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383193": {
+          "label": "L1_HAC",
+          "about": "NeuronMorphologicalType",
+          "hasPart": {
+            "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/canonicalmorphologymodels/19ddadf2-56a5-4811-9410-4afdb15ac762": {
+              "about": "CanonicalMorphologyModel",
+              "_rev": 3
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/614454342": {
+      "label": "Anterior cingulate area, dorsal part, layer 2",
+      "notation": "ACAd2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383198": {
+          "label": "L23_BP",
+          "about": "NeuronMorphologicalType",
+          "hasPart": {
+            "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/canonicalmorphologymodels/e717602b-ba96-42f8-8da3-b52a3e36b164": {
+              "about": "CanonicalMorphologyModel",
+              "_rev": 3
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@ import json
 from enum import Enum
 from pathlib import Path
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from cwl_registry import nexus
 from cwl_registry.mmodel.config import split_config
@@ -12,6 +12,7 @@ from cwl_registry.mmodel.staging import (
     materialize_canonical_config,
     materialize_placeholders_config,
 )
+from cwl_registry.staging import get_entry_id
 
 
 class VariantEntry(str, Enum):
@@ -26,18 +27,6 @@ class VariantInfo(BaseModel):
 
     algorithm: str
     version: str
-
-
-class EntityInfo(BaseModel):
-    """Linked entity info."""
-
-    id: str
-    rev: int | None = Field(default=None, alias="_rev")
-
-    @property
-    def full_id(self):
-        """Return full entity id."""
-        return f"{self.id}?rev={self.rev}" if self.rev else self.id
 
 
 class SynthesisOverrides(BaseModel):
@@ -82,69 +71,15 @@ class CanonicalMorphologyModel(BaseModel):
         return self.checksum() == other.checksum()
 
 
-class ConfigurationEntry(BaseModel):
-    """Configuration entry."""
-
-    id: str | None = None
-    rev: int | None = Field(default=None, alias="_rev")
-    overrides: dict[str, SynthesisOverrides] | None = None
-
-
-class LevelBase(BaseModel):
-    """Base for nested levels."""
-
-    hasPart: dict[str, dict]
-
-    def items(self):
-        """Return items."""
-        return self.hasPart.items()
-
-    def keys(self):
-        """Return keys."""
-        return self.hasPart.keys()
-
-    def values(self):
-        """Return values."""
-        return self.hasPart.values()
-
-    def __getitem__(self, value):
-        """Get item."""
-        return self.hasPart.__getitem__(value)
-
-    def __setitem__(self, key, value):
-        """Set item."""
-        return self.hasPart.__setitem__(key, value)
-
-    def __delitem__(self, key):
-        """Delete item."""
-        return self.hasPart.__delitem__(key)
-
-
-class EntityLevel(LevelBase):
-    """Level of entities."""
-
-    hasPart: dict[str, dict]
-
-
-class MtypeLevel(LevelBase):
-    """Level of mtypes."""
-
-    hasPart: dict[str, EntityLevel]
-
-
-class RegionLevel(LevelBase):
-    """Level of regions."""
-
-    hasPart: dict[str, MtypeLevel]
-
-
-class CanonicalDistributionConfig(RegionLevel):
+class CanonicalDistributionConfig(BaseModel):
     """Canonical distribution config."""
+
+    data: dict
 
     def materialize(self, forge, output_file=None, labels_only=False) -> dict:
         """Materialize distribution config."""
         return materialize_canonical_config(
-            dataset=self.dict(),
+            dataset=self.data,
             forge=forge,
             model_class=CanonicalMorphologyModel,
             output_file=output_file,
@@ -152,13 +87,15 @@ class CanonicalDistributionConfig(RegionLevel):
         )
 
 
-class PlaceholderDistributionConfig(RegionLevel):
+class PlaceholderDistributionConfig(BaseModel):
     """Placeholder distribution config."""
+
+    data: dict
 
     def materialize(self, forge, output_file=None, labels_only=False) -> dict:
         """Materialize distribution config."""
         return materialize_placeholders_config(
-            dataset=self.dict(),
+            dataset=self.data,
             forge=forge,
             output_file=output_file,
             labels_only=labels_only,
@@ -169,8 +106,8 @@ class MModelConfigExpanded(BaseModel):
     """Expanded config with json data instead of entity info."""
 
     variantDefinition: dict[VariantEntry, VariantInfo]
-    defaults: dict[VariantEntry, RegionLevel]
-    configuration: dict[VariantEntry, dict[str, dict[str, ConfigurationEntry]]]
+    defaults: dict[VariantEntry, dict]
+    configuration: dict[VariantEntry, dict]
 
     def split(self) -> tuple[PlaceholderDistributionConfig, CanonicalDistributionConfig]:
         """Split the canonical and placeholder defaults based on the configuration."""
@@ -181,8 +118,8 @@ class MModelConfigExpanded(BaseModel):
             placeholder_key=VariantEntry.placeholder,
         )
         return (
-            PlaceholderDistributionConfig.parse_obj(placeholders_dict),
-            CanonicalDistributionConfig.parse_obj(canonicals_dict),
+            PlaceholderDistributionConfig(data=placeholders_dict),
+            CanonicalDistributionConfig(data=canonicals_dict),
         )
 
 
@@ -190,16 +127,17 @@ class MModelConfigRaw(BaseModel):
     """Morphology assignment config schema."""
 
     variantDefinition: dict[VariantEntry, VariantInfo]
-    defaults: dict[VariantEntry, EntityInfo]
-    configuration: dict[VariantEntry, dict[str, dict[str, ConfigurationEntry]]]
+    defaults: dict[VariantEntry, dict]
+    configuration: dict[VariantEntry, dict[str, dict[str, dict]]]
 
     def expand(self, forge) -> MModelConfigExpanded:
         """Expand the resources in the defaults with their json contents."""
         # TODO: Switch forge with direct requests
         defaults = {
-            k: nexus.read_json_file_from_resource_id(forge, v.full_id)
+            k: nexus.read_json_file_from_resource_id(forge, get_entry_id(v))
             for k, v in self.defaults.items()
         }
+
         return MModelConfigExpanded(
             variantDefinition=self.variantDefinition,
             defaults=defaults,

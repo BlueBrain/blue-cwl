@@ -16,7 +16,6 @@ def build_synthesis_inputs(
 ) -> tuple[dict, dict]:
     """Build synthesis inputs."""
     parameters, distributions = {}, {}
-
     for region, region_data in configuration.items():
         param_mtypes, distr_mtypes = {}, {}
         for mtype, canonical_model in region_data.items():

@@ -7,6 +7,7 @@ import click
 import libsonata
 import morphio
 import numpy as np
+import pandas as pd
 import voxcell
 from entity_management.nexus import load_by_id
 
@@ -27,8 +28,6 @@ INH_HOLDING_CURRENT_RANGE = (-0.060696, -0.029930)
 SEED = 42
 
 L = logging.getLogger(__name__)
-
-logging.basicConfig(level=logging.DEBUG)
 
 
 @click.command()
@@ -385,16 +384,18 @@ def _split_circuit(
     nodes_file,
     population_name,
 ):
-    regions = list(canonicals.keys())
-    mtypes = list(set(mtype for region_data in canonicals.values() for mtype in region_data.keys()))
+    pairs = pd.DataFrame(
+        [(region, mtype) for region, data in canonicals.items() for mtype in data],
+        columns=["region", "mtype"],
+    )
 
     cell_collection = voxcell.CellCollection.load_sonata(
-        nodes_file, population_name=population_name
+        nodes_file,
+        population_name=population_name,
     )
 
-    t1, t2 = bisect_cell_collection_by_properties(
-        cell_collection=cell_collection, properties={"region": regions, "mtype": mtypes}
-    )
+    t1, t2 = bisect_cell_collection_by_properties(cell_collection=cell_collection, properties=pairs)
+
     return t1, t2
 
 

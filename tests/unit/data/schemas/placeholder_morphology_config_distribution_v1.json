@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "hasPart": {
+    "http://api.brain-map.org/api/v2/data/Structure/23": {
+      "hasPart": {
+        "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType": {
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology"
+            }
+          }
+        },
+        "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronMType": {
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology"
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/935": {
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383192": {
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology"
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383193": {
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology"
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383194": {
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology"
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383195": {
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology"
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383196": {
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology"
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383197": {
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology"
+            }
+          }
+        }
+      }
+    }
+  }
+}

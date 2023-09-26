@@ -1,0 +1,87 @@
+{
+  "version": 2,
+  "hasPart": {
+    "http://api.brain-map.org/api/v2/data/Structure/23": {
+      "notation": "AAA",
+      "hasPart": {
+        "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType": {
+          "label": "GEN_mtype",
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology",
+              "_rev": 4
+            }
+          }
+        },
+        "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronMType": {
+          "label": "GIN_mtype",
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology",
+              "_rev": 4
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/935": {
+      "notation": "ACAd1",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383192": {
+          "label": "L1_DAC",
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology",
+              "_rev": 4
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383193": {
+          "label": "L1_HAC",
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology",
+              "_rev": 4
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383194": {
+          "label": "L1_LAC",
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology",
+              "_rev": 4
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383195": {
+          "label": "L1_NGC-DA",
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology",
+              "_rev": 4
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383196": {
+          "label": "L1_NGC-SA",
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology",
+              "_rev": 4
+            }
+          }
+        },
+        "http://uri.interlex.org/base/ilx_0383197": {
+          "label": "L1_SAC",
+          "hasPart": {
+            "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100": {
+              "about": "NeuronMorphology",
+              "_rev": 4
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -445,11 +445,16 @@ def bisect_cell_collection_by_properties(
     # reset index because dataframe starts at 1
     df = cell_collection.as_dataframe().reset_index(drop=True)
 
-    mask = np.logical_and.reduce(
-        [df[name].isin(values).values for name, values in properties.items()]
-    )
-
-    return (split(df, mask), split(df, ~mask))
+    if isinstance(properties, pd.DataFrame):
+        mask = (
+            df[properties.columns].merge(properties, how="outer", indicator=True)["_merge"]
+            == "both"
+        )
+    else:
+        mask = np.logical_and.reduce(
+            [df[name].isin(values).values for name, values in properties.items()]
+        )
+    return split(df, mask), split(df, ~mask)
 
 
 def merge_cell_collections(
