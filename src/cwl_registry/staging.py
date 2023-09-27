@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Any, Callable, Union
 
 import pandas as pd
-from entity_management.nexus import get_file_location
-from entity_management.util import file_uri_to_path
+from entity_management.nexus import get_unquoted_uri_path
+from entity_management.util import unquote_uri_path
 from kgforge.core import Resource
 
 from cwl_registry import nexus, utils
@@ -79,7 +79,7 @@ def _stage_distribution_with_atLocation(
 ) -> Path:
     """Stage the distribution of given encoding format when atLocation is available."""
     distribution = _find_first(lambda d: d.encodingFormat == encoding_format, distributions)
-    source_file = Path(_remove_prefix("file://", distribution.atLocation.location))
+    source_file = Path(unquote_uri_path(distribution.atLocation.location))
     target_file = _create_target_file(source_file, output_dir, basename)
     stage_file(source_file, target_file, symbolic=symbolic)
     return target_file
@@ -246,9 +246,9 @@ def get_distribution_path_from_resource(forge, resource_id):
     resource = get_resource(forge=forge, resource_id=resource_id)
     # pylint: disable=protected-access
     return {
-        "path": get_file_location(
+        "path": get_unquoted_uri_path(
             url=resource.distribution.contentUrl, token=forge._store.token
-        ).removeprefix("file://")
+        )
     }
 
 
@@ -838,7 +838,7 @@ def materialize_ph_catalog(
     """Materialize placement hints catalog resources."""
 
     def get_file_path(entry):
-        return file_uri_to_path(entry["distribution"]["atLocation"]["location"])
+        return unquote_uri_path(entry["distribution"]["atLocation"]["location"])
 
     def materialize_path(entry, output_dir, output_filename):
         path = get_file_path(entry)

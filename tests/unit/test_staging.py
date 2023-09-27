@@ -84,8 +84,8 @@ def test_materialize_grouped_dataset__cell_composition_volume(
 
     forge = LocalForge()
     forge.register(resource=mock)
-    with patch("cwl_registry.staging.get_file_location") as patched:
-        patched.return_value = "my-path"
+    with patch("entity_management.nexus.get_file_location") as patched:
+        patched.return_value = "file:///my%5Bpath%5D"
         result_wout_groups = test_module.apply_to_grouped_dataset(
             forge, cell_composition_volume_dataset, group_names=None
         )
@@ -98,8 +98,14 @@ def test_materialize_grouped_dataset__cell_composition_volume(
             "http://uri.interlex.org/base/ilx_0383202": {
                 "label": "L23_LBC",
                 "hasPart": {
-                    "http://uri.interlex.org/base/ilx_0738199": {"label": "bAC", "path": "my-path"},
-                    "http://uri.interlex.org/base/ilx_0738200": {"label": "bAC", "path": "my-path"},
+                    "http://uri.interlex.org/base/ilx_0738199": {
+                        "label": "bAC",
+                        "path": "/my[path]",
+                    },
+                    "http://uri.interlex.org/base/ilx_0738200": {
+                        "label": "bAC",
+                        "path": "/my[path]",
+                    },
                 },
             }
         }
@@ -109,8 +115,14 @@ def test_materialize_grouped_dataset__cell_composition_volume(
             "http://uri.interlex.org/base/ilx_0383202": {
                 "label": "L23_LBC",
                 "etypes": {
-                    "http://uri.interlex.org/base/ilx_0738199": {"label": "bAC", "path": "my-path"},
-                    "http://uri.interlex.org/base/ilx_0738200": {"label": "bAC", "path": "my-path"},
+                    "http://uri.interlex.org/base/ilx_0738199": {
+                        "label": "bAC",
+                        "path": "/my[path]",
+                    },
+                    "http://uri.interlex.org/base/ilx_0738200": {
+                        "label": "bAC",
+                        "path": "/my[path]",
+                    },
                 },
             }
         }

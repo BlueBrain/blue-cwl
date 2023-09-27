@@ -10,7 +10,13 @@ from typing import Dict, Optional
 import jwt
 import requests
 from entity_management import state
-from entity_management.nexus import _print_nexus_error, file_as_dict, get_file_location, load_by_id
+from entity_management.nexus import (
+    _print_nexus_error,
+    file_as_dict,
+    get_unquoted_uri_path,
+    load_by_id,
+)
+from entity_management.util import unquote_uri_path
 from kgforge.core import KnowledgeGraphForge, Resource
 
 from cwl_registry.exceptions import CWLRegistryError
@@ -208,7 +214,7 @@ def read_json_file_from_resource(resource) -> dict:
 def read_arrow_file_from_resource(resource):
     """Read arrow file from kg resource."""
     distribution = _get_distribution(resource)
-    gpfs_location = _without_file_prefix(get_file_location(distribution.contentUrl))
+    gpfs_location = get_unquoted_uri_path(distribution.contentUrl)
     return load_arrow(gpfs_location)
 
 
@@ -344,14 +350,7 @@ def _get_files(resource):
     for part in resource.hasPart:
         if hasattr(part, "distribution"):
             distribution = part.distribution
-
-            filename = distribution.name
-            path = distribution.atLocation.location
-
-            if path.startswith("file://"):
-                path = path[7:]
-
-            files[filename] = Path(path)
+            files[distribution.name] = Path(unquote_uri_path(distribution.atLocation.location))
 
     return files
 
@@ -375,9 +374,7 @@ def get_config_path_from_circuit_resource(forge, resource_id: str) -> Path:
     except AttributeError:
         path = config_path
 
-    if path.startswith("file://"):
-        return Path(path[7:])
-    return Path(path)
+    return Path(unquote_uri_path(path))
 
 
 def get_region_resource_acronym(forge, resource_id: str) -> str:
