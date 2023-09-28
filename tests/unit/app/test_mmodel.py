@@ -2,6 +2,7 @@ from unittest.mock import patch, Mock
 from pathlib import Path
 import pytest
 from cwl_registry.wrappers import mmodel as test_module
+from cwl_registry.utils import load_json
 
 
 def test_assign_morphologies__raises():
@@ -110,3 +111,59 @@ def test_assign_morphologies__both_placeholders_canonicals():
             splits=[canonical, placeholder],
             population_name="foo",
         )
+
+
+def test_write_partial_config(tmp_path):
+    config = {
+        "version": 2,
+        "manifest": {"$BASE_DIR": "."},
+        "node_sets_file": "node_sets.json",
+        "networks": {
+            "nodes": [
+                {
+                    "nodes_file": "old-nodes-file",
+                    "populations": {
+                        "root__neurons": {"type": "biophysical", "partial": ["cell-properties"]}
+                    },
+                }
+            ],
+            "edges": [],
+        },
+        "metadata": {"status": "partial"},
+    }
+
+    output_file = tmp_path / "config.json"
+    population_name = "root__neurons"
+    morphologies_dir = "path-to-morphs"
+    nodes_file = "path-to-nodes-file"
+
+    test_module._write_partial_config(
+        config, nodes_file, population_name, morphologies_dir, output_file
+    )
+
+    res = load_json(output_file)
+
+    assert res == {
+        "version": 2,
+        "manifest": {"$BASE_DIR": "."},
+        "node_sets_file": "node_sets.json",
+        "networks": {
+            "nodes": [
+                {
+                    "nodes_file": "path-to-nodes-file",
+                    "populations": {
+                        "root__neurons": {
+                            "type": "biophysical",
+                            "partial": ["cell-properties", "morphologies"],
+                            "alternate_morphologies": {
+                                "h5v1": "path-to-morphs",
+                                "neurolucida-asc": "path-to-morphs",
+                            },
+                        }
+                    },
+                }
+            ],
+            "edges": [],
+        },
+        "metadata": {"status": "partial"},
+    }

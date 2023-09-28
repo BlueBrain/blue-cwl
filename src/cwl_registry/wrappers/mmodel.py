@@ -52,7 +52,7 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
     staging_dir = utils.create_dir(output_dir / "stage")
     build_dir = utils.create_dir(output_dir / "build")
     atlas_dir = utils.create_dir(staging_dir / "atlas")
-    morphologies_dir = utils.create_dir(build_dir / "morphologies/h5v1", clean_if_exists=True)
+    morphologies_dir = utils.create_dir(build_dir / "morphologies", clean_if_exists=True)
 
     forge = nexus.get_forge()
     partial_circuit = nexus.get_resource(forge, partial_circuit)
@@ -342,6 +342,10 @@ def _execute_synthesis_command(
         str(output_morphologies_dir),
         "--out-morph-ext",
         "h5",
+        "--out-morph-ext",
+        "asc",
+        "--max-files-per-dir",
+        "1024",
         "--out-apical",
         str(output_dir / "apical.yaml"),
         "--max-drop-ratio",
@@ -412,9 +416,10 @@ def _assign_placeholder_morphologies(placeholders, placeholder_group, output_mor
 
     # copy the placeholder morphologies to the morphologies directory
     for morphology_path in set(morphology_paths):
-        morphio.mut.Morphology(morphology_path).write(
-            output_morphologies_dir / f"{Path(morphology_path).stem}.h5"
-        )
+        morph = morphio.mut.Morphology(morphology_path)
+        morphology_name = Path(morphology_path).stem
+        morph.write(output_morphologies_dir / f"{morphology_name}.h5")
+        morph.write(output_morphologies_dir / f"{morphology_name}.asc")
 
     # add unit orientations
     placeholder_group.cells.orientations = np.broadcast_to(np.identity(3), (len(properties), 3, 3))
@@ -470,6 +475,7 @@ def _write_partial_config(config, nodes_file, population_name, morphologies_dir,
             "partial": ["morphologies"],
             "alternate_morphologies": {
                 "h5v1": str(morphologies_dir),
+                "neurolucida-asc": str(morphologies_dir),
             },
         },
         filepath=str(nodes_file),
