@@ -163,9 +163,11 @@ def write_arrow(filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = Fa
 
 
 @log
-def write_parquet(filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = False) -> None:
+def write_parquet(
+    filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = False, compression="gzip"
+) -> None:
     """Write pandas dataframe as an arrow file with gzip compression."""
-    dataframe.to_parquet(path=filepath, index=index, engine="pyarrow", compression="gzip")
+    dataframe.to_parquet(path=filepath, index=index, engine="pyarrow", compression=compression)
 
 
 @log
@@ -472,3 +474,21 @@ def merge_cell_collections(
 
     result = pd.concat(dataframes, ignore_index=False, join="outer").sort_index()
     return _cell_collection_from_frame(result, population_name, orientation_format)
+
+
+def parse_salloc_config(config):
+    """Parse slurm config."""
+    parameters = []
+    for key, value in config.items():
+        if value is None:
+            continue
+        key = key.replace("_", "-")
+        if isinstance(value, bool):
+            if value:
+                param = f"--{key}" if isinstance(value, bool) and value else f"--{key}={value}"
+            else:
+                continue
+        else:
+            param = f"--{key}={value}"
+        parameters.append(param)
+    return parameters

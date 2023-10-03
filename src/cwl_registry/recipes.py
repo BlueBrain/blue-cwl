@@ -169,7 +169,7 @@ def build_connectome_manipulator_recipe(
     merged_frame = merged_frame.sort_index()
     output_file = output_dir / "pathways.parquet"
 
-    utils.write_parquet(filepath=output_file, dataframe=merged_frame, index=True)
+    utils.write_parquet(filepath=output_file, dataframe=merged_frame, index=True, compression=None)
 
     config = {
         "circuit_config": str(circuit_config_path),
@@ -180,6 +180,7 @@ def build_connectome_manipulator_recipe(
             "fcts": [
                 {
                     "source": "conn_wiring",
+                    "morph_ext": "h5",
                     "model_pathways": str(output_file),
                     "model_config": {
                         "prob_model_spec": {"model": "ConnProbModel"},
@@ -190,7 +191,6 @@ def build_connectome_manipulator_recipe(
             ],
         },
     }
-
     return config
 
 

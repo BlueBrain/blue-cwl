@@ -97,22 +97,4 @@ class WrapperBuild:
 
         print("Final Command:", cmd)
 
-        process = subprocess.Popen(
-            ["bash", "-l"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-
-        try:
-            stdout, stderr = process.communicate(cmd.encode())
-        except TimeoutExpired as exc:
-            process.kill()
-            process.wait()
-            raise
-        except:
-            process.kill()
-            raise
-
-        retcode = process.poll()
-        if retcode:
-            print(stdout.decode())
-            print(stderr.decode())
-            raise subprocess.CalledProcessError(retcode, process.args, output=stdout, stderr=stderr)
+        subprocess.run(cmd, shell=True, check=True)

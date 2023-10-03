@@ -16,13 +16,28 @@ def output_dir(tmpdir_factory):
     return Path(tmpdir_factory.mktemp("dd-connectome"))
 
 
+"""
 @pytest.fixture(scope="module")
 def dd_connectome(output_dir):
     inputs = {
-        "configuration": "https://bbp.epfl.ch/neurosciencegraph/data/fc6ee68a-2278-4dd6-96c9-a3824d4690f2",
+        "configuration": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/e6cc381e-d68c-49a0-a1bc-f76b4f19a41c",
         "macro-connectome-config": "https://bbp.epfl.ch/neurosciencegraph/data/6aef1bea-e66f-4b9f-b3ac-70fcce4e3636",
         "partial-circuit": "https://bbp.epfl.ch/neurosciencegraph/data/302c35fd-581a-4950-8553-054fa7236496",
         "variant-config": "https://bbp.epfl.ch/neurosciencegraph/data/870cc5fe-91c2-4cfb-9298-a5af1d0664e7",
+        "output-dir": str(output_dir),
+    }
+    command = ["cwl-registry", "-vv", "execute", "connectome-generation-placeholder"]
+    return WrapperBuild(command=command, inputs=inputs)
+"""
+
+
+@pytest.fixture(scope="module")
+def dd_connectome(output_dir):
+    inputs = {
+        "configuration": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/e6cc381e-d68c-49a0-a1bc-f76b4f19a41c",
+        "macro-connectome-config": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/e3e4f35f-686e-4270-8475-2b3b5eba1859",
+        "partial-circuit": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/3c635baa-00d7-4e3f-9dc0-f55399bcf702",
+        "variant-config": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/5c4dcdf9-d547-4a44-8861-82a0781c68dc",
         "output-dir": str(output_dir),
     }
     command = ["cwl-registry", "-vv", "execute", "connectome-generation-placeholder"]

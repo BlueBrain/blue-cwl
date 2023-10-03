@@ -41,6 +41,8 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
     config_path = circuit_resource.circuitConfigPath.url.removeprefix("file://")
     config = utils.load_json(config_path)
 
+    variant = Variant.from_resource_id(forge, variant_config)
+
     recipe_file = _create_recipe(
         forge,
         macro_connectome_config,
@@ -52,7 +54,7 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
     )
 
     L.info("Running connectome manipulator...")
-    edges_file, edge_population_name = _run_connectome_manipulator(recipe_file, build_dir)
+    edges_file, edge_population_name = _run_connectome_manipulator(recipe_file, build_dir, variant)
 
     L.info("Writing partial circuit config...")
     sonata_config_file = output_dir / "circuit_config.json"
@@ -77,7 +79,7 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
 
     utils.write_resource_to_definition_output(
         json_resource=load_by_id(circuit_resource.get_id()),
-        variant=Variant.from_resource_id(forge, variant_config),
+        variant=variant,
         output_dir=output_dir,
     )
 
@@ -129,20 +131,25 @@ def _create_recipe(
     return recipe_file
 
 
-def _run_connectome_manipulator(recipe_file, output_dir):
+def _run_connectome_manipulator(recipe_file, output_dir, variant):
     """Run connectome manipulator."""
-    subprocess.run(
-        [
-            "connectome-manipulator",
-            "manipulate-connectome",
-            "--output-dir",
-            str(output_dir),
-            str(recipe_file),
-            "--convert-to-sonata",
-            "--overwrite-edges",
-        ],
-        check=True,
-    )
+    base_command = [
+        "parallel-manipulator",
+        "-v",
+        "manipulate-connectome",
+        "--output-dir",
+        str(output_dir),
+        str(recipe_file),
+        "--convert-to-sonata",
+    ]
+    str_base_command = " ".join(base_command)
+    slurm_config = utils.load_yaml(variant.get_resources_file("variant_config.yml"))["resources"][
+        "default"
+    ]
+    str_slurm_parameters = " ".join(utils.parse_salloc_config(slurm_config))
+    command = f"stdbuf -oL -eL salloc {str_slurm_parameters} srun {str_base_command}"
+    L.info("Tool full command: %s", command)
+    subprocess.run(command, check=True, shell=True)
 
     edges_file = output_dir / "edges.h5"
     if not edges_file.exists():
