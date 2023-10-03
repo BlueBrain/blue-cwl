@@ -432,8 +432,8 @@ def _assign_placeholder_dynamics(nodes_file, population_name, seed: int):
         nodes_file=nodes_file,
         population_name=population_name,
         properties={
-            "@dynamics/threshold_current": threshold_current,
-            "@dynamics/holding_current": holding_current,
+            "dynamics_params/threshold_current": threshold_current.astype(np.float32),
+            "dynamics_params/holding_current": holding_current.astype(np.float32),
         },
         output_file=nodes_file,
     )
