@@ -423,3 +423,29 @@ def test_bisect_recombine_cycle(cells_100):
     assert cells_100.orientation_format == res.orientation_format
     npt.assert_allclose(cells_100.positions, res.positions)
     pdt.assert_frame_equal(cells_100.properties, res.properties)
+
+
+def test_build_variant_allocation_command(tmp_path):
+    config = {
+        "resources": {
+            "default": {
+                "exclusive": True,
+                "account": "proj134",
+                "cpus_per_task": 2,
+                "time": "1-0:00:00",
+                "mem": 0,
+                "partition": "prod",
+                "ntasks": 400,
+            }
+        }
+    }
+
+    variant = Mock()
+
+    with patch("cwl_registry.utils.load_yaml", return_value=config):
+        res = tested.build_variant_allocation_command("echo foo", variant)
+
+        assert res == (
+            "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
+            "--mem=0 --partition=prod --ntasks=400 srun echo foo"
+        )

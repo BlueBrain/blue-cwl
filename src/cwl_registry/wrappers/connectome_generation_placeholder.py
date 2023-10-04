@@ -143,13 +143,10 @@ def _run_connectome_manipulator(recipe_file, output_dir, variant):
         "--convert-to-sonata",
     ]
     str_base_command = " ".join(base_command)
-    slurm_config = utils.load_yaml(variant.get_resources_file("variant_config.yml"))["resources"][
-        "default"
-    ]
-    str_slurm_parameters = " ".join(utils.parse_salloc_config(slurm_config))
-    command = f"stdbuf -oL -eL salloc {str_slurm_parameters} srun {str_base_command}"
-    L.info("Tool full command: %s", command)
-    subprocess.run(command, check=True, shell=True)
+    str_command = utils.build_variant_allocation_command(str_base_command, variant)
+
+    L.info("Tool full command: %s", str_command)
+    subprocess.run(str_command, check=True, shell=True)
 
     edges_file = output_dir / "edges.h5"
     if not edges_file.exists():

@@ -29,6 +29,8 @@ SEED = 42
 
 L = logging.getLogger(__name__)
 
+# pylint: disable=too-many-arguments
+
 
 @click.command()
 @click.option("--configuration", required=True)
@@ -87,6 +89,8 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
         circuit_config
     )
 
+    variant = Variant.from_resource_id(forge, variant_config)
+
     output_nodes_file = build_dir / "nodes.h5"
     _generate_mmodel_nodes(
         canonicals=canonicals,
@@ -98,6 +102,7 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
         output_nodes_file=output_nodes_file,
         output_morphologies_dir=morphologies_dir,
         parallel=parallel,
+        variant=variant,
     )
 
     sonata_config_file = output_dir / "circuit_config.json"
@@ -120,7 +125,7 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
     )
     utils.write_resource_to_definition_output(
         json_resource=load_by_id(circuit.get_id()),
-        variant=Variant.from_resource_id(forge, variant_config),
+        variant=variant,
         output_dir=output_dir,
     )
 
@@ -135,6 +140,7 @@ def _generate_mmodel_nodes(
     output_nodes_file,
     output_morphologies_dir,
     parallel,
+    variant,
 ):
     L.info("Assigning morphologies...")
     _assign_morphologies(
@@ -148,6 +154,7 @@ def _generate_mmodel_nodes(
         output_morphologies_dir=output_morphologies_dir,
         parallel=parallel,
         seed=SEED,
+        variant=variant,
     )
     L.info("Assigning placeholder dynamics...")
     _assign_placeholder_dynamics(
@@ -168,6 +175,7 @@ def _assign_morphologies(
     output_morphologies_dir,
     parallel,
     seed,
+    variant,
 ):
     L.info("Splitting nodes into canonical and placeholders...")
     canonical_group, placeholder_group = _split_circuit(
@@ -200,6 +208,7 @@ def _assign_morphologies(
             output_morphologies_dir=output_morphologies_dir,
             seed=seed,
             parallel=parallel,
+            variant=variant,
         )
         L.info(
             "Output nodes consist of %d synthesized nodes written at %s",
@@ -220,6 +229,7 @@ def _assign_morphologies(
             output_morphologies_dir=output_morphologies_dir,
             seed=seed,
             parallel=parallel,
+            variant=variant,
         )
         canonical_group.cells = voxcell.CellCollection.load_sonata(
             canonical_output_nodes_file, population_name
@@ -262,6 +272,7 @@ def _run_topological_synthesis(
     output_morphologies_dir,
     seed,
     parallel,
+    variant,
 ):
     L.info("Generating cell orientation field...")
     output_orientations_file = atlas_info.directory / "orientation.nrrd"
@@ -306,6 +317,7 @@ def _run_topological_synthesis(
         output_morphologies_dir=output_morphologies_dir,
         seed=seed,
         parallel=parallel,
+        variant=variant,
     )
 
 
@@ -320,6 +332,7 @@ def _execute_synthesis_command(
     output_morphologies_dir,
     seed,
     parallel,
+    variant,
 ):
     L.info("Running topological synthesis...")
 
@@ -362,15 +375,7 @@ def _execute_synthesis_command(
         arglist.append("--with-mpi")
 
     cmd = " ".join(arglist)
-    cmd = cmd.replace("'", "'\\''")
-
-    L.info("Tool base command: %s", cmd)
-
-    # TODO: Temp hack. Migrate to cwl-luigi's executable processes
-    cmd = (
-        ". /etc/profile.d/modules.sh && module load unstable && module load py-region-grower && "
-        f"salloc -A proj134 -p prod -n 200 -t 8:00:00 --exclusive srun {cmd}"
-    )
+    cmd = utils.build_variant_allocation_command(cmd, variant)
 
     L.info("Tool full command: %s", cmd)
 

@@ -476,7 +476,7 @@ def merge_cell_collections(
     return _cell_collection_from_frame(result, population_name, orientation_format)
 
 
-def parse_salloc_config(config):
+def _parse_slurm_config(config):
     """Parse slurm config."""
     parameters = []
     for key, value in config.items():
@@ -492,3 +492,13 @@ def parse_salloc_config(config):
             param = f"--{key}={value}"
         parameters.append(param)
     return parameters
+
+
+def build_variant_allocation_command(cmd: str, variant) -> str:
+    """Construct an allocation command based on variant resource default definition."""
+    slurm_config = load_yaml(variant.get_resources_file("variant_config.yml"))["resources"][
+        "default"
+    ]
+    str_slurm_parameters = " ".join(_parse_slurm_config(slurm_config))
+    command = f"stdbuf -oL -eL salloc {str_slurm_parameters} srun {cmd}"
+    return command

@@ -12,7 +12,7 @@ def test_assign_morphologies__raises():
     with pytest.raises(ValueError, match="Both canonical and placeholder nodes are empty."):
         with patch("cwl_registry.wrappers.mmodel._split_circuit", return_value=(None, None)):
             test_module._assign_morphologies(
-                None, None, None, None, None, None, None, None, None, None
+                None, None, None, None, None, None, None, None, None, None, None
             )
 
 
@@ -27,7 +27,7 @@ def test_assign_morphologies__only_placeholders():
         patch("cwl_registry.wrappers.mmodel._assign_placeholder_morphologies") as patched,
     ):
         test_module._assign_morphologies(
-            None, "placeholders", None, None, None, None, None, "morph-dir", None, None
+            None, "placeholders", None, None, None, None, None, "morph-dir", None, None, None
         )
         patched.assert_called_once_with(
             placeholders="placeholders",
@@ -56,6 +56,7 @@ def test_assign_morphologies__only_canonicals():
             output_morphologies_dir="morph-dir",
             parallel=False,
             seed=10,
+            variant=None,
         )
         patched.assert_called_once_with(
             canonicals="canonicals",
@@ -66,6 +67,7 @@ def test_assign_morphologies__only_canonicals():
             output_morphologies_dir="morph-dir",
             parallel=False,
             seed=10,
+            variant=None,
         )
 
 
@@ -94,6 +96,7 @@ def test_assign_morphologies__both_placeholders_canonicals():
             output_morphologies_dir="morph-dir",
             parallel=False,
             seed=10,
+            variant=None,
         )
         topo_patched.assert_called_once_with(
             canonicals="canonicals",
@@ -104,6 +107,7 @@ def test_assign_morphologies__both_placeholders_canonicals():
             output_morphologies_dir="morph-dir",
             parallel=False,
             seed=10,
+            variant=None,
         )
         place_patched.assert_called_once_with(
             placeholders="placeholders",
