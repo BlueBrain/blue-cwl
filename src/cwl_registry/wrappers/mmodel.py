@@ -369,6 +369,7 @@ def _execute_synthesis_command(
         "10",
         "--region-structure",
         str(region_structure_file),
+        "--hide-progress-bar",
     ]
 
     if parallel:

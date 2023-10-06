@@ -13,7 +13,7 @@ from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import click
 import libsonata
@@ -86,7 +86,6 @@ def cwd(path):
         os.chdir(original_cwd)
 
 
-@log
 def create_dir(path: os.PathLike, clean_if_exists=False) -> Path:
     """Create directory and parents if it doesn't already exist."""
     path = Path(path)
@@ -96,13 +95,12 @@ def create_dir(path: os.PathLike, clean_if_exists=False) -> Path:
     return path
 
 
-@log
-def load_json(filepath: os.PathLike) -> Dict[Any, Any]:
+def load_json(filepath: os.PathLike) -> dict:
     """Load from JSON file."""
     return json.loads(Path(filepath).read_bytes())
 
 
-def write_json(filepath: os.PathLike, data: Dict[Any, Any]) -> None:
+def write_json(filepath: os.PathLike, data: dict) -> None:
     """Write json file."""
 
     def serializer(obj):
@@ -117,13 +115,11 @@ def write_json(filepath: os.PathLike, data: Dict[Any, Any]) -> None:
         json.dump(data, fd, indent=2, default=serializer)
 
 
-@log
-def load_yaml(filepath: os.PathLike) -> Dict[Any, Any]:
+def load_yaml(filepath: os.PathLike) -> dict:
     """Load from YAML file."""
     return yaml.safe_load(Path(filepath).read_bytes())
 
 
-@log
 def write_yaml(filepath: os.PathLike, data: dict) -> None:
     """Writes dict data to yaml."""
 
@@ -145,14 +141,12 @@ def write_yaml(filepath: os.PathLike, data: dict) -> None:
         yaml.dump(data, out_file, Dumper=Dumper, sort_keys=False, default_flow_style=False)
 
 
-@log
 def load_arrow(filepath: os.PathLike) -> pd.DataFrame:
     """Load an arrow file as a pandas dataframe."""
     with pyarrow.fs.LocalFileSystem().open_input_file(str(filepath)) as fd:
         return pyarrow.RecordBatchFileReader(fd).read_pandas()
 
 
-@log
 def write_arrow(filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = False) -> None:
     """Write dataframe as an arrow file."""
     table = pyarrow.Table.from_pandas(dataframe, preserve_index=index)
@@ -162,7 +156,6 @@ def write_arrow(filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = Fa
             writer.write_table(table)
 
 
-@log
 def write_parquet(
     filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = False, compression="gzip"
 ) -> None:
@@ -198,9 +191,9 @@ def build_manifest(
     *,
     region: str,
     atlas_dir: Path,
-    morphology_release_dir: Optional[Path] = None,
+    morphology_release_dir: Path | None = None,
     synthesis: bool = False,
-    parameters: Optional[Dict[str, Any]] = None,
+    parameters: dict[str, Any] | None = None,
 ) -> dict:
     """Build MANIFEST.yaml for circuit-build build."""
 
@@ -269,11 +262,11 @@ def get_edge_population_name(edges_file):
 
 
 def update_circuit_config_population(
-    config: Dict[str, Any],
+    config: dict[str, Any],
     population_name: str,
-    population_data: Dict[str, Any],
+    population_data: dict[str, Any],
     filepath: os.PathLike,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create a new config from an existing one with updated population data."""
     config = deepcopy(config)
     population_data = deepcopy(population_data)
@@ -306,9 +299,9 @@ def update_circuit_config_population(
 def write_node_population_with_properties(
     nodes_file: Path,
     population_name: str,
-    properties: Dict[str, Any],
+    properties: dict[str, Any],
     output_file: Path,
-    orientations: Optional[np.array] = None,
+    orientations: np.ndarray | None = None,
 ):
     """Write a copy of nodes_file with additional properties for the given population."""
     population = voxcell.CellCollection.load_sonata(nodes_file, population_name=population_name)
@@ -319,7 +312,7 @@ def write_node_population_with_properties(
     population.save_sonata(output_file)
 
 
-def get_directory_contents(directory_path: Path) -> Dict[str, Path]:
+def get_directory_contents(directory_path: Path) -> dict[str, Path]:
     """Return the file in a dictionary if it exists, an empty dict otherwise."""
     if directory_path.is_dir():
         return {path.name: path for path in directory_path.iterdir()}
@@ -346,15 +339,13 @@ def write_resource_to_definition_output(
     write_json(filepath=out_filepath, data=json_resource)
 
 
-@log
 def url_without_revision(url: str) -> str:
     """Return the url without the revision query."""
     url = urllib.parse.urlparse(url)
     return url._replace(query="").geturl()
 
 
-@log
-def url_with_revision(url: str, rev: Optional[str]) -> str:
+def url_with_revision(url: str, rev: str | None) -> str:
     """Return the url with revision.
 
     Args:
