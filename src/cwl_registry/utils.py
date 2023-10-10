@@ -490,6 +490,14 @@ def build_variant_allocation_command(cmd: str, variant) -> str:
     slurm_config = load_yaml(variant.get_resources_file("variant_config.yml"))["resources"][
         "default"
     ]
+    env_vars = variant.tool_definition.environment.get("env_vars", {})
+
+    if env_vars:
+        str_env_vars = " ".join(f"{k}={v}" for k, v in env_vars.items())
+        srun_cmd = f"env {str_env_vars} {cmd}"
+    else:
+        srun_cmd = f"{cmd}"
+
     str_slurm_parameters = " ".join(_parse_slurm_config(slurm_config))
-    command = f"stdbuf -oL -eL salloc {str_slurm_parameters} srun {cmd}"
+    command = f"stdbuf -oL -eL salloc {str_slurm_parameters} srun {srun_cmd}"
     return command

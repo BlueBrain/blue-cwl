@@ -441,6 +441,34 @@ def test_build_variant_allocation_command(tmp_path):
     }
 
     variant = Mock()
+    variant.tool_definition.environment = {"env_vars": {"A": "foo", "B": "bar"}}
+
+    with patch("cwl_registry.utils.load_yaml", return_value=config):
+        res = tested.build_variant_allocation_command("echo foo", variant)
+
+        assert res == (
+            "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
+            "--mem=0 --partition=prod --ntasks=400 srun env A=foo B=bar echo foo"
+        )
+
+
+def test_build_variant_allocation_command__empty_env_vars(tmp_path):
+    config = {
+        "resources": {
+            "default": {
+                "exclusive": True,
+                "account": "proj134",
+                "cpus_per_task": 2,
+                "time": "1-0:00:00",
+                "mem": 0,
+                "partition": "prod",
+                "ntasks": 400,
+            }
+        }
+    }
+
+    variant = Mock()
+    variant.tool_definition.environment = {}
 
     with patch("cwl_registry.utils.load_yaml", return_value=config):
         res = tested.build_variant_allocation_command("echo foo", variant)

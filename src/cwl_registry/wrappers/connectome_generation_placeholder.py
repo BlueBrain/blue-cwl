@@ -141,6 +141,9 @@ def _run_connectome_manipulator(recipe_file, output_dir, variant):
         str(output_dir),
         str(recipe_file),
         "--convert-to-sonata",
+        "--parallel",
+        "--keep-parquet",
+        "--resume",
     ]
     str_base_command = " ".join(base_command)
     str_command = utils.build_variant_allocation_command(str_base_command, variant)
