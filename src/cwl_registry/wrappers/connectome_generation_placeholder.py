@@ -40,6 +40,7 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
     circuit_resource = nexus.get_resource(forge, partial_circuit)
     config_path = circuit_resource.circuitConfigPath.url.removeprefix("file://")
     config = utils.load_json(config_path)
+    _, node_population_name = utils.get_biophysical_partial_population_from_config(config)
 
     variant = Variant.from_resource_id(forge, variant_config)
 
@@ -52,10 +53,16 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
         staging_dir,
         build_dir,
     )
-
     L.info("Running connectome manipulator...")
-    edges_file, edge_population_name = _run_connectome_manipulator(recipe_file, build_dir, variant)
-
+    edge_population_name = f"{node_population_name}__{node_population_name}__chemical"
+    edges_file = output_dir / "edges.h5"
+    _run_connectome_manipulator(
+        recipe_file=recipe_file,
+        output_dir=build_dir,
+        variant=variant,
+        output_edges_file=edges_file,
+        output_edge_population_name=edge_population_name,
+    )
     L.info("Writing partial circuit config...")
     sonata_config_file = output_dir / "circuit_config.json"
     _write_partial_config(
@@ -131,8 +138,24 @@ def _create_recipe(
     return recipe_file
 
 
-def _run_connectome_manipulator(recipe_file, output_dir, variant):
+def _run_connectome_manipulator(
+    recipe_file, output_dir, variant, output_edges_file, output_edge_population_name
+):
     """Run connectome manipulator."""
+    _run_manipulator(recipe_file, output_dir, variant)
+
+    parquet_dir = output_dir / "parquet"
+
+    # Launch a second allocation to merge parquet edges into a SONATA edge population
+    _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_population_name)
+
+    # Fix for spykfunc, This should not be needed in general.
+    _add_efferent_section_type(output_edges_file, output_edge_population_name)
+
+    L.debug("Edge population %s generated at %s", output_edge_population_name, output_edges_file)
+
+
+def _run_manipulator(recipe_file, output_dir, variant):
     base_command = [
         "parallel-manipulator",
         "-v",
@@ -140,7 +163,6 @@ def _run_connectome_manipulator(recipe_file, output_dir, variant):
         "--output-dir",
         str(output_dir),
         str(recipe_file),
-        "--convert-to-sonata",
         "--parallel",
         "--keep-parquet",
         "--resume",
@@ -151,18 +173,33 @@ def _run_connectome_manipulator(recipe_file, output_dir, variant):
     L.info("Tool full command: %s", str_command)
     subprocess.run(str_command, check=True, shell=True)
 
-    edges_file = output_dir / "edges.h5"
-    if not edges_file.exists():
-        raise CWLWorkflowError(f"Edges file has failed to be generated at {edges_file}")
 
-    edge_population_name = utils.get_edge_population_name(edges_file)
+def _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_population_name):
+    # Launch a second allocation to merge parquet edges into a SONATA edge population
+    base_command = [
+        "parquet2hdf5",
+        str(parquet_dir),
+        str(output_edges_file),
+        output_edge_population_name,
+    ]
+    str_base_command = " ".join(base_command)
 
-    # Fix for spykfunc, This should not be needed in general.
-    _add_efferent_section_type(edges_file, edge_population_name)
+    # TODO: To remove when sub-workflows are supported
+    str_command = (
+        "salloc "
+        "--account=proj134 "
+        "--partition=prod "
+        "--nodes=100 "
+        "--tasks-per-node=10 "
+        "--cpus-per-task=4 "
+        "--exclusive "
+        "--time=8:00:00 "
+        f"srun dplace {str_base_command}"
+    )
+    subprocess.run(str_command, check=True, shell=True)
 
-    L.debug("Edge population %s generated at %s", edge_population_name, edges_file)
-
-    return edges_file, edge_population_name
+    if not output_edges_file.exists():
+        raise CWLWorkflowError(f"Edges file has failed to be generated at {output_edges_file}")
 
 
 def _add_efferent_section_type(edges_file, population_name):
