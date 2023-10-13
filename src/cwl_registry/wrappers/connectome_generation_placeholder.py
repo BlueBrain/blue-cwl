@@ -4,7 +4,6 @@ import logging
 import subprocess
 
 import click
-import h5py
 import libsonata
 import numpy as np
 import voxcell
@@ -149,9 +148,6 @@ def _run_connectome_manipulator(
     # Launch a second allocation to merge parquet edges into a SONATA edge population
     _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_population_name)
 
-    # Fix for spykfunc, This should not be needed in general.
-    _add_efferent_section_type(output_edges_file, output_edge_population_name)
-
     L.debug("Edge population %s generated at %s", output_edge_population_name, output_edges_file)
 
 
@@ -196,24 +192,11 @@ def _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_populati
         "--time=8:00:00 "
         f"srun dplace {str_base_command}"
     )
+    L.info("Tool full command: %s", str_command)
     subprocess.run(str_command, check=True, shell=True)
 
     if not output_edges_file.exists():
         raise CWLWorkflowError(f"Edges file has failed to be generated at {output_edges_file}")
-
-
-def _add_efferent_section_type(edges_file, population_name):
-    """Add efferent section type until spykfunc is fixed to not depend on it."""
-    with h5py.File(edges_file, "r+") as fd:
-        edge_population = fd["edges"][population_name]
-
-        shape = len(edge_population["target_node_id"])
-
-        edge_population["0"].create_dataset(
-            "efferent_section_type",
-            data=np.full(fill_value=2, shape=shape),
-            dtype=np.uint32,
-        )
 
 
 def _write_partial_config(config, edges_file, population_name, output_file):
