@@ -38,7 +38,7 @@ setup(
         "joblib",
         "bba_data_push>=1.0.4",
         "cwl-luigi>=0.3.1",
-        "entity_management>=1.2.27",
+        "entity_management>=1.2.28",
         "pyarrow",
         "lxml",
         "fz_td_recipe",
