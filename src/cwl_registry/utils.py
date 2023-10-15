@@ -501,3 +501,31 @@ def build_variant_allocation_command(cmd: str, variant) -> str:
     str_slurm_parameters = " ".join(_parse_slurm_config(slurm_config))
     command = f"stdbuf -oL -eL salloc {str_slurm_parameters} srun {srun_cmd}"
     return command
+
+
+def get_morphologies_dir(circuit_config, population_name, ext):
+    """Get the morphologies directory from the circuit config."""
+    pop_dict = _get_population(circuit_config["networks"]["nodes"], population_name)
+
+    if ext == "swc":
+        return pop_dict["morphologies_dir"]
+
+    if ext == "h5":
+        return pop_dict["alternate_morphologies"]["h5v1"]
+
+    if ext == "asc":
+        return pop_dict["alternate_morphologies"]["neurolucida-asc"]
+
+    raise CWLWorkflowError(f"Unknown extension {ext}. Supported: (swc, h5, asc)")
+
+
+def _get_population(node_list, population_name):
+    for node_dict in node_list:
+        populations = node_dict["populations"]
+        assert len(populations) == 1
+        if population_name in populations:
+            return populations[population_name]
+
+    raise CWLWorkflowError(
+        f"Population {population_name} does not exist in circuit config's node list: {node_list}."
+    )

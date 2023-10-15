@@ -34,7 +34,7 @@ def connectome_filtering(output_dir):
         "source /etc/profile.d/modules.sh && "
         "module load unstable spykfunc parquet-converters && "
         f"salloc --account={os.environ['SALLOC_ACCOUNT']} --partition=prod --nodes=1 "
-        "--constraint=nvme --exclusive --time=1:00:00 srun --mpi=none sh -c '{cmd}'"
+        "--constraint=nvme --exclusive --time=1:00:00 srun {cmd}"
     )
     return WrapperBuild(command=base_command_list, inputs=inputs, salloc_cmd=salloc_cmd)
 

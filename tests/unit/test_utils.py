@@ -477,3 +477,44 @@ def test_build_variant_allocation_command__empty_env_vars(tmp_path):
             "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
             "--mem=0 --partition=prod --ntasks=400 srun echo foo"
         )
+
+
+@pytest.fixture
+def morph_config():
+    return {
+        "version": 2,
+        "manifest": {"$BASE_DIR": "."},
+        "networks": {
+            "nodes": [
+                {
+                    "nodes_file": "some-path",
+                    "populations": {
+                        "a-pop": {
+                            "type": "not-biophysical",
+                            "partial": ["cell-properties"],
+                            "morphologies_dir": "swc",
+                            "alternate_morphologies": {
+                                "h5v1": "h5",
+                                "neurolucida-asc": "asc",
+                            },
+                        }
+                    },
+                }
+            ]
+        },
+    }
+
+
+def test_morphologies_dir__swc(morph_config):
+    res = tested.get_morphologies_dir(morph_config, "a-pop", "swc")
+    assert res == "swc"
+
+
+def test_morphologies_dir__h5(morph_config):
+    res = tested.get_morphologies_dir(morph_config, "a-pop", "h5")
+    assert res == "h5"
+
+
+def test_morphologies_dir__asc(morph_config):
+    res = tested.get_morphologies_dir(morph_config, "a-pop", "asc")
+    assert res == "asc"
