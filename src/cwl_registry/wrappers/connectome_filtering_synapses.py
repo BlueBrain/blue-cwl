@@ -47,7 +47,7 @@ def connectome_filtering_synapses(
     build_dir = utils.create_dir(output_dir / "build")
 
     forge = nexus.get_forge()
-    variant = (Variant.from_resource_id(forge, variant_config),)
+    variant = Variant.from_resource_id(forge, variant_config)
 
     config = utils.load_json(nexus.get_config_path_from_circuit_resource(forge, partial_circuit))
     partial_circuit = nexus.get_resource(forge, partial_circuit)
