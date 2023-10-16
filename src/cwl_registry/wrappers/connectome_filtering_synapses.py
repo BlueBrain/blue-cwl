@@ -61,9 +61,9 @@ def connectome_filtering_synapses(
 
     edges_file, edge_population_name = utils.get_first_edge_population_from_config(config)
 
-    morphologies_dir = config["networks"]["nodes"][0]["populations"][node_population_name][
-        "morphologies_dir"
-    ]
+    morphologies_dir = utils.get_morphologies_dir(
+        config["networks"]["nodes"], node_population_name, "h5"
+    )
 
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     L.info("Staging atlas to  %s", atlas_dir)
