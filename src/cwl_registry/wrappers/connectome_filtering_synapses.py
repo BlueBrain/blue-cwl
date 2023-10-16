@@ -47,6 +47,7 @@ def connectome_filtering_synapses(
     build_dir = utils.create_dir(output_dir / "build")
 
     forge = nexus.get_forge()
+    variant = (Variant.from_resource_id(forge, variant_config),)
 
     config = utils.load_json(nexus.get_config_path_from_circuit_resource(forge, partial_circuit))
     partial_circuit = nexus.get_resource(forge, partial_circuit)
@@ -98,36 +99,16 @@ def connectome_filtering_synapses(
         )
 
     L.info("Running functionalizer...")
-    command = [
-        "env",
-        f"SPARK_USER={os.environ['USER']}",
-        "dplace",
-        "functionalizer",
-        "-p",
-        "spark.driver.memory=60g",
-        str(edges_file),
+    _run_functionalizer(
+        nodes_file,
+        node_population_name,
+        edges_file,
         edge_population_name,
-        "--work-dir",
-        str(build_dir),
-        "--output-dir",
-        str(build_dir),
-        "--from",
-        str(nodes_file),
-        node_population_name,
-        "--to",
-        str(nodes_file),
-        node_population_name,
-        "--filters",
-        "SynapseProperties",
-        "--recipe",
-        str(recipe_file),
-        "--morphologies",
-        str(morphologies_dir),
-    ]
-    L.debug("Tool command: %s", " ".join(command))
-
-    subprocess.run(command, check=True)
-
+        recipe_file,
+        morphologies_dir,
+        build_dir,
+        variant,
+    )
     parquet_dir = build_dir / "circuit.parquet"
     assert parquet_dir.exists()
 
@@ -137,15 +118,7 @@ def connectome_filtering_synapses(
 
     L.info("Running parquet conversion to sonata...")
 
-    command = [
-        "parquet2hdf5",
-        str(parquet_dir),
-        str(output_edges_file),
-        edge_population_name,
-    ]
-    L.debug("Tool command: %s", " ".join(command))
-
-    subprocess.run(command, check=True)
+    _run_parquet_conversion(parquet_dir, output_edges_file, edge_population_name)
 
     L.info("Functionalized edges generated at %s", output_edges_file)
 
@@ -166,9 +139,82 @@ def connectome_filtering_synapses(
 
     utils.write_resource_to_definition_output(
         json_resource=load_by_id(circuit_resource.get_id()),
-        variant=Variant.from_resource_id(forge, variant_config),
+        variant=variant,
         output_dir=output_dir,
     )
+
+
+def _run_functionalizer(
+    nodes_file,
+    node_population_name,
+    edges_file,
+    edge_population_name,
+    recipe_file,
+    morphologies_dir,
+    output_dir,
+    variant,
+):
+    base_command = [
+        "env",
+        f"SPARK_USER={os.environ['USER']}",
+        "dplace",
+        "functionalizer",
+        "-p",
+        "spark.driver.memory=60g",
+        str(edges_file),
+        edge_population_name,
+        "--work-dir",
+        str(output_dir),
+        "--output-dir",
+        str(output_dir),
+        "--from",
+        str(nodes_file),
+        node_population_name,
+        "--to",
+        str(nodes_file),
+        node_population_name,
+        "--filters",
+        "SynapseProperties",
+        "--recipe",
+        str(recipe_file),
+        "--morphologies",
+        str(morphologies_dir),
+    ]
+    str_base_command = " ".join(base_command)
+    str_command = utils.build_variant_allocation_command(str_base_command, variant)
+
+    L.debug("Tool command: %s", " ".join(str_command))
+
+    subprocess.run(str_command, check=True, shell=True)
+
+
+def _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_population_name):
+    # Launch a second allocation to merge parquet edges into a SONATA edge population
+    base_command = [
+        "parquet2hdf5",
+        str(parquet_dir),
+        str(output_edges_file),
+        output_edge_population_name,
+    ]
+    str_base_command = " ".join(base_command)
+
+    # TODO: To remove when sub-workflows are supported
+    str_command = (
+        "salloc "
+        "--account=proj134 "
+        "--partition=prod "
+        "--nodes=100 "
+        "--tasks-per-node=10 "
+        "--cpus-per-task=4 "
+        "--exclusive "
+        "--time=8:00:00 "
+        f"srun dplace {str_base_command}"
+    )
+    L.info("Tool full command: %s", str_command)
+    subprocess.run(str_command, check=True, shell=True)
+
+    if not output_edges_file.exists():
+        raise CWLWorkflowError(f"Edges file has failed to be generated at {output_edges_file}")
 
 
 def _get_connectome_pathways(edges_file, edge_population_name, nodes_file, node_population_name):
