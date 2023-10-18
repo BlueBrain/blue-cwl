@@ -53,7 +53,7 @@ def build_region_structure(ph_catalog: dict) -> dict:
         if region in region_structure:
             entry = region_structure[region]
         else:
-            entry = {"layers": [], "names": [], "thicknesses": []}
+            entry = {"layers": [], "names": {}, "thicknesses": {}}
             region_structure[region] = entry
             visited.add(region)
 
@@ -61,8 +61,8 @@ def build_region_structure(ph_catalog: dict) -> dict:
 
     def update_entry(i, entry, layer_id, layer_name):
         entry["layers"].append(layer_id)
-        entry["names"].append(layer_name)
-        entry["thicknesses"].append(thicknesses[i])
+        entry["names"][layer_id] = layer_name
+        entry["thicknesses"][layer_id] = thicknesses[i]
 
     for i, ph_entry in enumerate(ph_catalog["placement_hints"]):
         # region's structure layer if is the X in [PH]X.nrrd
