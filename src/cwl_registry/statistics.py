@@ -125,6 +125,7 @@ def density_summary_stats_region(region_map, df_region_mtype_etype, mtype_urls, 
         region_id = next(iter(region_map.find(acronym, "acronym")))
         hasPart[_region_url(region_id)] = {
             "label": region_map.get(region_id, "name"),
+            "notation": acronym,
             "about": "BrainRegion",
             "hasPart": _density_summary_stats_mtype(
                 mtype_urls,

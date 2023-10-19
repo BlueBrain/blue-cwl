@@ -301,6 +301,7 @@ def test_atlas_densities_composition_summary(density_distribution, region_map, b
     r1 = result["hasPart"][MOp1_URI]
 
     r1["label"] == "Primary motor area, layer 1"
+    r1["notation"] == "MOp1"
     r1["about"] == "BrainReigon"
 
     r1_mtypes = r1["hasPart"]
@@ -319,6 +320,7 @@ def test_atlas_densities_composition_summary(density_distribution, region_map, b
 
     r2 = result["hasPart"][MOs1_URI]
     r2["label"] == "Secondary motor area, layer 1"
+    r2["notation"] = "MOs1"
     r2["about"] == "BrainReigon"
 
     r2_mtypes = r2["hasPart"]
