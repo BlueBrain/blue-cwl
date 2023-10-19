@@ -1,19 +1,23 @@
 cwlVersion: v1.2
 class: CommandLineTool
 
-id: placeholder_morphology_assignment
-label: Morphology Assignment
+id: connectome_generation_placeholder
+label: Placeholder connectome manipulation with parallel execution
 stdout: stdout.txt
 
-baseCommand: ['cwl-registry', 'execute', 'mmodel-neurons']
+baseCommand: ['cwl-registry', 'execute', 'connectome-generation-placeholder']
 
 
 environment:
   env_type: MODULE
+  modulepath: /gpfs/bbp.cscs.ch/ssd/apps/bsd/pulls/2135/config/modules/_meta
   modules:
     - unstable
     - py-cwl-registry
-    - py-region-grower
+    - py-connectome-manipulator/0.0.9
+  env_vars:
+    OMP_NUM_THREADS: 40
+    MPI_OPENMP_INTEROP: 1
   enable_internet: true
 
 
@@ -29,6 +33,11 @@ inputs:
       inputBinding:
         prefix: --partial-circuit
 
+    - id: macro_connectome_config
+      type: NexusType
+      inputBinding:
+        prefix: --macro-connectome-config
+
     - id: variant_config
       type: NexusType
       inputBinding:
@@ -43,6 +52,6 @@ outputs:
 
     - id: partial_circuit
       type: NexusType
-      doc: Circuit bundle with me-types and morphologies.
+      doc: Circuit bundle with connectivity.
       outputBinding:
-        glob: "circuit_morphologies_bundle.json"
+        glob: "circuit_connectome_bundle.json"

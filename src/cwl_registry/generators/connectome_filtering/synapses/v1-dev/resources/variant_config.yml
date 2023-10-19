@@ -2,10 +2,8 @@
 resources:
     default:
         partition: prod
-        account: proj134
         nodes: 5
         exclusive: true
-        time: '12:00:00'
-        cpus_per_task: 40
-        mem: 0
+        time: '8:00:00'
         constraint: nvme
+        ntasks: 1

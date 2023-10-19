@@ -1,19 +1,21 @@
 cwlVersion: v1.2
 class: CommandLineTool
 
-id: placeholder_morphology_assignment
-label: Morphology Assignment
+id: connectome_distance_dependent
+label: Distance dependent connectome manipulation
 stdout: stdout.txt
 
-baseCommand: ['cwl-registry', 'execute', 'mmodel-neurons']
+baseCommand: ['cwl-registry', 'execute', 'connectome-filtering-synapses']
 
 
 environment:
   env_type: MODULE
+  modulepath: /gpfs/bbp.cscs.ch/ssd/apps/bsd/pulls/2135/config/modules/_meta
   modules:
     - unstable
+    - spykfunc
+    - parquet-converters
     - py-cwl-registry
-    - py-region-grower
   enable_internet: true
 
 
@@ -43,6 +45,6 @@ outputs:
 
     - id: partial_circuit
       type: NexusType
-      doc: Circuit bundle with me-types and morphologies.
+      doc: Circuit bundle with connectivity.
       outputBinding:
-        glob: "circuit_morphologies_bundle.json"
+        glob: "output_circuit.json"

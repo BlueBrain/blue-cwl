@@ -10,8 +10,8 @@ baseCommand: ['cwl-registry', 'execute', 'connectome-filtering-synapses']
 
 environment:
   env_type: MODULE
+  modulepath: /gpfs/bbp.cscs.ch/ssd/apps/bsd/pulls/2135/config/modules/_meta
   modules:
-    - unstable
     - spykfunc
     - parquet-converters
     - py-cwl-registry

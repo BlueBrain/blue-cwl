@@ -1,33 +1,35 @@
 cwlVersion: v1.2
 class: CommandLineTool
 
-id: placeholder_morphology_assignment
-label: Morphology Assignment
+id: placeholder_emodel_assignment
+label: EModel assignment
 stdout: stdout.txt
 
-baseCommand: ['cwl-registry', 'execute', 'mmodel-neurons']
+baseCommand: ['cwl-registry', 'execute', 'placeholder-emodel-assignment']
 
 
 environment:
-  env_type: MODULE
-  modules:
-    - unstable
-    - py-cwl-registry
-    - py-region-grower
+  env_type: VENV
+  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv310-EModelAssignment
   enable_internet: true
 
 
 inputs:
 
-    - id: configuration
-      type: NexusType
+    - id: region
+      type: string
       inputBinding:
-        prefix: --configuration
+        prefix: --region
 
     - id: partial_circuit
       type: NexusType
       inputBinding:
         prefix: --partial-circuit
+
+    - id: etype_emodels
+      type: NexusType
+      inputBinding:
+        prefix: --etype-emodels
 
     - id: variant_config
       type: NexusType
@@ -43,6 +45,6 @@ outputs:
 
     - id: partial_circuit
       type: NexusType
-      doc: Circuit bundle with me-types and morphologies.
+      doc: Circuit bundle with emodels.
       outputBinding:
-        glob: "circuit_morphologies_bundle.json"
+        glob: "circuit_emodels_bundle.json"

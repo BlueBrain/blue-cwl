@@ -10,6 +10,7 @@ baseCommand: ['cwl-registry', 'execute', 'mmodel-neurons']
 
 environment:
   env_type: MODULE
+  modulepath: /gpfs/bbp.cscs.ch/ssd/apps/bsd/pulls/2135/config/modules/_meta
   modules:
     - unstable
     - py-cwl-registry
