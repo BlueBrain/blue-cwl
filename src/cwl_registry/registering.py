@@ -5,6 +5,7 @@ from pathlib import Path
 from entity_management.atlas import AtlasBrainRegion, AtlasRelease
 from entity_management.base import BrainLocation, OntologyTerm
 from entity_management.core import DataDownload, Subject
+from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
 from kgforge.core import Resource
 
@@ -26,8 +27,10 @@ def _subject(forge, species_id):
 def _subject_2(species_id: str | None):
     if not species_id:
         species_id = "http://purl.obolibrary.org/obo/NCBITaxon_10090"
-
-    return Subject(species=OntologyTerm(url=species_id)).publish()
+        label = "Mus musculus"
+    else:
+        label = load_by_id(species_id, cross_bucket=True)["label"]
+    return Subject(species=OntologyTerm(url=species_id, label=label)).publish()
 
 
 def _circuit_config_path(path):
