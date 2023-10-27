@@ -154,17 +154,17 @@ def _run_functionalizer(
     output_dir,
     variant,
 ):
+    work_dir = utils.create_dir(output_dir / "workdir", clean_if_exists=True)
+
     base_command = [
         "env",
         f"SPARK_USER={os.environ['USER']}",
         "dplace",
         "functionalizer",
-        "-p",
-        "spark.driver.memory=60g",
         str(edges_file),
         edge_population_name,
         "--work-dir",
-        str(output_dir),
+        str(work_dir),
         "--output-dir",
         str(output_dir),
         "--from",
@@ -183,8 +183,7 @@ def _run_functionalizer(
     str_base_command = " ".join(base_command)
     str_command = utils.build_variant_allocation_command(str_base_command, variant)
 
-    L.debug("Tool command: %s", " ".join(str_command))
-
+    L.info("Tool full command: %s", str_command)
     subprocess.run(str_command, check=True, shell=True)
 
 
