@@ -82,9 +82,6 @@ def connectome_filtering_synapses(
         L.info("Building functionalizer xml recipe...")
         recipe_file = recipes.write_functionalizer_xml_recipe(
             synapse_config=configuration,
-            circuit_pathways=_get_connectome_pathways(
-                edges_file, edge_population_name, nodes_file, node_population_name
-            ),
             region_map=voxcell.RegionMap.load_json(atlas_info.ontology_path),
             annotation=voxcell.VoxelData.load_nrrd(atlas_info.annotation_path),
             output_file=build_dir / "recipe.xml",

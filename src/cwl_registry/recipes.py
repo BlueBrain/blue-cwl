@@ -6,7 +6,6 @@ import shutil
 from pathlib import Path
 from typing import Any, Dict, List
 
-import fz_td_recipe
 import lxml.etree as ET
 import numpy as np
 import pandas as pd
@@ -280,9 +279,6 @@ def write_functionalizer_xml_recipe(
     _write_xml_tree(
         synapse_properties_generator, synapse_config["synapses_classification"], output_file
     )
-
-    r = fz_td_recipe.Recipe(output_file.as_posix(), strict=True)
-    assert r.synapse_properties.validate(), f"Rule validation failed for {output_file}"
 
     return output_file
 
