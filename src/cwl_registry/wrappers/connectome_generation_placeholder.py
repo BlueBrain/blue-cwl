@@ -177,6 +177,7 @@ def _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_populati
         str(parquet_dir),
         str(output_edges_file),
         output_edge_population_name,
+        "--no-index",
     ]
     str_base_command = " ".join(base_command)
 
