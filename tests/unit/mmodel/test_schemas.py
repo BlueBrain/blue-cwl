@@ -13,7 +13,7 @@ MOCK_ID = "https://bbp.epfl.ch/my-id"
 
 def test_variant_info():
     """Test VariantInfo schema."""
-    res = test_module.VariantInfo.parse_obj({"algorithm": "foo", "version": "v1"})
+    res = test_module.VariantInfo.from_dict({"algorithm": "foo", "version": "v1"})
     assert res.algorithm == "foo"
     assert res.version == "v1"
 
@@ -26,7 +26,7 @@ def _create_canonical_model(parameters, distributions, overrides, out_dir):
     distributions_path = out_dir / f"distributions_{uuid.uuid4()}.json"
     write_json(filepath=distributions_path, data=distributions)
 
-    return test_module.CanonicalMorphologyModel.parse_obj(
+    return test_module.CanonicalMorphologyModel.from_dict(
         {
             "parameters": parameters_path,
             "distributions": distributions_path,

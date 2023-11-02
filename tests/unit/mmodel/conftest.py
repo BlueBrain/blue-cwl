@@ -77,7 +77,7 @@ def canonical_morphology_model_config_distribution(
 @pytest.fixture
 def canonical_distribution_config(canonical_morphology_model_config_distribution):
     """CanonicalMorphologConfig distribution schema instance."""
-    return schemas.CanonicalDistributionConfig.parse_obj(
+    return schemas.CanonicalDistributionConfig.from_dict(
         canonical_morphology_model_config_distribution
     )
 
@@ -112,7 +112,7 @@ def placeholder_morphology_config_distribution(placeholder_morphology_config_dis
 @pytest.fixture
 def placeholder_distribution_config(placeholder_morphology_config_distribution):
     """PlaceholderMorphologyConfig distribution data."""
-    return schemas.PlaceholderDistributionConfig.parse_obj(
+    return schemas.PlaceholderDistributionConfig.from_dict(
         placeholder_morphology_config_distribution
     )
 

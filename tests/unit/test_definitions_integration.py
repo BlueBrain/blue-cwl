@@ -9,7 +9,7 @@ def test_pipeline_definitions_inputs_outputs():
         ("cell_position", "neurons_cell_position"),
         ("placeholder", "emodel_assignment"),
         ("placeholder", "morphology_assignment"),
-        ("connectome", "distance"),
+        ("connectome", "placeholder"),
         ("connectome_filtering", "synapses"),
     ]
 

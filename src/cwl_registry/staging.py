@@ -184,63 +184,6 @@ def materialize_density_distribution(
     return groups
 
 
-def materialize_connectome_dataset(forge, dataset: dict, output_file: os.PathLike | None = None):
-    """Materialize a connectome dataset."""
-    visited = {}
-
-    def _get_label(resource_id):
-        """Get label if available or fetch it from the resource."""
-        if resource_id in visited:
-            return visited[resource_id]
-        label = get_resource(forge, resource_id).label
-        visited[resource_id] = label
-        return label
-
-    def _get_region_notation(resource_id):
-        if resource_id in visited:
-            return visited[resource_id]
-        label = get_resource(forge, resource_id).notation
-        visited[resource_id] = label
-        return label
-
-    hemispheres = ("undefined", "left", "right")
-
-    rows = []
-
-    input_names = None
-
-    # pylint: disable=too-many-nested-blocks
-    for hi, hid in dataset["hasPart"].items():
-        hi_label = hemispheres[int(hi)]
-        for hj, hjd in hid["hasPart"].items():
-            hj_label = hemispheres[int(hj)]
-            for ri, rid in hjd["hasPart"].items():
-                ri_label = _get_region_notation(ri)
-                for rj, rjd in rid["hasPart"].items():
-                    rj_label = _get_region_notation(rj)
-                    for mi, mid in rjd["hasPart"].items():
-                        mi_label = _get_label(mi)
-                        for mj, mjd in mid["hasPart"].items():
-                            mj_label = _get_label(mj)
-
-                            if input_names is None:
-                                input_names = [inp["name"] for inp in mjd["hasPart"]["inputs"]]
-
-                            row = [hi_label, hj_label, ri_label, rj_label, mi_label, mj_label] + [
-                                inp["value"] for inp in mjd["hasPart"]["inputs"]
-                            ]
-                            rows.append(row)
-
-    hierarchy_names = ["hi", "hj", "ri", "rj", "mi", "mj"]
-
-    df = pd.DataFrame(rows, columns=hierarchy_names + input_names)
-
-    if output_file:
-        df.to_json(output_file, orient="records")
-
-    return df
-
-
 def get_distribution_path_from_resource(forge, resource_id):
     """Get json file path from resource's distribution."""
     resource = get_resource(forge=forge, resource_id=resource_id)

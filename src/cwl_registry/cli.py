@@ -8,7 +8,6 @@ from cwl_registry.version import VERSION
 from cwl_registry.wrappers import (
     cell_composition_manipulation,
     cell_composition_summary,
-    connectome_distance_dependent,
     connectome_filtering_synapses,
     connectome_generation_placeholder,
     density_calculation,
@@ -59,7 +58,6 @@ execute.add_command(name="cell-composition-summary", cmd=cell_composition_summar
 execute.add_command(name="cell-composition-manipulation", cmd=cell_composition_manipulation.app)
 execute.add_command(name="mmodel-neurons", cmd=mmodel.app)
 execute.add_command(name="placeholder-emodel-assignment", cmd=placeholder_emodel_assignment.app)
-execute.add_command(name="connectome-distance-dependent", cmd=connectome_distance_dependent.app)
 execute.add_command(
     name="connectome-generation-placeholder", cmd=connectome_generation_placeholder.app
 )

@@ -13,7 +13,7 @@ class MorphologyAssignmentConfig(Entity):
         # pylint: disable=no-member
         dataset = self.distribution.as_dict()
         validate_schema(data=dataset, schema_name="morphology_assignment_config_distribution.yml")
-        return schemas.MModelConfigRaw.parse_obj(dataset)
+        return schemas.MModelConfigRaw.from_dict(dataset)
 
 
 class CanonicalMorphologyModelConfig(Entity):

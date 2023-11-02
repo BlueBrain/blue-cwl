@@ -22,7 +22,7 @@ def test_morphology_assignment_config__to_model(monkeypatch, morphology_assignme
 
     with (
         patch("cwl_registry.mmodel.entity.validate_schema"),
-        patch(f"cwl_registry.mmodel.schemas.MModelConfigRaw.parse_obj") as patched,
+        patch(f"cwl_registry.mmodel.schemas.MModelConfigRaw.from_dict") as patched,
     ):
         model = morphology_assignment_config.to_model()
         patched.assert_called_once_with({"data": "my-data"})

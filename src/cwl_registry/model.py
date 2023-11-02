@@ -16,6 +16,11 @@ class CustomBaseModel(pydantic.BaseModel):
         validate_assignment = True
         arbitrary_types_allowed = True
 
+    @classmethod
+    def from_dict(cls, obj) -> "CustoMBaseModel":
+        """Convert object to model instance."""
+        return cls.model_validate(obj) if _PYDANTIC_MAJOR > 1 else cls.parse_obj(obj)
+
     def to_dict(self) -> dict:
         """Convert the object into a dict."""
         return self.model_dump() if _PYDANTIC_MAJOR > 1 else self.dict()
