@@ -4,14 +4,13 @@ import json
 from enum import Enum
 from pathlib import Path
 
-from pydantic import BaseModel
-
 from cwl_registry import nexus
 from cwl_registry.mmodel.config import split_config
 from cwl_registry.mmodel.staging import (
     materialize_canonical_config,
     materialize_placeholders_config,
 )
+from cwl_registry.model import CustomBaseModel
 from cwl_registry.staging import get_entry_id
 
 
@@ -22,14 +21,14 @@ class VariantEntry(str, Enum):
     placeholder = "placeholder_assignment"
 
 
-class VariantInfo(BaseModel):
+class VariantInfo(CustomBaseModel):
     """Variant entry information."""
 
     algorithm: str
     version: str
 
 
-class SynthesisOverrides(BaseModel):
+class SynthesisOverrides(CustomBaseModel):
     """Synthesis inputs overrides."""
 
     total_extent: float | None = None
@@ -39,7 +38,7 @@ class SynthesisOverrides(BaseModel):
     radius: float | None = None
 
 
-class CanonicalMorphologyModel(BaseModel):
+class CanonicalMorphologyModel(CustomBaseModel):
     """Synthesis datasets."""
 
     parameters: Path
@@ -57,7 +56,7 @@ class CanonicalMorphologyModel(BaseModel):
             overrides = {}
             for neurite_type, neurite_overrides in self.overrides.items():
                 neurite_overrides = {
-                    k: v for k, v in neurite_overrides.dict().items() if v is not None
+                    k: v for k, v in neurite_overrides.to_dict().items() if v is not None
                 }
                 if neurite_overrides:
                     overrides[neurite_type] = neurite_overrides
@@ -71,7 +70,7 @@ class CanonicalMorphologyModel(BaseModel):
         return self.checksum() == other.checksum()
 
 
-class CanonicalDistributionConfig(BaseModel):
+class CanonicalDistributionConfig(CustomBaseModel):
     """Canonical distribution config."""
 
     data: dict
@@ -87,7 +86,7 @@ class CanonicalDistributionConfig(BaseModel):
         )
 
 
-class PlaceholderDistributionConfig(BaseModel):
+class PlaceholderDistributionConfig(CustomBaseModel):
     """Placeholder distribution config."""
 
     data: dict
@@ -102,7 +101,7 @@ class PlaceholderDistributionConfig(BaseModel):
         )
 
 
-class MModelConfigExpanded(BaseModel):
+class MModelConfigExpanded(CustomBaseModel):
     """Expanded config with json data instead of entity info."""
 
     variantDefinition: dict[VariantEntry, VariantInfo]
@@ -123,7 +122,7 @@ class MModelConfigExpanded(BaseModel):
         )
 
 
-class MModelConfigRaw(BaseModel):
+class MModelConfigRaw(CustomBaseModel):
     """Morphology assignment config schema."""
 
     variantDefinition: dict[VariantEntry, VariantInfo]

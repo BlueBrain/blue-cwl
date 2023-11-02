@@ -23,10 +23,10 @@ import pyarrow
 import pyarrow.fs
 import voxcell
 import yaml
-from pydantic import BaseModel
 
 from cwl_registry.constants import DEFAULT_CIRCUIT_BUILD_PARAMETERS
 from cwl_registry.exceptions import CWLWorkflowError
+from cwl_registry.model import CustomBaseModel
 
 ExistingFile = click.Path(
     exists=True, readable=True, dir_okay=False, resolve_path=True, path_type=str
@@ -105,8 +105,8 @@ def write_json(filepath: os.PathLike, data: dict) -> None:
 
     def serializer(obj):
         """Serialize pydantic models if they are nested inside dicts."""
-        if isinstance(obj, BaseModel):
-            return obj.dict()
+        if isinstance(obj, CustomBaseModel):
+            return obj.to_dict()
         if isinstance(obj, Path):
             return str(obj)
         raise TypeError(f"Unexpected type {obj.__class__.__name__}")
