@@ -5,11 +5,11 @@ from pathlib import Path
 
 import click
 import libsonata
-import morphio
 import numpy as np
 import pandas as pd
 import voxcell
 from entity_management.nexus import load_by_id
+from morph_tool.converter import convert
 
 from cwl_registry import nexus, registering, staging, utils, validation
 from cwl_registry.mmodel import recipe
@@ -422,10 +422,9 @@ def _assign_placeholder_morphologies(placeholders, placeholder_group, output_mor
 
     # copy the placeholder morphologies to the morphologies directory
     for morphology_path in set(morphology_paths):
-        morph = morphio.mut.Morphology(morphology_path)
         morphology_name = Path(morphology_path).stem
-        morph.write(output_morphologies_dir / f"{morphology_name}.h5")
-        morph.write(output_morphologies_dir / f"{morphology_name}.asc")
+        convert(morphology_path, output_morphologies_dir / f"{morphology_name}.h5")
+        convert(morphology_path, output_morphologies_dir / f"{morphology_name}.asc")
 
     # add unit orientations
     placeholder_group.cells.orientations = np.broadcast_to(np.identity(3), (len(properties), 3, 3))

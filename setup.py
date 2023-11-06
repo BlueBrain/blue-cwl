@@ -43,7 +43,7 @@ setup(
         "lxml",
         "fz_td_recipe",
         "pydantic",
-        "morphio",
+        "morph-tool",
         "jsonschema",
     ],
     packages=find_packages(where="src"),
