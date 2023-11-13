@@ -727,11 +727,17 @@ def materialize_micro_connectome_config(
         """Convert a config section to pointing to gpfs paths instead of KG resources."""
         resolved_section = {}
         for entry_name, entry_data in section.items():
+            # empty data, no overrides
+            if not entry_data:
+                continue
+
             if entry_name == "configuration":
                 for variant_name, variant_data in entry_data.items():
-                    resolved_section[variant_name] = _config_to_path(forge, variant_data)
+                    if variant_data:
+                        resolved_section[variant_name] = _config_to_path(forge, variant_data)
             else:
                 resolved_section[entry_name] = _config_to_path(forge, entry_data)
+
         return resolved_section
 
     data = read_json_file_from_resource_id(forge, resource_id)

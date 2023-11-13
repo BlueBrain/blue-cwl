@@ -223,11 +223,15 @@ def test_materialize_macro_connectome_config__empty_overrides():
 
 
 def _materialize_micro_config(config):
-    with patch("cwl_registry.staging.read_json_file_from_resource_id") as mock1, patch(
-        "cwl_registry.staging._config_to_path"
-    ) as mock2:
+    def mock_config_to_path(forge, variant_data):
+        assert variant_data
+        return "foo"
+
+    with (
+        patch("cwl_registry.staging.read_json_file_from_resource_id") as mock1,
+        patch("cwl_registry.staging._config_to_path", side_effect=mock_config_to_path),
+    ):
         mock1.return_value = config
-        mock2.return_value = "foo"
 
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
             out_file = Path(tfile.name)
@@ -236,7 +240,7 @@ def _materialize_micro_config(config):
             return res, json.loads(Path(out_file).read_bytes())
 
 
-def test_materialize_micro_connectome_config():
+def test_materialize_micro_connectome_config__no_overrides():
     config = {
         "variants": {
             "placeholder__erdos_renyi": {},
@@ -248,37 +252,64 @@ def test_materialize_micro_connectome_config():
                 "rev": 5,
                 "type": ["Entity", "Dataset", "MicroConnectomeVariantSelection"],
             },
-            "configuration": {
-                "placeholder__erdos_renyi": {
-                    "id": "er-id",
-                    "rev": 2,
-                    "type": ["Entity", "Dataset", "MicroConnectomeData"],
-                },
-                "placeholder__distance_dependent": {
-                    "id": "dd-id",
-                    "rev": 2,
-                    "type": ["Entity", "Dataset", "MicroConnectomeData"],
-                },
+            "placeholder__erdos_renyi": {
+                "id": "er-id",
+                "rev": 2,
+                "type": ["Entity", "Dataset", "MicroConnectomeData"],
+            },
+            "placeholder__distance_dependent": {
+                "id": "dd-id",
+                "rev": 2,
+                "type": ["Entity", "Dataset", "MicroConnectomeData"],
+            },
+        },
+        "overrides": {},
+    }
+
+    res1, res2 = _materialize_micro_config(config)
+
+    assert (
+        res1
+        == res2
+        == {
+            "variants": {"placeholder__erdos_renyi": {}, "placeholder__distance_dependent": {}},
+            "initial": {
+                "variants": "foo",
+                "placeholder__erdos_renyi": "foo",
+                "placeholder__distance_dependent": "foo",
+            },
+            "overrides": {},
+        }
+    )
+
+
+def test_materialize_micro_connectome_config__no_overrides2():
+    config = {
+        "variants": {
+            "placeholder__erdos_renyi": {},
+            "placeholder__distance_dependent": {},
+        },
+        "initial": {
+            "placeholder__erdos_renyi": {
+                "id": "https://bbp.epfl.ch/neurosciencegraph/data/microconnectomedata/009413eb-e51b-40bc-9199-8b98bfc53f87",
+                "rev": 7,
+                "type": ["Entity", "Dataset", "MicroConnectomeData"],
+            },
+            "variants": {
+                "id": "https://bbp.epfl.ch/neurosciencegraph/data/a46a442c-5baa-4a5c-9907-bfb359dd9e5d",
+                "rev": 9,
+                "type": ["Entity", "Dataset", "MicroConnectomeVariantSelection"],
+            },
+            "placeholder__distance_dependent": {
+                "id": "https://bbp.epfl.ch/neurosciencegraph/data/microconnectomedata/c7e1d215-2dad-4216-8565-6b1e4c161f46",
+                "rev": 7,
+                "type": ["Entity", "Dataset", "MicroConnectomeData"],
             },
         },
         "overrides": {
-            "variants": {
-                "id": "v-overrides-id",
-                "type": ["Entity", "Dataset", "MicroConnectomeVariantSelectionOverrides"],
-                "rev": 1,
-            },
-            "configuration": {
-                "placeholder__erdos_renyi": {
-                    "id": "er-overrides-id",
-                    "type": ["Entity", "Dataset", "MicroConnectomeDataOverrides"],
-                    "rev": 1,
-                },
-                "placeholder__distance_dependent": {
-                    "id": "dd-overrides-id",
-                    "type": ["Entity", "Dataset", "MicroConnectomeDataOverrides"],
-                    "rev": 1,
-                },
-            },
+            "placeholder__erdos_renyi": {},
+            "variants": {},
+            "placeholder__distance_dependent": {},
         },
     }
 
@@ -294,11 +325,7 @@ def test_materialize_micro_connectome_config():
                 "placeholder__erdos_renyi": "foo",
                 "placeholder__distance_dependent": "foo",
             },
-            "overrides": {
-                "variants": "foo",
-                "placeholder__erdos_renyi": "foo",
-                "placeholder__distance_dependent": "foo",
-            },
+            "overrides": {},
         }
     )
 
