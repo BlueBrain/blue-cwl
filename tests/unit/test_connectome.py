@@ -86,6 +86,22 @@ def macro_assembled():
 
 
 @pytest.fixture(scope="module")
+def macro_assembled_empty():
+    # fmt: off
+    data = [
+        (L, L, "AUDd4"   , "VISrl6a" , 1.0),
+        (L, L, "SSp-bfd2", "SSp-bfd2", 1.0),
+        (R, R, "MOs2"    , "MOs2"    , 1.0),
+        (L, L, "FRP2"    , "FRP2"    , 1.0),
+        (L, R, "CA1"     , "CA1"     , 1.0),
+        (R, R, "TEa5"    , "TEa5"    , 1.0),
+        (R, L, "SSp-bfd3", "SSp-bfd2", 1.0),
+    ]
+    # fmt: on
+    return _build_df(data, Constants.MACRO_LEVELS + Constants.MACRO_VALUES)
+
+
+@pytest.fixture(scope="module")
 def macro_file(output_dir, macro):
     return _create_arrow_file(output_dir / "macro.arrow", macro)
 
@@ -96,6 +112,11 @@ def macro_overrides_file(output_dir, macro_overrides):
 
 
 @pytest.fixture(scope="module")
+def macro_overrides_empty_file():
+    return DATA_DIR / "empty_macro_overrides.arrow"
+
+
+@pytest.fixture(scope="module")
 def macro_config(macro_file, macro_overrides_file):
     return {
         "initial": {"connection_strength": macro_file},
@@ -103,9 +124,24 @@ def macro_config(macro_file, macro_overrides_file):
     }
 
 
+@pytest.fixture(scope="module")
+def macro_config_empty_overrides(macro_file, macro_overrides_empty_file):
+    return {
+        "initial": {"connection_strength": macro_file},
+        "overrides": {"connection_strength": macro_overrides_empty_file},
+    }
+
+
 def test_assemble_macro_matrix(macro_config, macro_assembled):
     res = test_module.assemble_macro_matrix(macro_config)
     pdt.assert_frame_equal(res, macro_assembled)
+
+
+def test_assemble_macro_matrix__empty_overrides(
+    macro_config_empty_overrides, macro_assembled_empty
+):
+    res = test_module.assemble_macro_matrix(macro_config_empty_overrides)
+    pdt.assert_frame_equal(res, macro_assembled_empty)
 
 
 @pytest.fixture(scope="module")
@@ -135,6 +171,11 @@ def variants_overrides():
     return _build_df(data, Constants.COMPACT_MICRO_LEVELS + ["variant"])
 
 
+# @pytest.fixture(scope="module")
+# def variants_overrides_empty():
+#    return load_arrow(DATA_DIR / "empty_variant_overrides.arrow")
+
+
 @pytest.fixture(scope="module")
 def variants_assembled():
     # fmt: off
@@ -147,6 +188,21 @@ def variants_assembled():
         (R, R, "TEa5"    , "TEa5"     , "L5_TPC:A" , "L5_TPC:B" , ER),
         (R, L, "SSp-bfd3",  "SSp-bfd2", "L3_TPC:A" , "L3_TPC:B" , DD),
         (L, L, "FRP2"    , "FRP2"     , "L2_IPC"   , "L23_SBC" , "disabled"),
+    ]
+    # fmt: on
+    return _build_df(data, Constants.MICRO_LEVELS + ["variant"])
+
+
+@pytest.fixture(scope="module")
+def variants_assembled_empty_overrides():
+    # fmt: off
+    data = [
+        (L, L, "AUDd4"   , "VISrl6a"  , "L4_UPC"   , "L5_LBC"   , ER),
+        (L, L, "SSp-bfd2", "SSp-bfd2" , "L2_TPC:B" , "L2_TPC:B" , DD),
+        (R, R, "MOs2"    , "MOs2"     , "L2_IPC"   , "L23_SBC"  , DD),
+        (L, L, "FRP5"    , "FRP5"     , "L5_TPC:C" , "L4_DBC"   , DD),
+        (L, R, "CA1"     , "CA1"      , "GEN_mtype", "GIN_mtype", DD),
+        (R, R, "TEa5"    , "TEa5"     , "L5_TPC:A" , "L5_TPC:B" , ER),
     ]
     # fmt: on
     return _build_df(data, Constants.MICRO_LEVELS + ["variant"])
@@ -204,6 +260,11 @@ def variants_overrides_file(output_dir, variants_overrides):
     return _create_arrow_file(output_dir / "variants_overrides.arrow", variants_overrides)
 
 
+@pytest.fixture(scope="module")
+def variants_overrides_empty_file():
+    return DATA_DIR / "empty_variant_overrides.arrow"
+
+
 def test_assemble__variants(variants_file, variants_overrides_file, variants_assembled):
     res = test_module._assemble(
         variants_file,
@@ -212,6 +273,19 @@ def test_assemble__variants(variants_file, variants_overrides_file, variants_ass
         variants_overrides_file,
     )
     pdt.assert_frame_equal(res, variants_assembled)
+
+
+def test_assemble__variants_empty(
+    variants_file, variants_overrides_empty_file, variants_assembled_empty_overrides
+):
+    return
+    res = test_module._assemble(
+        variants_file,
+        Constants.MICRO_LEVELS,
+        Constants.MICRO_VARIANT_VALUES,
+        variants_overrides_empty_file,
+    )
+    pdt.assert_frame_equal(res, variants_assembled_empty_overrides)
 
 
 @pytest.fixture
@@ -258,6 +332,17 @@ def micro_er_assembled():
     data = [
         (R, R, "ENTm6", "VISal5" , "GEN_mtype", "L5_SBC", 0.2, 1.0, 0.1, 100.0, 5.0 ),
         (L, L, "AUDd4", "VISrl6a", "L4_UPC"   , "L5_LBC", 1.2, 2.2, 0.1, 150.0, 11.0),
+    ]
+    # fmt: on
+    return _build_df(data, Constants.MICRO_LEVELS + Constants.MICRO_ER_VALUES)
+
+
+@pytest.fixture(scope="module")
+def micro_er_assembled_empty_overrides():
+    # fmt: off
+    data = [
+        (R, R, "ENTm6", "VISal5" , "GEN_mtype", "L5_SBC", 0.2, 1.0, 0.1, 100.0, 5.0 ),
+        (L, L, "AUDd4", "VISrl6a", "L4_UPC"   , "L5_LBC", 0.3, 2.0, 0.2, 150.0, 10.0),
     ]
     # fmt: on
     return _build_df(data, Constants.MICRO_LEVELS + Constants.MICRO_ER_VALUES)
@@ -316,6 +401,11 @@ def micro_er_overrides_file(output_dir, micro_er_overrides):
     return _create_arrow_file(output_dir / "micro_er_overrides.arrow", micro_er_overrides)
 
 
+@pytest.fixture(scope="module")
+def micro_er_overrides_empty_file():
+    return DATA_DIR / "empty_er_overrides.arrow"
+
+
 def test_assemble__er(micro_er_file, micro_er_overrides_file, micro_er_assembled):
     res = test_module._assemble(
         initial_path=micro_er_file,
@@ -324,6 +414,18 @@ def test_assemble__er(micro_er_file, micro_er_overrides_file, micro_er_assembled
         overrides_path=micro_er_overrides_file,
     )
     pdt.assert_frame_equal(res, micro_er_assembled)
+
+
+def test_assemble__er__empty_overrides(
+    micro_er_file, micro_er_overrides_empty_file, micro_er_assembled_empty_overrides
+):
+    res = test_module._assemble(
+        initial_path=micro_er_file,
+        index_columns=Constants.MICRO_LEVELS,
+        value_columns=Constants.MICRO_ER_VALUES,
+        overrides_path=micro_er_overrides_empty_file,
+    )
+    pdt.assert_frame_equal(res, micro_er_assembled_empty_overrides)
 
 
 def test_conform__er(variants_conformed, micro_er_defaults, micro_er_assembled, micro_er_conformed):
@@ -373,6 +475,18 @@ def micro_dd_assembled():
 
 
 @pytest.fixture(scope="module")
+def micro_dd_assembled_empty_overrides():
+    # fmt: off
+    data = [
+        (L, L, "SSp-bfd2", "SSp-bfd2", "L2_TPC:B", "L2_TPC:B", 1.0, 0.008, 3.0, 1.5, 250.0, 0.8),
+        (R, R, "MOs2"    , "MOs2"    , "L2_IPC"  , "L23_SBC" , 1.0, 0.008, 3.0, 1.5, 250.0, 0.8),
+        (L, L, "FRP5"    , "FRP5"    , "L5_TPC:C", "L4_DBC"  , 1.0, 0.008, 3.0, 1.5, 250.0, 0.8),
+    ]
+    # fmt: on
+    return _build_df(data, Constants.MICRO_LEVELS + Constants.MICRO_DD_VALUES)
+
+
+@pytest.fixture(scope="module")
 def micro_dd_conformed():
     """Assembled micro dd parameters conformed to variant matrix."""
     # fmt: off
@@ -407,6 +521,11 @@ def micro_dd_overrides_file(micro_dd_overrides, output_dir):
     return _create_arrow_file(output_dir / "micro_dd_overrides.arrow", micro_dd_overrides)
 
 
+@pytest.fixture(scope="module")
+def micro_dd_overrides_empty_file():
+    return DATA_DIR / "empty_dd_overrides.arrow"
+
+
 def test_assemble__dd(micro_dd_file, micro_dd_overrides_file, micro_dd_assembled):
     res = test_module._assemble(
         initial_path=micro_dd_file,
@@ -415,6 +534,18 @@ def test_assemble__dd(micro_dd_file, micro_dd_overrides_file, micro_dd_assembled
         overrides_path=micro_dd_overrides_file,
     )
     pdt.assert_frame_equal(res, micro_dd_assembled)
+
+
+def test_assemble__dd__empty_overrides(
+    micro_dd_file, micro_dd_overrides_empty_file, micro_dd_assembled_empty_overrides
+):
+    res = test_module._assemble(
+        initial_path=micro_dd_file,
+        index_columns=Constants.MICRO_LEVELS,
+        value_columns=Constants.MICRO_DD_VALUES,
+        overrides_path=micro_dd_overrides_empty_file,
+    )
+    pdt.assert_frame_equal(res, micro_dd_assembled_empty_overrides)
 
 
 def test_conform__dd(variants_conformed, micro_dd_defaults, micro_dd_assembled, micro_dd_conformed):

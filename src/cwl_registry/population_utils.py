@@ -20,7 +20,7 @@ def get_HRM_counts(population) -> pd.Series:
     """Return the number of cells for each (hemisphere, region, mtype) in the population."""
     df = pd.DataFrame({name: _make_categorical(population, name) for name in HRM})
 
-    counts = df.groupby(HRM).value_counts()
+    counts = df.groupby(HRM, observed=True).value_counts()
 
     # remove the zeros from the grouping
     counts = counts[counts != 0]

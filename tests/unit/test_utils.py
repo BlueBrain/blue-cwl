@@ -385,6 +385,42 @@ def test_arrow_io():
     pdt.assert_frame_equal(df, new_df)
 
 
+def test_arrow_io__empty():
+    df = pd.DataFrame(
+        {
+            "a": np.array([], dtype=np.float32),
+            "b": np.array([], dtype=np.int64),
+            "c": np.array([], dtype=bool),
+        }
+    )
+    with tempfile.NamedTemporaryFile(suffix=".arrow") as tfile:
+        filepath = tfile.name
+        tested.write_arrow(filepath=filepath, dataframe=df)
+        new_df = tested.load_arrow(filepath=filepath)
+
+    pdt.assert_frame_equal(df, new_df)
+
+
+def test_load_arrow__empty_dataset():
+    res = tested.load_arrow(DATA_DIR / "empty_variant_overrides.arrow")
+
+    expected_columns = [
+        "side",
+        "source_region",
+        "source_mtype",
+        "target_region",
+        "target_mtype",
+        "variant",
+    ]
+
+    assert res.columns.tolist() == expected_columns
+    assert len(res) == 0
+
+    for name in expected_columns:
+        c = res[name]
+        assert c.dtype == pd.CategoricalDtype(categories=[], ordered=False)
+
+
 @pytest.fixture
 def cells_100():
     nodes_file = DATA_DIR / "nodes_100.h5"

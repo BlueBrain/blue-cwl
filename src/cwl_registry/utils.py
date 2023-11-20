@@ -23,6 +23,7 @@ import pyarrow
 import pyarrow.fs
 import voxcell
 import yaml
+from pyarrow.pandas_compat import get_logical_type, get_logical_type_map
 
 from cwl_registry.constants import DEFAULT_CIRCUIT_BUILD_PARAMETERS
 from cwl_registry.exceptions import CWLWorkflowError
@@ -143,8 +144,35 @@ def write_yaml(filepath: os.PathLike, data: dict) -> None:
 
 def load_arrow(filepath: os.PathLike) -> pd.DataFrame:
     """Load an arrow file as a pandas dataframe."""
-    with pyarrow.fs.LocalFileSystem().open_input_file(str(filepath)) as fd:
-        return pyarrow.RecordBatchFileReader(fd).read_pandas()
+    with pyarrow.ipc.open_file(str(filepath)) as reader:
+        try:
+            return reader.read_pandas()
+        except pyarrow.lib.ArrowKeyError as e:
+            # pyarrow has trouble reading an empty file with dictionaries and no metadata
+            # we need to manually construct an empty dataframe from the schema info
+            schema = reader.schema
+
+            types = get_logical_type_map().values()
+
+            data_dict = {}
+            for name, arrow_dtype in zip(schema.names, schema.types):
+                dtype = get_logical_type(arrow_dtype)
+
+                if dtype in types:
+                    series = pd.Series(dtype=dtype)
+                elif dtype == "categorical":
+                    value_type = arrow_dtype.value_type
+                    series = pd.Categorical(
+                        values=pd.Series(dtype=get_logical_type(value_type)),
+                        ordered=arrow_dtype.ordered,
+                    )
+                else:
+                    raise NotImplementedError(
+                        f"Constructing an empty dataframe from '{dtype}' is not supported."
+                    ) from e
+
+                data_dict[name] = series
+            return pd.DataFrame(data_dict)
 
 
 def write_arrow(filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = False) -> None:
