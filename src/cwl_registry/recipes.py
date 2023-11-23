@@ -249,7 +249,7 @@ def write_functionalizer_xml_recipe(
     region_map: voxcell.RegionMap,
     annotation: voxcell.VoxelData,
     output_file: Path,
-    circuit_pathways: pd.DataFrame | None = None,
+    populations: tuple[voxcell.CellCollection, voxcell.CellCollection] | None = None,
 ):
     """Build functionalizer xml recipe.
 
@@ -273,7 +273,7 @@ def write_functionalizer_xml_recipe(
         synapse_properties=synapse_config["synapse_properties"],
         region_map=region_map,
         annotation=annotation,
-        pathways=circuit_pathways,
+        populations=populations,
     )
 
     _write_xml_tree(
@@ -302,54 +302,47 @@ def _generate_tailored_properties(
     synapse_properties: dict,
     region_map: voxcell.RegionMap,
     annotation: voxcell.VoxelData,
-    pathways: pd.DataFrame | None = None,
+    populations: tuple[voxcell.CellCollection, voxcell.CellCollection] | None = None,
 ) -> pd.DataFrame:
     """Generate properties tailored to a circuit if its pathways are passed."""
-    if pathways is not None:
-        available = {
-            "fromSClass": set(pathways["source_synapse_class"]),
-            "toSClass": set(pathways["target_synapse_class"]),
-            "fromHemisphere": set(pathways["source_hemisphere"]),
-            "toHemisphere": set(pathways["target_hemisphere"]),
-            "fromRegion": set(pathways["source_region"]),
-            "toRegion": set(pathways["target_region"]),
-            "fromMType": set(pathways["source_mtype"]),
-            "toMType": set(pathways["target_mtype"]),
-            "fromEType": set(pathways["source_etype"]),
-            "toEType": set(pathways["target_etype"]),
-        }
+    if populations:
+        available_sources = set(populations[0].properties["region"])
+        available_targets = set(populations[1].properties["region"])
 
-        def in_pathways(entry: dict) -> bool:
-            """Check that a synapse entry is in the circuit pathways.
+        available_sources = {region_map.find(r, attr="acronym").pop() for r in available_sources}
+        available_targets = {region_map.find(r, attr="acronym").pop() for r in available_targets}
 
-            Note: Missing or None entries will not be filtered out.
-            """
-            for prop_name, available_values in available.items():
-                value = entry.get(prop_name, None)
-                if value is not None and value not in available_values:
-                    return False
-            return True
+        available_sources.add(None)
+        available_targets.add(None)
 
     else:
+        available_sources = None
+        available_targets = None
 
-        def in_pathways(_: dict) -> bool:
-            return True
-
-    annotation_ids = set(annotation.raw.flatten())
+    annotation_ids = set(pd.unique(annotation.raw.flatten()))
 
     cache = {}
-    entries = (
-        entry
-        for prop in synapse_properties
-        for entry in _expand_properties(
-            prop, region_map, annotation_ids, include_null=False, cache=cache
+    for prop in synapse_properties:
+        yield from _expand_properties(
+            prop,
+            region_map,
+            annotation_ids,
+            include_null=False,
+            cache=cache,
+            allowed_from_region_leaves=available_sources,
+            allowed_to_region_leaves=available_targets,
         )
-        if in_pathways(entry)
-    )
-    yield from entries
 
 
-def _expand_properties(prop, region_map, annotation_ids: set[int], include_null=True, cache=None):
+def _expand_properties(
+    prop,
+    region_map,
+    annotation_ids: set[int],
+    include_null=True,
+    cache=None,
+    allowed_from_region_leaves: set = None,
+    allowed_to_region_leaves: set = None,
+):
     """Return a list of properties matching the leaf regions.
 
     Args:
@@ -367,13 +360,21 @@ def _expand_properties(prop, region_map, annotation_ids: set[int], include_null=
 
     if source_region:
         from_leaf_regions = _get_leaf_regions(source_region, region_map, annotation_ids, cache)
+
+        if allowed_from_region_leaves:
+            from_leaf_regions &= allowed_from_region_leaves
+
     else:
-        from_leaf_regions = [None]
+        from_leaf_regions = {None}
 
     if target_region:
         to_leaf_regions = _get_leaf_regions(target_region, region_map, annotation_ids, cache)
+
+        if allowed_to_region_leaves:
+            to_leaf_regions &= allowed_to_region_leaves
+
     else:
-        to_leaf_regions = [None]
+        to_leaf_regions = {None}
 
     for from_reg, to_reg in itertools.product(from_leaf_regions, to_leaf_regions):
         # Construct the individual dicts for each leaf region pairs

@@ -1,4 +1,5 @@
 import pytest
+import voxcell
 import libsonata
 from pathlib import Path
 import pandas as pd
@@ -343,42 +344,29 @@ def test_get_leaf_regions__annotation_ids(region_map):
 
 
 @pytest.fixture(scope="module")
-def pathways():
+def populations():
     data = [
-        (
-            "left",
-            "left",
-            "SSp-bfd2",
-            "SSp-bfd3",
-            "L5_TPC:A",
-            "L5_TPC:B",
-            "dSTUT",
-            "cNAc",
-            "EXC",
-            "EXC",
-        ),
-        ("left", "right", "CA1", "CA1", "GIN_mtype", "GIN_mtype", "cAc", "cAc", "INH", "INH"),
+        ("left", "SSp-bfd2"),
+        ("left", "SSp-bfd3"),
+        ("left", "CA1"),
+        ("right", "CA1"),
     ]
-    return pd.DataFrame(
+    df = pd.DataFrame(
         data,
-        columns=[
-            "source_hemisphere",
-            "target_hemisphere",
-            "source_region",
-            "target_region",
-            "source_mtype",
-            "target_mtype",
-            "source_etype",
-            "target_etype",
-            "source_synapse_class",
-            "target_synapse_class",
-        ],
+        columns=["hemisphere", "region"],
     )
 
+    pop = voxcell.CellCollection()
+    pop.add_properties(df)
 
-def test_build_tailored_properties(synaptic_assignment, region_map, annotation, pathways):
+    return (pop, pop)
+
+
+def test_build_tailored_properties(synaptic_assignment, region_map, annotation, populations):
     res = list(
-        tested._generate_tailored_properties(synaptic_assignment, region_map, annotation, pathways)
+        tested._generate_tailored_properties(
+            synaptic_assignment, region_map, annotation, populations
+        )
     )
 
     assert res == [
@@ -411,6 +399,76 @@ def test_build_tailored_properties(synaptic_assignment, region_map, annotation, 
             "fromHemisphere": "left",
             "toHemisphere": "left",
             "fromRegion": "SSp-bfd2",
+            "toRegion": "SSp-bfd2",
+            "fromMType": "L5_TPC:A",
+            "toMType": "L5_TPC:B",
+            "synapticModel": "ProbAMPANMDA_EMS.mod",
+        },
+        {
+            "synapticType": "E2_L5TTPC",
+            "fromHemisphere": "left",
+            "toHemisphere": "left",
+            "fromRegion": "SSp-bfd2",
+            "toRegion": "SSp-bfd3",
+            "fromMType": "L5_TPC:A",
+            "toMType": "L5_TPC:B",
+            "synapticModel": "ProbAMPANMDA_EMS.mod",
+        },
+        {
+            "synapticType": "E2_L5TTPC",
+            "fromHemisphere": "left",
+            "toHemisphere": "left",
+            "fromRegion": "SSp-bfd3",
+            "toRegion": "SSp-bfd2",
+            "fromMType": "L5_TPC:A",
+            "toMType": "L5_TPC:B",
+            "synapticModel": "ProbAMPANMDA_EMS.mod",
+        },
+        {
+            "synapticType": "E2_L5TTPC",
+            "fromHemisphere": "left",
+            "toHemisphere": "left",
+            "fromRegion": "SSp-bfd3",
+            "toRegion": "SSp-bfd3",
+            "fromMType": "L5_TPC:A",
+            "toMType": "L5_TPC:B",
+            "synapticModel": "ProbAMPANMDA_EMS.mod",
+        },
+        {
+            "synapticType": "E2_L5TTPC",
+            "fromHemisphere": "right",
+            "toHemisphere": "right",
+            "fromRegion": "SSp-bfd2",
+            "toRegion": "SSp-bfd2",
+            "fromMType": "L5_TPC:A",
+            "toMType": "L5_TPC:B",
+            "synapticModel": "ProbAMPANMDA_EMS.mod",
+        },
+        {
+            "synapticType": "E2_L5TTPC",
+            "fromHemisphere": "right",
+            "toHemisphere": "right",
+            "fromRegion": "SSp-bfd2",
+            "toRegion": "SSp-bfd3",
+            "fromMType": "L5_TPC:A",
+            "toMType": "L5_TPC:B",
+            "synapticModel": "ProbAMPANMDA_EMS.mod",
+        },
+        {
+            "synapticType": "E2_L5TTPC",
+            "fromHemisphere": "right",
+            "toHemisphere": "right",
+            "fromRegion": "SSp-bfd3",
+            "toRegion": "SSp-bfd2",
+            "fromMType": "L5_TPC:A",
+            "toMType": "L5_TPC:B",
+            "synapticModel": "ProbAMPANMDA_EMS.mod",
+        },
+        {
+            "synapticType": "E2_L5TTPC",
+            "fromHemisphere": "right",
+            "toHemisphere": "right",
+            "fromRegion": "SSp-bfd3",
             "toRegion": "SSp-bfd3",
             "fromMType": "L5_TPC:A",
             "toMType": "L5_TPC:B",

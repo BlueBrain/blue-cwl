@@ -6,20 +6,10 @@ import subprocess
 from pathlib import Path
 
 import click
-import libsonata
 import voxcell
 from entity_management.nexus import load_by_id
 
-from cwl_registry import (
-    Variant,
-    nexus,
-    population_utils,
-    recipes,
-    registering,
-    staging,
-    utils,
-    validation,
-)
+from cwl_registry import Variant, nexus, recipes, registering, staging, utils, validation
 from cwl_registry.exceptions import CWLWorkflowError
 
 L = logging.getLogger(__name__)
@@ -79,11 +69,14 @@ def connectome_filtering_synapses(
     if configuration:
         configuration = {name: utils.load_json(path) for name, path in configuration.items()}
 
+        pop = voxcell.CellCollection.load_sonata(nodes_file)
+
         L.info("Building functionalizer xml recipe...")
         recipe_file = recipes.write_functionalizer_xml_recipe(
             synapse_config=configuration,
             region_map=voxcell.RegionMap.load_json(atlas_info.ontology_path),
             annotation=voxcell.VoxelData.load_nrrd(atlas_info.annotation_path),
+            populations=(pop, pop),
             output_file=build_dir / "recipe.xml",
         )
     else:
@@ -211,17 +204,6 @@ def _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_populati
 
     if not output_edges_file.exists():
         raise CWLWorkflowError(f"Edges file has failed to be generated at {output_edges_file}")
-
-
-def _get_connectome_pathways(edges_file, edge_population_name, nodes_file, node_population_name):
-    node_population = libsonata.NodeStorage(nodes_file).open_population(node_population_name)
-    edge_population = libsonata.EdgeStorage(edges_file).open_population(edge_population_name)
-    return population_utils.get_pathways(
-        edge_population=edge_population,
-        source_node_population=node_population,
-        target_node_population=node_population,
-        properties=["hemisphere", "region", "mtype", "etype", "synapse_class"],
-    )
 
 
 def _write_partial_config(config, edges_file, output_file):
