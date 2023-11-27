@@ -1,18 +1,16 @@
 import tempfile
-import libsonata
-import voxcell
 from pathlib import Path
 
-import pytest
+import libsonata
 import numpy as np
 import numpy.testing as npt
-
 import pandas as pd
+import pytest
+import voxcell
 from pandas import testing as pdt
-
 from voxcell.nexus.voxelbrain import Atlas
-from cwl_registry import statistics as test_module
 
+from cwl_registry import statistics as test_module
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -40,11 +38,6 @@ def region_map(atlas):
 
 
 @pytest.fixture
-def brain_regions(atlas):
-    return atlas.load_data("brain_regions")
-
-
-@pytest.fixture
 def mtype_urls():
     return {mtype: MTYPE_URIS[mtype] for mtype in ("L23_BP", "L5_TPC:A")}
 
@@ -55,20 +48,20 @@ def etype_urls():
 
 
 @pytest.fixture
-def density_distribution(brain_regions):
+def density_distribution(annotation):
     with tempfile.TemporaryDirectory() as tdir:
         tdir = Path(tdir)
 
-        v1_raw = np.zeros_like(brain_regions.raw)
+        v1_raw = np.zeros_like(annotation.raw)
         # mask selected so that it includes 0 and two regions: 320, 656
         v1_raw[100:120, 100:102, 100:120] = 20000.0
         path1 = tdir / "L23_BP__dSTUT_density.nrrd"
-        brain_regions.with_data(v1_raw).save_nrrd(path1)
+        annotation.with_data(v1_raw).save_nrrd(path1)
 
-        v2_raw = np.zeros_like(brain_regions.raw)
+        v2_raw = np.zeros_like(annotation.raw)
         # empty
         path2 = tdir / "L5_TPCA__cADpyr_density.nrrd"
-        brain_regions.with_data(v2_raw).save_nrrd(path2)
+        annotation.with_data(v2_raw).save_nrrd(path2)
 
         distribution = {
             "mtypes": {
@@ -238,13 +231,13 @@ def test_node_population_composition_summary(population, atlas, mtype_urls, etyp
                 assert count == expected_composition["neuron"]["count"]
 
 
-def test_get_statistics_from_nrrd_volume(region_map, brain_regions):
-    raw = np.zeros_like(brain_regions.raw, dtype=float)
+def test_get_statistics_from_nrrd_volume(region_map, annotation):
+    raw = np.zeros_like(annotation.raw, dtype=float)
 
     # mask selected so that it includes 0 and two regions: 320, 656
     raw[100:120, 100:102, 100:120] = 20000.0
 
-    density = brain_regions.with_data(raw)
+    density = annotation.with_data(raw)
 
     mtype = "my-mtype"
     etype = "my-etype"
@@ -254,25 +247,18 @@ def test_get_statistics_from_nrrd_volume(region_map, brain_regions):
         density.save_nrrd(path)
 
         result = test_module.get_statistics_from_nrrd_volume(
-            region_map, brain_regions, mtype, etype, path
+            region_map, annotation, mtype, etype, path
         )
 
-        mop1_density = density.raw[brain_regions.raw == 320]
+        mop1_density = density.raw[annotation.raw == 320]
         expected_mop1_density = np.mean(mop1_density)
-        expected_mop1_counts = np.round(np.sum(mop1_density * brain_regions.voxel_volume * 1e-9))
+        expected_mop1_counts = int(np.round(np.sum(mop1_density * annotation.voxel_volume * 1e-9)))
 
-        mos1_density = density.raw[brain_regions.raw == 656]
+        mos1_density = density.raw[annotation.raw == 656]
         expected_mos1_density = np.mean(mos1_density)
-        expected_mos1_counts = np.round(np.sum(mos1_density * brain_regions.voxel_volume * 1e-9))
+        expected_mos1_counts = int(np.round(np.sum(mos1_density * annotation.voxel_volume * 1e-9)))
 
         assert result == [
-            {
-                "region": "MOp1",
-                "mtype": "my-mtype",
-                "etype": "my-etype",
-                "density": expected_mop1_density,
-                "count": expected_mop1_counts,
-            },
             {
                 "region": "MOs1",
                 "mtype": "my-mtype",
@@ -280,12 +266,19 @@ def test_get_statistics_from_nrrd_volume(region_map, brain_regions):
                 "density": expected_mos1_density,
                 "count": expected_mos1_counts,
             },
+            {
+                "region": "MOp1",
+                "mtype": "my-mtype",
+                "etype": "my-etype",
+                "density": expected_mop1_density,
+                "count": expected_mop1_counts,
+            },
         ]
 
 
-def test_atlas_densities_composition_summary(density_distribution, region_map, brain_regions):
+def test_atlas_densities_composition_summary(density_distribution, region_map, annotation):
     result = test_module.atlas_densities_composition_summary(
-        density_distribution, region_map, brain_regions
+        density_distribution, region_map, annotation
     )
 
     MOp1 = "MOp1"

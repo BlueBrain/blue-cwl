@@ -1,4 +1,7 @@
 """Cell composition summary app."""
+import logging
+import multiprocessing
+from functools import partial
 from pathlib import Path
 
 import click
@@ -6,6 +9,8 @@ from voxcell.nexus.voxelbrain import LocalAtlas
 
 from cwl_registry import registering, staging, statistics, utils
 from cwl_registry.nexus import get_forge
+
+L = logging.getLogger(__name__)
 
 
 @click.group()
@@ -44,13 +49,12 @@ def from_density_distribution(
     )
     densities = utils.load_json(density_distribution_file)
 
-    summary = statistics.atlas_densities_composition_summary(
-        density_distribution=densities,
-        region_map=atlas.load_region_map(),
-        brain_regions=atlas.load_data("brain_regions"),
-    )
     composition_summary_file = output_dir / "cell_composition_summary.json"
-    utils.write_json(filepath=composition_summary_file, data=summary)
+    _run_summary(
+        dataset=densities,
+        atlas=atlas,
+        output_file=composition_summary_file,
+    )
 
     # pylint: disable=no-member
     registering.register_cell_composition_summary(
@@ -60,3 +64,22 @@ def from_density_distribution(
         atlas_release_id=atlas_release,
         derivation_entity_id=density_distribution,
     )
+
+
+def _run_summary(dataset, atlas, output_file):
+    n_procs = multiprocessing.cpu_count() - 1
+
+    n_items = sum(len(mtype_data["etypes"]) for mtype_data in dataset["mtypes"].values())
+
+    n_chunks = n_items // n_procs
+    L.debug("n_processes: %d, n_items: %d, n_batches %d", n_procs, n_items, n_chunks)
+
+    with multiprocessing.Pool(processes=n_procs) as pool:
+        summary = statistics.atlas_densities_composition_summary(
+            density_distribution=dataset,
+            region_map=atlas.load_region_map(),
+            brain_regions=atlas.load_data("brain_regions"),
+            map_function=partial(pool.imap, chunksize=n_chunks),
+        )
+
+    utils.write_json(filepath=output_file, data=summary)

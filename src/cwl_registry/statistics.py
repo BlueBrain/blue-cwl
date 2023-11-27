@@ -1,11 +1,10 @@
 """Composition summary statistics."""
-import itertools
 import logging
+from functools import partial
 
 import numpy as np
 import pandas as pd
 import voxcell
-from joblib import Parallel, delayed
 
 from cwl_registry.utils import url_without_revision
 
@@ -222,12 +221,19 @@ def _density_summary_stats_etype(etype_urls, df_etype):
     return ret
 
 
-def atlas_densities_composition_summary(density_distribution, region_map, brain_regions):
+def atlas_densities_composition_summary(
+    density_distribution, region_map, brain_regions, map_function=map
+):
     """Calculate the composition summary statistics of a density distribution."""
     mtype_urls, etype_urls = mtype_etype_url_mapping(density_distribution)
 
     L.info("Extracting statistics from density distribution.")
-    nrrd_stats = _get_nrrd_statistics(region_map, brain_regions, density_distribution)
+    nrrd_stats = _get_nrrd_statistics(
+        region_map=region_map,
+        brain_regions=brain_regions,
+        density_distribution=density_distribution,
+        map_function=map_function,
+    )
 
     L.info("Converting statistics from dataframe to json format.")
     summary_statistics = density_summary_stats_region(
@@ -236,30 +242,48 @@ def atlas_densities_composition_summary(density_distribution, region_map, brain_
     return summary_statistics
 
 
-def _get_nrrd_statistics(region_map, brain_regions, density_distribution):
-    p = Parallel(
-        n_jobs=-2,
-        backend="multiprocessing",
+def _get_nrrd_statistics(region_map, brain_regions, density_distribution, map_function):
+    def _triplets():
+        index = 0
+        res = []
+        for mtype in density_distribution["mtypes"].values():
+            for etype in mtype["etypes"].values():
+                res.append((index, (mtype["label"], etype["label"], etype["path"])))
+                index += 1
+        return res
+
+    return get_statistics_from_triplets(
+        triplets=_triplets(),
+        region_map=region_map,
+        brain_regions=brain_regions,
+        map_function=map_function,
     )
 
-    worker_function = delayed(get_statistics_from_nrrd_volume)
-    work = []
 
-    for mtype in density_distribution["mtypes"].values():
-        for etype in mtype["etypes"].values():
-            work.append(
-                worker_function(
-                    region_map=region_map,
-                    brain_regions=brain_regions,
-                    mtype=mtype["label"],
-                    etype=etype["label"],
-                    nrrd_path=etype["path"],
-                ),
-            )
+def get_statistics_from_triplets(triplets, region_map, brain_regions, map_function=map):
+    """Get statistics from (mtype, etype, nrrd_path) triplets."""
+    result = map_function(
+        partial(_worker_function, region_map=region_map, brain_regions=brain_regions),
+        triplets,
+    )
 
-    df = list(itertools.chain.from_iterable(p(work)))
+    n_triplets = len(triplets)
+    L.info("Statistics from %d nrrd volumes will be calculated.", n_triplets)
+
+    df = []
+    for i, (index, chunk) in enumerate(result):
+        df.extend(chunk)
+        L.info("Completed [%d|%d] : %s", i + 1, n_triplets, triplets[index][1])
+
     df = pd.DataFrame.from_records(df).set_index(["region", "mtype", "etype"])
     return df
+
+
+def _worker_function(data, region_map, brain_regions):
+    index, (mtype, etype, nrrd_path) = data
+    return index, get_statistics_from_nrrd_volume(
+        region_map, brain_regions, mtype, etype, nrrd_path
+    )
 
 
 def get_statistics_from_nrrd_volume(region_map, brain_regions, mtype, etype, nrrd_path):
@@ -272,27 +296,43 @@ def get_statistics_from_nrrd_volume(region_map, brain_regions, mtype, etype, nrr
         etype(str): label to apply to values
         nrrd_path: path to nrrd file
     """
+    unique_region_ids, total_densities, voxel_counts = _calculate_statistics(
+        brain_regions, nrrd_path
+    )
+
+    cell_counts = np.round(total_densities * brain_regions.voxel_volume * 1e-9)
+
+    return [
+        {
+            "region": region_map.get(region_id, "acronym"),
+            "mtype": mtype,
+            "etype": etype,
+            "density": total_densities[i] / voxel_counts[i],
+            "count": int(cell_counts[i]),
+        }
+        for i, region_id in enumerate(unique_region_ids)
+    ]
+
+
+def _extract_densities(brain_regions, nrrd_path):
     v = voxcell.VoxelData.load_nrrd(nrrd_path)
-    region_ids = np.unique(brain_regions.raw[np.nonzero(v.raw)])
-    res = []
+    mask = brain_regions.raw != 0
+    return brain_regions.raw[mask], v.raw[mask]
 
-    for region_id in region_ids:
-        if not region_id:
-            continue
 
-        region_densities = v.raw[brain_regions.raw == region_id]
+def _calculate_statistics(brain_regions, nrrd_path):
+    region_ids, densities = _extract_densities(brain_regions, nrrd_path)
 
-        mean_density = np.mean(region_densities)
-        counts = np.round(np.sum(region_densities) * brain_regions.voxel_volume * 1e-9)
+    # faster than np.unique
+    codes, uniques = pd.factorize(region_ids)
 
-        res.append(
-            {
-                "region": region_map.get(region_id, "acronym"),
-                "mtype": mtype,
-                "etype": etype,
-                "density": mean_density,
-                "count": int(counts),
-            }
-        )
+    sums = np.zeros(uniques.size, dtype=float)
+    counts = np.zeros(uniques.size, dtype=int)
 
-    return res
+    # add.at allows accumulating when the same index is encountered
+    np.add.at(sums, codes, densities)
+    np.add.at(counts, codes, 1)
+
+    # ignore regions that are completely empty
+    nonzero = sums != 0.0
+    return uniques[nonzero], sums[nonzero], counts[nonzero]
