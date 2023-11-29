@@ -482,10 +482,10 @@ def test_build_variant_allocation_command(tmp_path):
     with patch("cwl_registry.utils.load_yaml", return_value=config):
         res = tested.build_variant_allocation_command("echo foo", variant)
 
-        assert res == (
-            "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
-            "--mem=0 --partition=prod --ntasks=400 srun env A=foo B=bar echo foo"
-        )
+    assert res == (
+        "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
+        "--mem=0 --partition=prod --ntasks=400 srun env A=foo B=bar echo foo"
+    )
 
 
 def test_build_variant_allocation_command__empty_env_vars(tmp_path):
@@ -509,10 +509,10 @@ def test_build_variant_allocation_command__empty_env_vars(tmp_path):
     with patch("cwl_registry.utils.load_yaml", return_value=config):
         res = tested.build_variant_allocation_command("echo foo", variant)
 
-        assert res == (
-            "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
-            "--mem=0 --partition=prod --ntasks=400 srun echo foo"
-        )
+    assert res == (
+        "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
+        "--mem=0 --partition=prod --ntasks=400 srun echo foo"
+    )
 
 
 @pytest.fixture
@@ -554,3 +554,24 @@ def test_morphologies_dir__h5(morph_config):
 def test_morphologies_dir__asc(morph_config):
     res = tested.get_morphologies_dir(morph_config, "a-pop", "asc")
     assert res == "asc"
+
+
+def test_get_variant_resources_config__default():
+    variant = Mock()
+    config = {"resources": {"default": "foo"}}
+
+    with patch("cwl_registry.utils.load_yaml", return_value=config):
+        res = tested.get_variant_resources_config(variant)
+
+    assert res == "foo"
+
+
+def test_get_variant_resources_config__subtask():
+    config = {"resources": {"default": "foo", "sub-tasks": ["foo", "bar"]}}
+
+    variant = Mock()
+
+    with patch("cwl_registry.utils.load_yaml", return_value=config):
+        res = tested.get_variant_resources_config(variant, sub_task_index=1)
+
+    assert res == "bar"

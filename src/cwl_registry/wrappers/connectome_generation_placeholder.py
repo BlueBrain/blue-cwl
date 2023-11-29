@@ -146,7 +146,7 @@ def _run_connectome_manipulator(
     parquet_dir = output_dir / "parquet"
 
     # Launch a second allocation to merge parquet edges into a SONATA edge population
-    _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_population_name)
+    _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_population_name, variant)
 
     L.debug("Edge population %s generated at %s", output_edge_population_name, output_edges_file)
 
@@ -164,13 +164,15 @@ def _run_manipulator(recipe_file, output_dir, variant):
         "--resume",
     ]
     str_base_command = " ".join(base_command)
-    str_command = utils.build_variant_allocation_command(str_base_command, variant)
+    str_command = utils.build_variant_allocation_command(
+        str_base_command, variant, sub_task_index=0
+    )
 
     L.info("Tool full command: %s", str_command)
     subprocess.run(str_command, check=True, shell=True)
 
 
-def _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_population_name):
+def _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_population_name, variant):
     # Launch a second allocation to merge parquet edges into a SONATA edge population
     base_command = [
         "parquet2hdf5",
@@ -182,17 +184,13 @@ def _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_populati
     str_base_command = " ".join(base_command)
 
     # TODO: To remove when sub-workflows are supported
-    str_command = (
-        "salloc "
-        "--account=proj134 "
-        "--partition=prod "
-        "--nodes=100 "
-        "--tasks-per-node=10 "
-        "--cpus-per-task=4 "
-        "--exclusive "
-        "--time=8:00:00 "
-        f"srun dplace {str_base_command}"
-    )
+    variant_resources = utils.get_variant_resources_config(variant, sub_task_index=1)
+
+    str_slurm_params = utils.parse_slurm_config(variant_resources)
+
+    # TODO: To remove when sub-workflows are supported
+    str_command = f"salloc {str_slurm_params} srun dplace {str_base_command}"
+
     L.info("Tool full command: %s", str_command)
     subprocess.run(str_command, check=True, shell=True)
 
