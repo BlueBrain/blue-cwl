@@ -763,7 +763,7 @@ def materialize_synapse_config(forge, resource_id, output_dir):
         section_name: {
             dset_name: stage_resource_distribution_file(
                 forge,
-                get_entry_id(dset_data),
+                resource_id=get_entry_id(dset_data),
                 output_dir=output_dir,
                 encoding_type="json",
                 symbolic=False,
@@ -771,6 +771,7 @@ def materialize_synapse_config(forge, resource_id, output_dir):
             for dset_name, dset_data in section_data.items()
         }
         for section_name, section_data in data.items()
+        if section_name in {"defaults", "configuration"}
     }
 
 

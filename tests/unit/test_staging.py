@@ -450,6 +450,32 @@ def test_materialize_micro_connectome_config__no_er_overrides():
 
 
 @pytest.fixture
+def json_synapse_config():
+    return load_json(DATA_DIR / "synapse_config.json")
+
+
+def test_materialize_synapse_config(json_synapse_config):
+    with patch(
+        "cwl_registry.staging.read_json_file_from_resource_id", return_value=json_synapse_config
+    ), patch(
+        "cwl_registry.staging.stage_resource_distribution_file",
+        side_effect=lambda *args, **kwargs: kwargs["resource_id"],
+    ):
+        res = test_module.materialize_synapse_config(None, None, None)
+
+        assert res == {
+            "defaults": {
+                "synapse_properties": "https://bbp.epfl.ch/neurosciencegraph/data/synapticassignment/d57536aa-d576-4b3b-a89b-b7888f24eb21?rev=9",
+                "synapses_classification": "https://bbp.epfl.ch/neurosciencegraph/data/synapticparameters/cf25c2bf-e6e4-4367-acd8-94004bfcfe49?rev=6",
+            },
+            "configuration": {
+                "synapse_properties": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/f2bce285-380d-40da-95db-c8af2013f21e?rev=1",
+                "synapses_classification": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/d133e408-bd00-41ca-9334-e5fab779ad99?rev=1",
+            },
+        }
+
+
+@pytest.fixture
 def json_ph_catalog():
     return load_json(DATA_DIR / "placement_hints_catalog.json")
 
