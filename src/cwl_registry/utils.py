@@ -495,7 +495,7 @@ def merge_cell_collections(
     return _cell_collection_from_frame(result, population_name, orientation_format)
 
 
-def parse_slurm_config(config):
+def _parse_slurm_config(config):
     """Parse slurm config."""
     parameters = []
     for key, value in config.items():
@@ -513,7 +513,7 @@ def parse_slurm_config(config):
     return parameters
 
 
-def get_variant_resources_config(variant, sub_task_index=None) -> dict:
+def _get_variant_resources_config(variant, sub_task_index=None) -> dict:
     """Return variant resources config."""
     resources_dict = load_yaml(variant.get_resources_file("variant_config.yml"))["resources"]
 
@@ -532,9 +532,9 @@ def get_variant_resources_config(variant, sub_task_index=None) -> dict:
     return resources
 
 
-def build_variant_allocation_command(cmd: str, variant, sub_task_index=None) -> str:
+def build_variant_allocation_command(cmd: str, variant, sub_task_index=None, srun="srun") -> str:
     """Construct an allocation command based on variant resource default definition."""
-    slurm_config = get_variant_resources_config(variant, sub_task_index=sub_task_index)
+    slurm_config = _get_variant_resources_config(variant, sub_task_index=sub_task_index)
 
     env_vars = variant.tool_definition.environment.get("env_vars", {})
 
@@ -544,8 +544,8 @@ def build_variant_allocation_command(cmd: str, variant, sub_task_index=None) -> 
     else:
         srun_cmd = f"{cmd}"
 
-    str_slurm_parameters = " ".join(parse_slurm_config(slurm_config))
-    command = f"stdbuf -oL -eL salloc {str_slurm_parameters} srun {srun_cmd}"
+    str_slurm_parameters = " ".join(_parse_slurm_config(slurm_config))
+    command = f"stdbuf -oL -eL salloc {str_slurm_parameters} {srun} {srun_cmd}"
     return command
 
 

@@ -561,7 +561,7 @@ def test_get_variant_resources_config__default():
     config = {"resources": {"default": "foo"}}
 
     with patch("cwl_registry.utils.load_yaml", return_value=config):
-        res = tested.get_variant_resources_config(variant)
+        res = tested._get_variant_resources_config(variant)
 
     assert res == "foo"
 
@@ -572,6 +572,6 @@ def test_get_variant_resources_config__subtask():
     variant = Mock()
 
     with patch("cwl_registry.utils.load_yaml", return_value=config):
-        res = tested.get_variant_resources_config(variant, sub_task_index=1)
+        res = tested._get_variant_resources_config(variant, sub_task_index=1)
 
     assert res == "bar"

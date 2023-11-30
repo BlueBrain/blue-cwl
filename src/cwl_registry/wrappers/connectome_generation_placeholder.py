@@ -183,13 +183,9 @@ def _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_populati
     ]
     str_base_command = " ".join(base_command)
 
-    # TODO: To remove when sub-workflows are supported
-    variant_resources = utils.get_variant_resources_config(variant, sub_task_index=1)
-
-    str_slurm_params = utils.parse_slurm_config(variant_resources)
-
-    # TODO: To remove when sub-workflows are supported
-    str_command = f"salloc {str_slurm_params} srun dplace {str_base_command}"
+    str_command = utils.build_variant_allocation_command(
+        str_base_command, variant, sub_task_index=1, srun="srun dplace"
+    )
 
     L.info("Tool full command: %s", str_command)
     subprocess.run(str_command, check=True, shell=True)
