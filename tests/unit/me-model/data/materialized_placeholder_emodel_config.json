@@ -1,0 +1,53 @@
+{
+  "hasPart": {
+    "http://api.brain-map.org/api/v2/data/Structure/23": {
+      "notation": "AAA",
+      "hasPart": {
+        "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType": {
+          "label": "GEN_mtype",
+          "hasPart": {
+            "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronEType": {
+              "label": "GEN_etype",
+              "hasPart": {
+                "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/65d6a42a-ec6f-4a17-b1d2-b6ff1c7225b8": "AAA__GEN_mtype__GEN_etype__emodel"
+              }
+            }
+          }
+        },
+        "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronMType": {
+          "label": "GIN_mtype",
+          "hasPart": {
+            "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronEType": {
+              "label": "GIN_etype",
+              "hasPart": {
+                "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/ff571ada-fc08-4e6b-9b5c-1c21ee22ccb2": "AAA__GIN_mtype__GIN_etype__emodel"
+              }
+            }
+          }
+        }
+      }
+    },
+    "http://api.brain-map.org/api/v2/data/Structure/935": {
+      "notation": "ACAd1",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0383192": {
+          "label": "L1_DAC",
+          "hasPart": {
+            "http://uri.interlex.org/base/ilx_0738203": {
+              "label": "bNAC",
+              "hasPart": {
+                "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/af16d001-7e73-4b10-88ef-868567d77242": "ACAd1__L1_DAC__bNAC__emodel"
+              }
+            },
+            "http://uri.interlex.org/base/ilx_0738201": {
+              "label": "cNAC",
+              "hasPart": {
+                "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/292427f3-fbdc-4e26-9731-d89b114441b3": "ACAd1__L1_DAC__cNAC"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

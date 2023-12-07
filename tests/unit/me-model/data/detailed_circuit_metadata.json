@@ -1,0 +1,48 @@
+{
+  "@context": [
+    "https://bluebrain.github.io/nexus/contexts/metadata.json",
+    "https://bbp.neuroshapes.org"
+  ],
+  "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/19b06180-b3b2-4b16-a522-eccbeeebabf9",
+  "@type": "DetailedCircuit",
+  "atlasRelease": {
+    "@id": "https://bbp.epfl.ch/neurosciencegraph/data/4906ab85-694f-469d-962f-c0174e901885",
+    "@type": [
+      "BrainAtlasRelease",
+      "AtlasRelease",
+      "Entity"
+    ]
+  },
+  "brainLocation": {
+    "brainRegion": {
+      "@id": "mba:997",
+      "label": "root"
+    }
+  },
+  "circuitConfigPath": {
+    "@type": "DataDownload",
+    "url": "file:///circuit_config.json"
+  },
+  "description": "Partial circuit built with cell properties, and morphologies.",
+  "name": "Partial circuit with morphologies",
+  "subject": {
+    "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/932f51fd-af50-4221-97fb-2c3a26a27f79",
+    "@type": "Subject"
+  },
+  "wasGeneratedBy": {
+    "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/287e91bd-7b8f-499f-bc33-de754b0c2baa",
+    "@type": "WorkflowExecution"
+  },
+  "_constrainedBy": "https://bluebrain.github.io/nexus/schemas/unconstrained.json",
+  "_createdAt": "2023-11-06T12:15:42.171Z",
+  "_createdBy": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/zisis",
+  "_deprecated": false,
+  "_incoming": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2F19b06180-b3b2-4b16-a522-eccbeeebabf9/incoming",
+  "_outgoing": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2F19b06180-b3b2-4b16-a522-eccbeeebabf9/outgoing",
+  "_project": "https://bbp.epfl.ch/nexus/v1/projects/bbp/mmb-point-neuron-framework-model",
+  "_rev": 1,
+  "_schemaProject": "https://bbp.epfl.ch/nexus/v1/projects/bbp/mmb-point-neuron-framework-model",
+  "_self": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2F19b06180-b3b2-4b16-a522-eccbeeebabf9",
+  "_updatedAt": "2023-11-06T12:15:42.171Z",
+  "_updatedBy": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/zisis"
+}

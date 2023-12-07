@@ -1,0 +1,112 @@
+{
+  "@context": [
+    "https://bluebrain.github.io/nexus/contexts/metadata.json",
+    "https://bbp.neuroshapes.org"
+  ],
+  "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/e1bd0904-ec25-42c5-b887-4512bd82e8b9",
+  "@type": [
+    "Entity",
+    "EModelWorkflow"
+  ],
+  "annotation": {
+    "@type": [
+      "ETypeAnnotation",
+      "Annotation"
+    ],
+    "hasBody": {
+      "@type": [
+        "EType",
+        "AnnotationBody"
+      ],
+      "label": "cADpyr"
+    },
+    "name": "E-type annotation"
+  },
+  "contribution": {
+    "@type": "Contribution",
+    "agent": {
+      "@id": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/mandge",
+      "@type": [
+        "Person",
+        "Agent"
+      ],
+      "email": "darshan.mandge@epfl.ch",
+      "name": "Darshan Mandge",
+      "preferred_username": "mandge",
+      "sub": "f:0fdadef7-b2b9-492b-af46-c65492d459c2:mandge"
+    }
+  },
+  "distribution": {
+    "@type": "DataDownload",
+    "atLocation": {
+      "@type": "Location",
+      "location": "file:///gpfs/bbp.cscs.ch/data/project/proj134/nexus/bbp/mmb-point-neuron-framework-model/2/3/5/6/d/9/6/7/EMW__emodel=cADpyr__etype=cADpyr__iteration=b40985f.json",
+      "store": {
+        "@id": "https://bbp.epfl.ch/neurosciencegraph/data/10419671-da26-48d3-abf9-51eb54759ca4",
+        "@type": "RemoteDiskStorage",
+        "_rev": 1
+      }
+    },
+    "contentSize": {
+      "unitCode": "bytes",
+      "value": 804
+    },
+    "contentUrl": "https://bbp.epfl.ch/nexus/v1/files/bbp/mmb-point-neuron-framework-model/https%3A%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2F482b6a89-ae47-4572-8692-9adce7b0b7ed",
+    "digest": {
+      "algorithm": "SHA-256",
+      "value": "deb8dbab7a65935f74720eb27d5aca39ee91154404d74881c04a39008a7d44ac"
+    },
+    "encodingFormat": "application/json",
+    "name": "EMW__emodel=cADpyr__etype=cADpyr__iteration=b40985f.json"
+  },
+  "emodel": "cADpyr",
+  "etype": "cADpyr",
+  "generates": [
+    {
+      "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/59247e15-8204-4bc9-b2a3-49d1d16015c1",
+      "@type": "EModel"
+    },
+    {
+      "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/c644ac45-a3d1-4af5-93b2-243df7ba6925",
+      "@type": "EModelScript"
+    },
+    {
+      "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/e0101d07-fbe7-426b-a287-99b31945301c",
+      "@type": "FitnessCalculatorConfiguration"
+    }
+  ],
+  "hasPart": [
+    {
+      "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/08776acd-ea8c-4301-bc25-1d3e2dd46287",
+      "@type": "ExtractionTargetsConfiguration"
+    },
+    {
+      "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/20c9b89b-9fcf-4f65-8023-12f2f6cf61c4",
+      "@type": "EModelPipelineSettings"
+    },
+    {
+      "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/7c555f0e-9ff9-475f-b023-19827aa1af90",
+      "@type": "EModelConfiguration"
+    }
+  ],
+  "iteration": "b40985f",
+  "name": "EMW__b40985f__cADpyr",
+  "objectOfStudy": {
+    "@id": "http://bbp.epfl.ch/neurosciencegraph/taxonomies/objectsofstudy/singlecells",
+    "@type": "ObjectOfStudy",
+    "label": "Single Cell"
+  },
+  "state": "done",
+  "_constrainedBy": "https://bluebrain.github.io/nexus/schemas/unconstrained.json",
+  "_createdAt": "2023-11-07T10:02:15.214Z",
+  "_createdBy": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/mandge",
+  "_deprecated": false,
+  "_incoming": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2Fe1bd0904-ec25-42c5-b887-4512bd82e8b9/incoming",
+  "_outgoing": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2Fe1bd0904-ec25-42c5-b887-4512bd82e8b9/outgoing",
+  "_project": "https://bbp.epfl.ch/nexus/v1/projects/bbp/mmb-point-neuron-framework-model",
+  "_rev": 16,
+  "_schemaProject": "https://bbp.epfl.ch/nexus/v1/projects/bbp/mmb-point-neuron-framework-model",
+  "_self": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2Fe1bd0904-ec25-42c5-b887-4512bd82e8b9",
+  "_updatedAt": "2023-11-07T11:57:50.257Z",
+  "_updatedBy": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/mandge"
+}

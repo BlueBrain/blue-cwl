@@ -12,6 +12,7 @@ from cwl_registry.wrappers import (
     connectome_generation_placeholder,
     density_calculation,
     density_manipulation,
+    memodel,
     mmodel,
     neurons_cell_position,
     placeholder_emodel_assignment,
@@ -20,7 +21,7 @@ from cwl_registry.wrappers import (
 
 @click.group("cwl-registry", help=__doc__.format(esc="\b"))
 @click.version_option(version=VERSION)
-@click.option("-v", "--verbose", count=True, default=0, help="-v for INFO, -vv for DEBUG")
+@click.option("-v", "--verbose", count=True, default=1, help="-v for INFO, -vv for DEBUG")
 def main(verbose):
     """CWL Registry execution tools."""
     existing_handlers = logging.getLogger().handlers
@@ -62,7 +63,7 @@ execute.add_command(
     name="connectome-generation-placeholder", cmd=connectome_generation_placeholder.app
 )
 execute.add_command(name="connectome-filtering-synapses", cmd=connectome_filtering_synapses.app)
-
+execute.add_command(cmd=memodel.app)
 
 if __name__ == "__main__":
     main(verbose=1)

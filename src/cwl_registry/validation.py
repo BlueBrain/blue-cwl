@@ -55,8 +55,16 @@ def check_properties_in_population(population_name, nodes_file, property_names):
     pop = libsonata.NodeStorage(nodes_file).open_population(population_name)
 
     pop_attributes = pop.attribute_names
+    pop_dynamics_attributes = pop.dynamics_attribute_names
 
-    not_existing = [name for name in property_names if name not in pop_attributes]
+    dynamics_prefix = "dynamics_params/"
+
+    def _property_exists(property_name):
+        if property_name.startswith(dynamics_prefix):
+            return property_name.removeprefix(dynamics_prefix) in pop_dynamics_attributes
+        return property_name in pop_attributes
+
+    not_existing = [name for name in property_names if not _property_exists(name)]
 
     if not_existing:
         raise CWLWorkflowError(
