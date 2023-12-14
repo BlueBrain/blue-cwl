@@ -15,7 +15,6 @@ from cwl_registry.wrappers import (
     memodel,
     mmodel,
     neurons_cell_position,
-    placeholder_emodel_assignment,
 )
 
 
@@ -58,7 +57,6 @@ execute.add_command(name="density-manipulation", cmd=density_manipulation.app)
 execute.add_command(name="cell-composition-summary", cmd=cell_composition_summary.app)
 execute.add_command(name="cell-composition-manipulation", cmd=cell_composition_manipulation.app)
 execute.add_command(name="mmodel-neurons", cmd=mmodel.app)
-execute.add_command(name="placeholder-emodel-assignment", cmd=placeholder_emodel_assignment.app)
 execute.add_command(
     name="connectome-generation-placeholder", cmd=connectome_generation_placeholder.app
 )

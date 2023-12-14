@@ -7,7 +7,6 @@ from collections import deque
 from collections.abc import Sequence
 from copy import deepcopy
 from dataclasses import dataclass
-from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Union
 
@@ -455,30 +454,6 @@ def stage_dataset_groups(forge, dataset_resource_id, staging_function):
             data[label] = entries
 
     return data
-
-
-def stage_mtype_morphologies(forge, resource_id: str, output_dir: Path):
-    """Stage mtype morphologies."""
-    staging_function = partial(
-        stage_resource_distribution_file,
-        forge=forge,
-        output_dir=output_dir,
-        encoding_type=None,
-        symbolic=False,
-    )
-    return stage_dataset_groups(forge, resource_id, staging_function)
-
-
-def stage_etype_emodels(forge, resource_id: str, output_dir: Path):
-    """Stage etype models."""
-    staging_function = partial(
-        stage_resource_distribution_file,
-        forge=forge,
-        output_dir=output_dir,
-        encoding_type="x-neuron-hoc",
-        symbolic=False,
-    )
-    return stage_dataset_groups(forge, resource_id, staging_function)
 
 
 @dataclass
