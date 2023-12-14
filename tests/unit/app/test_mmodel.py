@@ -174,25 +174,3 @@ def test_write_partial_config(tmp_path):
         },
         "metadata": {"status": "partial"},
     }
-
-
-import shutil
-import libsonata
-
-
-def test_assign_dymanics(tmp_path):
-    nodes_file = DATA_DIR / "nodes_100.h5"
-
-    target_nodes_file = tmp_path / "nodes.h5"
-
-    shutil.copy(nodes_file, target_nodes_file)
-
-    test_module._assign_placeholder_dynamics(target_nodes_file, "root__neurons", 42)
-
-    pop = libsonata.NodeStorage(target_nodes_file).open_population("root__neurons")
-
-    th_current = pop.get_dynamics_attribute("threshold_current", pop.select_all())
-    hl_current = pop.get_dynamics_attribute("holding_current", pop.select_all())
-
-    assert len(th_current) == 100
-    assert len(hl_current) == 100

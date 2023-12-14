@@ -4,7 +4,6 @@ import subprocess
 from pathlib import Path
 
 import click
-import libsonata
 import numpy as np
 import pandas as pd
 import voxcell
@@ -16,14 +15,6 @@ from cwl_registry.mmodel import recipe
 from cwl_registry.mmodel.entity import MorphologyAssignmentConfig
 from cwl_registry.utils import bisect_cell_collection_by_properties, merge_cell_collections
 from cwl_registry.variant import Variant
-
-# these values where found by examining the proj83/Bio_M circuit, and find the
-# 25% and 75% percentile value, by INH/EXC
-EXC_THRESHOLD_CURRENT_RANGE = (7.009766e-02, 1.742969e-01)
-EXC_HOLDING_CURRENT_RANGE = (-8.513693e-02, -1.867439e-02)
-INH_THRESHOLD_CURRENT_RANGE = (0.037985, 0.154215)
-INH_HOLDING_CURRENT_RANGE = (-0.060696, -0.029930)
-
 
 SEED = 42
 
@@ -155,12 +146,6 @@ def _generate_mmodel_nodes(
         parallel=parallel,
         seed=SEED,
         variant=variant,
-    )
-    L.info("Assigning placeholder dynamics...")
-    _assign_placeholder_dynamics(
-        nodes_file=output_nodes_file,
-        population_name=population_name,
-        seed=SEED,
     )
 
 
@@ -428,47 +413,6 @@ def _assign_placeholder_morphologies(placeholders, placeholder_group, output_mor
 
     # add unit orientations
     placeholder_group.cells.orientations = np.broadcast_to(np.identity(3), (len(properties), 3, 3))
-
-
-def _assign_placeholder_dynamics(nodes_file, population_name, seed: int):
-    threshold_current, holding_current = _create_dynamics(nodes_file, population_name, seed)
-
-    utils.write_node_population_with_properties(
-        nodes_file=nodes_file,
-        population_name=population_name,
-        properties={
-            "dynamics_params/threshold_current": threshold_current.astype(np.float32),
-            "dynamics_params/holding_current": holding_current.astype(np.float32),
-        },
-        output_file=nodes_file,
-    )
-
-
-def _create_dynamics(nodes_file, population_name, seed):
-    rng = np.random.default_rng(seed)
-
-    pop = libsonata.NodeStorage(nodes_file).open_population(population_name)
-
-    exc_mask = pop.get_attribute("synapse_class", pop.select_all()) == "EXC"
-    exc_count = np.sum(exc_mask)
-    inh_count = pop.size - exc_count
-
-    threshold_current = np.empty(pop.size, dtype=np.float32)
-    threshold_current[exc_mask] = rng.uniform(
-        EXC_THRESHOLD_CURRENT_RANGE[0], EXC_THRESHOLD_CURRENT_RANGE[1], exc_count
-    )
-    threshold_current[~exc_mask] = rng.uniform(
-        INH_THRESHOLD_CURRENT_RANGE[0], INH_THRESHOLD_CURRENT_RANGE[1], inh_count
-    )
-
-    holding_current = np.empty(pop.size, dtype=np.float32)
-    holding_current[exc_mask] = rng.uniform(
-        EXC_HOLDING_CURRENT_RANGE[0], EXC_HOLDING_CURRENT_RANGE[1], exc_count
-    )
-    holding_current[~exc_mask] = rng.uniform(
-        INH_HOLDING_CURRENT_RANGE[0], INH_HOLDING_CURRENT_RANGE[1], inh_count
-    )
-    return threshold_current, holding_current
 
 
 def _write_partial_config(config, nodes_file, population_name, morphologies_dir, output_file):
