@@ -1,9 +1,11 @@
+import os
 from pathlib import Path
 from unittest.mock import patch, Mock
 import pytest
 
 from cwl_registry.wrappers import memodel as test_module
 from cwl_registry.utils import load_json
+from cwl_registry.testing import patchenv
 
 
 def test_get_biophysical_population_info(circuit_config_file):
@@ -103,6 +105,33 @@ def test_build_recipe(tmp_path, materialized_me_model_config_file):
     }
 
 
+def test_run_emodel_prepare():
+    with (
+        patch("subprocess.run") as patched_subprocess,
+        patch(
+            "cwl_registry.utils.build_variant_allocation_command",
+            side_effect=lambda e, *args, **kwargs: e,
+        ),
+    ):
+        test_module._run_emodel_prepare(
+            recipe_file="recipe-file",
+            mechanisms_dir="mechanisms-dir",
+            work_dir="work-dir",
+            variant=None,
+        )
+        expected_command = (
+            "emodel-generalisation -v prepare "
+            "--config-path recipe-file "
+            "--local-config-path work-dir/configs "
+            "--mechanisms-path mechanisms-dir"
+        )
+        patched_subprocess.assert_called_once_with(
+            expected_command,
+            check=True,
+            shell=True,
+        )
+
+
 def test_run_emodel_assign(circuit_config_file):
     with (
         patch("subprocess.run") as patched_subprocess,
@@ -120,7 +149,7 @@ def test_run_emodel_assign(circuit_config_file):
             work_dir=Path("work-dir"),
         )
         expected_command = (
-            "emodel-generalisation -v assign "
+            "emodel-generalisation -v --no-progress assign "
             "--input-node-path nodes.h5 "
             "--config-path recipe-file "
             "--output-node-path out-file "
@@ -134,6 +163,7 @@ def test_run_emodel_assign(circuit_config_file):
         )
 
 
+@patchenv(foo="bar")
 def test_run_emodel_adapt(circuit_config_file):
     with (
         patch("subprocess.run") as patched_subprocess,
@@ -151,9 +181,10 @@ def test_run_emodel_adapt(circuit_config_file):
             output_biophysical_models_dir="hoc-dir",
             variant=None,
             work_dir=Path("work-dir"),
+            mechanisms_dir="mechanisms-dir",
         )
         expected_command = (
-            "emodel-generalisation -v adapt "
+            "emodel-generalisation -v --no-progress adapt "
             "--input-node-path nodes-file-path "
             "--output-node-path out-file "
             "--morphology-path morphologies "
@@ -167,9 +198,15 @@ def test_run_emodel_adapt(circuit_config_file):
             expected_command,
             check=True,
             shell=True,
+            env={
+                "foo": "bar",
+                "EMODEL_GENERALISATION_MOD_LIBRARY_PATH": "mechanisms-dir",
+                "NEURON_MODULE_OPTIONS": "-nogui",
+            },
         )
 
 
+@patchenv(foo="bar")
 def test_run_emodel_currents(circuit_config_file):
     with (
         patch("subprocess.run") as patched_subprocess,
@@ -185,9 +222,10 @@ def test_run_emodel_currents(circuit_config_file):
             biophysical_neuron_models_dir="hoc-dir",
             output_nodes_file="out-file",
             variant=None,
+            mechanisms_dir="mechanisms-dir",
         )
         expected_command = (
-            "emodel-generalisation -v compute_currents "
+            "emodel-generalisation -v --no-progress compute_currents "
             "--input-path nodes-file-path "
             "--output-path out-file "
             "--morphology-path morphologies "
@@ -198,6 +236,11 @@ def test_run_emodel_currents(circuit_config_file):
             expected_command,
             check=True,
             shell=True,
+            env={
+                "foo": "bar",
+                "EMODEL_GENERALISATION_MOD_LIBRARY_PATH": "mechanisms-dir",
+                "NEURON_MODULE_OPTIONS": "-nogui",
+            },
         )
 
 

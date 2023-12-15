@@ -69,6 +69,14 @@ def _mono_execution(configuration, partial_circuit, variant_config, output_dir):
     recipe_file = build_dir / "recipe.json"
     _build_recipe(configuration_file=configuration_file, output_file=recipe_file)
 
+    mechanisms_dir = utils.create_dir(build_dir / "mechanisms")
+    _run_emodel_prepare(
+        recipe_file=recipe_file,
+        mechanisms_dir=mechanisms_dir,
+        variant=variant,
+        work_dir=build_dir,
+    )
+
     assign_nodes_file = build_dir / "assign_nodes.h5"
     _run_emodel_assign(
         circuit_config_file=circuit_config_file,
@@ -89,6 +97,7 @@ def _mono_execution(configuration, partial_circuit, variant_config, output_dir):
         output_biophysical_models_dir=output_biophysical_models_dir,
         variant=variant,
         work_dir=build_dir,
+        mechanisms_dir=mechanisms_dir,
     )
 
     output_nodes_file = build_dir / "nodes.h5"
@@ -98,6 +107,7 @@ def _mono_execution(configuration, partial_circuit, variant_config, output_dir):
         biophysical_neuron_models_dir=output_biophysical_models_dir,
         output_nodes_file=output_nodes_file,
         variant=variant,
+        mechanisms_dir=mechanisms_dir,
     )
 
     _register(
@@ -139,18 +149,38 @@ def _build_recipe(configuration_file, output_file):
     utils.write_json(data=recipe, filepath=output_file)
 
 
+def _run_emodel_prepare(recipe_file, mechanisms_dir, variant, work_dir):
+    local_config_path = _rmdir_if_exists(Path(work_dir, "configs"))
+
+    arglist = [
+        "emodel-generalisation",
+        "-v",
+        "prepare",
+        "--config-path",
+        str(recipe_file),
+        "--local-config-path",
+        str(local_config_path),
+        "--mechanisms-path",
+        str(mechanisms_dir),
+    ]
+
+    cmd = " ".join(arglist)
+    cmd = utils.build_variant_allocation_command(cmd, variant, sub_task_index=0)
+
+    L.info("Tool command :%s", cmd)
+    subprocess.run(cmd, check=True, shell=True)
+
+
 def _run_emodel_assign(circuit_config_file, recipe_file, output_nodes_file, work_dir, variant):
     nodes_file, population_name, _ = _get_biophysical_population_info(
         circuit_config_file=circuit_config_file,
         ext="asc",
     )
 
-    local_config_path = _rmdir_if_exists(work_dir / "configs")
-
     arglist = [
         "emodel-generalisation",
         "-v",
-        # "--no-progress",
+        "--no-progress",
         "assign",
         "--input-node-path",
         str(nodes_file),
@@ -159,7 +189,7 @@ def _run_emodel_assign(circuit_config_file, recipe_file, output_nodes_file, work
         "--output-node-path",
         str(output_nodes_file),
         "--local-config-path",
-        str(local_config_path),
+        str(Path(work_dir, "configs")),
     ]
 
     cmd = " ".join(arglist)
@@ -184,6 +214,7 @@ def _run_emodel_adapt(
     output_biophysical_models_dir,
     variant,
     work_dir,
+    mechanisms_dir,
 ):
     _, population_name, morphologies_dir = _get_biophysical_population_info(
         circuit_config_file=circuit_config_file,
@@ -195,7 +226,7 @@ def _run_emodel_adapt(
     arglist = [
         "emodel-generalisation",
         "-v",
-        # "--no-progress",
+        "--no-progress",
         "adapt",
         "--input-node-path",
         str(nodes_file),
@@ -219,7 +250,14 @@ def _run_emodel_adapt(
 
     L.info("Tool command :%s", cmd)
 
-    subprocess.run(cmd, check=True, shell=True)
+    env = os.environ.copy()
+    env.update(
+        {
+            "EMODEL_GENERALISATION_MOD_LIBRARY_PATH": str(mechanisms_dir),
+            "NEURON_MODULE_OPTIONS": "-nogui",
+        }
+    )
+    subprocess.run(cmd, check=True, shell=True, env=env)
 
     L.info("Validating generated nodes file...")
     validation.check_properties_in_population(
@@ -235,6 +273,7 @@ def _run_emodel_currents(
     biophysical_neuron_models_dir,
     output_nodes_file,
     variant,
+    mechanisms_dir,
 ):
     _, population_name, morphologies_dir = _get_biophysical_population_info(
         circuit_config_file=circuit_config_file,
@@ -243,7 +282,7 @@ def _run_emodel_currents(
     arglist = [
         "emodel-generalisation",
         "-v",
-        # "--no-progress",
+        "--no-progress",
         "compute_currents",
         "--input-path",
         str(nodes_file),
@@ -260,7 +299,14 @@ def _run_emodel_currents(
     cmd = utils.build_variant_allocation_command(cmd, variant, sub_task_index=2)
 
     L.info("Tool command :%s", cmd)
-    subprocess.run(cmd, check=True, shell=True)
+    env = os.environ.copy()
+    env.update(
+        {
+            "EMODEL_GENERALISATION_MOD_LIBRARY_PATH": str(mechanisms_dir),
+            "NEURON_MODULE_OPTIONS": "-nogui",
+        }
+    )
+    subprocess.run(cmd, check=True, shell=True, env=env)
 
     L.info("Validating generated nodes file...")
     validation.check_properties_in_population(

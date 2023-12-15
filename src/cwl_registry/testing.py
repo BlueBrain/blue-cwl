@@ -1,9 +1,10 @@
 """Testing resources."""
 import json
+import os
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional
+from unittest.mock import patch
 
 from kgforge.core import Resource
 
@@ -13,7 +14,7 @@ from cwl_registry.nexus import get_forge
 @contextmanager
 def temporary_nexus_resource(
     properties: dict,
-    distribution_contents: Optional[dict] = None,
+    distribution_contents: dict | None = None,
     nexus_base: str = None,
     nexus_org: str = None,
     nexus_proj: str = None,
@@ -51,3 +52,19 @@ def _data_to_json_file(data):
         filepath = Path(tfile.name)
         filepath.write_text(serialized_data, encoding="utf-8")
         yield filepath
+
+
+@contextmanager
+def cwd(path):
+    """Context manager to temporarily change the working directory."""
+    original_cwd = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(original_cwd)
+
+
+def patchenv(**envvars):
+    """Patch function environment."""
+    return patch.dict(os.environ, envvars, clear=True)

@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch, Mock
 from cwl_registry.wrappers.mmodel import _app
 from cwl_registry.wrappers import mmodel as test_module
-from tests.functional.utils import WrapperBuild
+from cwl_registry.testing import WrapperBuild
 import pytest
 
 out_dir = Path(

@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import patch, Mock
 
 from cwl_registry import registering as test_module
+from cwl_registry.testing import patchenv
 from kgforge.core import Resource
 
 from entity_management import nexus
@@ -10,7 +11,6 @@ from entity_management.atlas import AtlasBrainRegion, AtlasRelease
 from entity_management.base import BrainLocation
 from entity_management.core import DataDownload
 from tests.unit.mocking import LocalForge
-from tests.unit.utils import patchenv
 
 
 def test_as_reference():

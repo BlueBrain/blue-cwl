@@ -1,4 +1,4 @@
-from tests.functional.utils import WrapperBuild
+from cwl_registry.testing import WrapperBuild
 
 
 import pytest

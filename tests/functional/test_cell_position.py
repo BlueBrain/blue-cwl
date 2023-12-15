@@ -1,7 +1,7 @@
 import json
 import libsonata
 from pathlib import Path
-from tests.functional.utils import WrapperBuild
+from cwl_registry.testing import WrapperBuild
 
 from entity_management.simulation import DetailedCircuit
 
