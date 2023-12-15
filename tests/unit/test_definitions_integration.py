@@ -7,8 +7,8 @@ def test_pipeline_definitions_inputs_outputs():
     tools = [
         ("cell_composition", "cell_composition_manipulation"),
         ("cell_position", "neurons_cell_position"),
-        ("placeholder", "emodel_assignment"),
-        ("placeholder", "morphology_assignment"),
+        ("mmodel", "neurons_mmodel"),
+        ("memodel", "neurons_memodel"),
         ("connectome", "placeholder"),
         ("connectome_filtering", "synapses"),
     ]
