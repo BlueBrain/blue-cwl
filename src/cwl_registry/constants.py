@@ -33,3 +33,11 @@ DEFAULT_CIRCUIT_BUILD_PARAMETERS = {
 
 HR = ["hemisphere", "region"]
 HRM = HR + ["mtype"]
+
+
+class MorphologyProducer:
+    """Morphology producer values."""
+
+    PLACEHOLDER: str = "placeholder"
+    SYNTHESIS: str = "synthesis"
+    BIOLOGIC: str = "biologic"

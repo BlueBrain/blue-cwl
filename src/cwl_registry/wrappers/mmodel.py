@@ -1,5 +1,6 @@
 """Placeholder emodel assignment."""
 import logging
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -11,16 +12,41 @@ from entity_management.nexus import load_by_id
 from morph_tool.converter import convert
 
 from cwl_registry import nexus, registering, staging, utils, validation
+from cwl_registry.constants import MorphologyProducer
 from cwl_registry.mmodel import recipe
 from cwl_registry.mmodel.entity import MorphologyAssignmentConfig
 from cwl_registry.utils import bisect_cell_collection_by_properties, merge_cell_collections
 from cwl_registry.variant import Variant
 
 SEED = 42
+SONATA_MORPHOLOGY = "morphology"
+SONATA_MORPHOLOGY_PRODUCER = "morphology_producer"
 
 L = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments
+
+INPUT_POPULATION_COLUMNS = [
+    "etype",
+    "hemisphere",
+    "morph_class",
+    "mtype",
+    "region",
+    "subregion",
+    "synapse_class",
+    "x",
+    "y",
+    "z",
+]
+
+OUTPUT_POPULATION_COLUMNS = INPUT_POPULATION_COLUMNS + [
+    "morphology",
+    "morphology_producer",
+    "orientation_w",
+    "orientation_x",
+    "orientation_y",
+    "orientation_z",
+]
 
 
 @click.command()
@@ -79,11 +105,12 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
     nodes_file, population_name = utils.get_biophysical_partial_population_from_config(
         circuit_config
     )
+    validation.check_properties_in_population(population_name, nodes_file, INPUT_POPULATION_COLUMNS)
 
     variant = Variant.from_resource_id(forge, variant_config)
 
     output_nodes_file = build_dir / "nodes.h5"
-    _generate_mmodel_nodes(
+    _assign_morphologies(
         canonicals=canonicals,
         placeholders=placeholders,
         nodes_file=nodes_file,
@@ -94,6 +121,10 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
         output_morphologies_dir=morphologies_dir,
         parallel=parallel,
         variant=variant,
+        seed=SEED,
+    )
+    validation.check_properties_in_population(
+        population_name, output_nodes_file, OUTPUT_POPULATION_COLUMNS
     )
 
     sonata_config_file = output_dir / "circuit_config.json"
@@ -121,34 +152,6 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
     )
 
 
-def _generate_mmodel_nodes(
-    canonicals,
-    placeholders,
-    nodes_file,
-    population_name,
-    atlas_info,
-    output_dir,
-    output_nodes_file,
-    output_morphologies_dir,
-    parallel,
-    variant,
-):
-    L.info("Assigning morphologies...")
-    _assign_morphologies(
-        canonicals=canonicals,
-        placeholders=placeholders,
-        nodes_file=nodes_file,
-        population_name=population_name,
-        atlas_info=atlas_info,
-        output_dir=output_dir,
-        output_nodes_file=output_nodes_file,
-        output_morphologies_dir=output_morphologies_dir,
-        parallel=parallel,
-        seed=SEED,
-        variant=variant,
-    )
-
-
 def _assign_morphologies(
     canonicals,
     placeholders,
@@ -163,51 +166,21 @@ def _assign_morphologies(
     variant,
 ):
     L.info("Splitting nodes into canonical and placeholders...")
-    canonical_group, placeholder_group = _split_circuit(
+    synthesized_file, placeholder_file = _split_circuit(
         canonicals=canonicals,
         nodes_file=nodes_file,
         population_name=population_name,
+        output_dir=output_dir,
     )
 
-    if canonical_group is None and placeholder_group is not None:
-        L.info("No synthesized nodes. Assigning placeholder morphologies...")
-        _assign_placeholder_morphologies(
-            placeholders=placeholders,
-            placeholder_group=placeholder_group,
-            output_morphologies_dir=output_morphologies_dir,
-        )
-        placeholder_group.cells.save_sonata(output_nodes_file)
-        L.info(
-            "Output nodes consist of %d placeholder nodes written at %s",
-            len(placeholder_group.cells),
-            output_nodes_file,
-        )
-    elif canonical_group is not None and placeholder_group is None:
-        L.info("No placeholder nodes. Assigning synthesized morphologies...")
+    built_groups = []
+
+    if synthesized_file:
+        L.info("Generating synthesized morphologies...")
+        canonical_output_nodes_file = output_dir / "canonicals.h5"
         _run_topological_synthesis(
             canonicals=canonicals,
-            input_nodes_file=nodes_file,
-            atlas_info=atlas_info,
-            output_dir=output_dir,
-            output_nodes_file=output_nodes_file,
-            output_morphologies_dir=output_morphologies_dir,
-            seed=seed,
-            parallel=parallel,
-            variant=variant,
-        )
-        L.info(
-            "Output nodes consist of %d synthesized nodes written at %s",
-            len(canonical_group.cells),
-            output_nodes_file,
-        )
-    elif canonical_group is not None and placeholder_group is not None:
-        L.info("Assigning synthesized morphologies...")
-        canonical_input_nodes_file = output_dir / "canonical_input_nodes.h5"
-        canonical_output_nodes_file = output_dir / "canonical_output_nodes.h5"
-        canonical_group.cells.save_sonata(canonical_input_nodes_file)
-        _run_topological_synthesis(
-            canonicals=canonicals,
-            input_nodes_file=canonical_input_nodes_file,
+            input_nodes_file=synthesized_file,
             atlas_info=atlas_info,
             output_dir=output_dir,
             output_nodes_file=canonical_output_nodes_file,
@@ -216,34 +189,30 @@ def _assign_morphologies(
             parallel=parallel,
             variant=variant,
         )
-        canonical_group.cells = voxcell.CellCollection.load_sonata(
-            canonical_output_nodes_file, population_name
-        )
+        built_groups.append(canonical_output_nodes_file)
 
+    if placeholder_file:
         L.info("Assigning placeholder morphologies...")
-        _assign_placeholder_morphologies(
+        placeholder_output_nodes_file = output_dir / "placeholders.h5"
+        _run_placeholder_assignment(
             placeholders=placeholders,
-            placeholder_group=placeholder_group,
+            input_nodes_file=placeholder_file,
             output_morphologies_dir=output_morphologies_dir,
+            output_nodes_file=placeholder_output_nodes_file,
         )
-        L.info(
-            (
-                "Merging:\n"
-                "Synthesized:\n\tSize: %d\n\tProperties: %s\n\tHas Orientations: %s\n"
-                "Placeholder:\n\tSize: %d\n\tProperties: %s\n\tHas Orientations: %s\n"
-            ),
-            len(canonical_group.cells),
-            canonical_group.cells.properties.columns,
-            canonical_group.cells.orientations is not None,
-            len(placeholder_group.cells),
-            placeholder_group.cells.properties.columns,
-            placeholder_group.cells.orientations is not None,
-        )
+        built_groups.append(placeholder_output_nodes_file)
+
+    if len(built_groups) == 1:
+        output_file = built_groups[0]
+        shutil.move(output_file, output_nodes_file)
+        L.debug("A single population is built. Moved %s -> %s", output_file, output_nodes_file)
+    elif len(built_groups) == 2:
         merge_cell_collections(
-            splits=[canonical_group, placeholder_group],
+            splits=[voxcell.CellCollection.load_sonata(p) for p in built_groups],
             population_name=population_name,
         ).save_sonata(output_nodes_file)
         L.info("Final merged nodes written at %s", output_nodes_file)
+
     else:
         raise ValueError("Both canonical and placeholder nodes are empty.")
 
@@ -259,38 +228,18 @@ def _run_topological_synthesis(
     parallel,
     variant,
 ):
-    L.info("Generating cell orientation field...")
-    output_orientations_file = atlas_info.directory / "orientation.nrrd"
-    recipe.build_cell_orientation_field(
-        brain_regions=voxcell.VoxelData.load_nrrd(atlas_info.annotation_path),
-        orientations=voxcell.VoxelData.load_nrrd(atlas_info.cell_orientation_field_path)
-        if atlas_info.cell_orientation_field_path
-        else None,
-    ).save_nrrd(output_orientations_file)
-    L.info("Cell orientation field written at %s", output_orientations_file)
+    # create cell orientations in atlas directory
+    _generate_cell_orientations(atlas_info)
 
-    L.info("Generating parameters and distributions inputs...")
-    parameters, distributions = recipe.build_synthesis_inputs(
+    tmd_parameters_file, tmd_distributions_file = _generate_synthesis_inputs(
         canonicals,
-        region_map=voxcell.RegionMap.load_json(atlas_info.ontology_path),
+        hierarchy_file=atlas_info.ontology_path,
+        output_dir=output_dir,
     )
-
-    tmd_parameters_file = output_dir / "tmd_parameters.json"
-    utils.write_json(filepath=tmd_parameters_file, data=parameters)
-
-    tmd_distributions_file = output_dir / "tmd_distributions.json"
-    utils.write_json(filepath=tmd_distributions_file, data=distributions)
-
-    L.info("Generating region structure...")
-    if atlas_info.ph_catalog:
-        region_structure = recipe.build_region_structure(atlas_info.ph_catalog)
-    else:
-        region_structure = {}
-        L.warning("No placement hints found. An empty region_structure will be generated.")
-
-    region_structure_file = output_dir / "region_structure.yaml"
-    utils.write_yaml(filepath=region_structure_file, data=region_structure)
-
+    region_structure_file = _generate_region_structure(
+        ph_catalog_file=atlas_info.ph_catalog,
+        output_file=output_dir / "region_structure.yaml",
+    )
     _execute_synthesis_command(
         input_nodes_file=input_nodes_file,
         tmd_parameters_file=tmd_parameters_file,
@@ -304,6 +253,83 @@ def _run_topological_synthesis(
         parallel=parallel,
         variant=variant,
     )
+    cells = voxcell.CellCollection.load_sonata(output_nodes_file)
+    properties = cells.properties
+
+    # Add morphology_producer column if not existent
+    if SONATA_MORPHOLOGY_PRODUCER not in properties.columns:
+        properties[SONATA_MORPHOLOGY_PRODUCER] = MorphologyProducer.SYNTHESIS
+        cells.save_sonata(output_nodes_file)
+        L.warning("morphology_producer column did not exist and was added in synthesized nodes.")
+
+    L.info(
+        "%d synthesized nodes written at %s",
+        len(cells),
+        output_nodes_file,
+    )
+
+
+def _generate_cell_orientations(atlas_info):
+    """Generate cell orientations from atlas information."""
+    L.info("Generating cell orientation field...")
+
+    orientations = (
+        voxcell.VoxelData.load_nrrd(atlas_info.cell_orientation_field_path)
+        if atlas_info.cell_orientation_field_path
+        else None
+    )
+
+    orientation_field = recipe.build_cell_orientation_field(
+        brain_regions=voxcell.VoxelData.load_nrrd(atlas_info.annotation_path),
+        orientations=orientations,
+    )
+
+    output_orientations_file = atlas_info.directory / "orientation.nrrd"
+    orientation_field.save_nrrd(output_orientations_file)
+
+    L.info("Cell orientation field written at %s", output_orientations_file)
+
+    return output_orientations_file
+
+
+def _generate_synthesis_inputs(
+    canonicals,
+    hierarchy_file: Path,
+    output_dir: Path,
+) -> tuple[Path, Path]:
+    """Generate input parameter and distribution files for topological synthesis."""
+    L.info("Generating parameters and distributions inputs...")
+
+    parameters, distributions = recipe.build_synthesis_inputs(
+        canonicals,
+        region_map=voxcell.RegionMap.load_json(hierarchy_file),
+    )
+
+    tmd_parameters_file = output_dir / "tmd_parameters.json"
+    utils.write_json(filepath=tmd_parameters_file, data=parameters)
+
+    tmd_distributions_file = output_dir / "tmd_distributions.json"
+    utils.write_json(filepath=tmd_distributions_file, data=distributions)
+
+    return tmd_parameters_file, tmd_distributions_file
+
+
+def _generate_region_structure(ph_catalog_file: Path | None, output_file: Path) -> Path:
+    """Generate input region structure for region grower."""
+    if ph_catalog_file is not None:
+        region_structure = recipe.build_region_structure(ph_catalog_file)
+        L.debug(
+            "Generated synthesis region structure at %s from placement hints at %s",
+            output_file,
+            ph_catalog_file,
+        )
+    else:
+        region_structure = {}
+        L.warning("No placement hints found. An empty region_structure will be generated.")
+
+    utils.write_yaml(filepath=output_file, data=region_structure)
+
+    return output_file
 
 
 def _execute_synthesis_command(
@@ -343,7 +369,7 @@ def _execute_synthesis_command(
         "--out-morph-ext",
         "asc",
         "--max-files-per-dir",
-        "1024",
+        "10000",
         "--out-apical",
         str(output_dir / "apical.yaml"),
         "--max-drop-ratio",
@@ -378,6 +404,7 @@ def _split_circuit(
     canonicals,
     nodes_file,
     population_name,
+    output_dir,
 ):
     pairs = pd.DataFrame(
         [(region, mtype) for region, data in canonicals.items() for mtype in data],
@@ -391,28 +418,77 @@ def _split_circuit(
 
     t1, t2 = bisect_cell_collection_by_properties(cell_collection=cell_collection, properties=pairs)
 
-    return t1, t2
+    # switch to using files instead of the populations
+    if t1 and t2:
+        t1_path = output_dir / "canonicals.h5"
+        t1.save_sonata(t1_path)
+        L.info("Cells to be synthesized: %d", len(t1))
+
+        t2_path = output_dir / "placeholders.h5"
+        t2.save_sonata(t2_path)
+
+        L.info("Cells to be assigned placeholders: %d", len(t2))
+
+        return t1_path, t2_path
+
+    if t1 and not t2:
+        L.info("Cells to be synthesized: %d", len(cell_collection))
+        return nodes_file, None
+
+    if t2 and not t1:
+        L.info("Cells to be assigned placeholders: %d", len(cell_collection))
+        return None, nodes_file
+
+    raise ValueError("Both splits are empty.")
 
 
-def _assign_placeholder_morphologies(placeholders, placeholder_group, output_morphologies_dir):
-    properties = placeholder_group.cells.properties
+def _run_placeholder_assignment(
+    placeholders, input_nodes_file, output_morphologies_dir, output_nodes_file=None
+):
+    cells = voxcell.CellCollection.load_sonata(input_nodes_file)
+    properties = cells.properties
 
-    # TODO: If needed sample from the available placeholders. Currently 1 per mtype.
-    morphology_paths = [
-        placeholders[region][mtype][0]
-        for region, mtype in zip(properties["region"], properties["mtype"])
-    ]
+    df_placeholders = pd.DataFrame(
+        [
+            (mtype, etype, etype_data[0])
+            for mtype, mtype_data in placeholders.items()
+            for etype, etype_data in mtype_data.items()
+        ],
+        columns=["region", "mtype", "path"],
+    )
 
-    properties["morphology"] = [Path(path).stem for path in morphology_paths]
+    # add morphology column from the path stems
+    df_placeholders[SONATA_MORPHOLOGY] = df_placeholders["path"].apply(lambda e: Path(e).stem)
 
-    # copy the placeholder morphologies to the morphologies directory
-    for morphology_path in set(morphology_paths):
+    # get unique values and remove from dataframe
+    unique_morphology_paths = df_placeholders["path"].unique()
+
+    # avoid adding the path to the properties df when merging below
+    df_placeholders.drop(columns="path", inplace=True)
+    assert set(df_placeholders.columns) == {"region", "mtype", SONATA_MORPHOLOGY}
+
+    # add morphology column via merge with the placeholder entries
+    properties = pd.merge(properties, df_placeholders, how="left", on=["region", "mtype"])
+    assert not properties[SONATA_MORPHOLOGY].isnull().any()
+
+    properties[SONATA_MORPHOLOGY_PRODUCER] = MorphologyProducer.PLACEHOLDER
+
+    # use morphology unique paths to copy the placeholder morphologies to the morphologies directory
+    for morphology_path in unique_morphology_paths:
         morphology_name = Path(morphology_path).stem
         convert(morphology_path, output_morphologies_dir / f"{morphology_name}.h5")
         convert(morphology_path, output_morphologies_dir / f"{morphology_name}.asc")
 
     # add unit orientations
-    placeholder_group.cells.orientations = np.broadcast_to(np.identity(3), (len(properties), 3, 3))
+    cells.orientations = np.broadcast_to(np.identity(3), (len(properties), 3, 3))
+
+    cells.save_sonata(output_nodes_file)
+
+    L.info(
+        "%d placeholder nodes written at %s",
+        len(cells),
+        output_nodes_file,
+    )
 
 
 def _write_partial_config(config, nodes_file, population_name, morphologies_dir, output_file):

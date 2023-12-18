@@ -432,7 +432,7 @@ def test_bisect_cell_collection_by_properties(cells_100):
 
     splits = tested.bisect_cell_collection_by_properties(cells_100, properties)
 
-    actual_indices = np.sort(np.concatenate([s.reverse_indices for s in splits]))
+    actual_indices = np.sort(np.concatenate([s.properties["split_index"] for s in splits]))
     npt.assert_array_equal(actual_indices, cells_100.properties.index.values)
 
 
@@ -444,7 +444,8 @@ def test_bisect_cell_collection_by_properties__one_split(cells_100):
 
     splits = tested.bisect_cell_collection_by_properties(cells_100, properties)
 
-    npt.assert_array_equal(splits[0].reverse_indices, cells_100.properties.index.values)
+    pdt.assert_frame_equal(splits[0].properties, cells_100.properties)
+    assert "split_index" not in splits[0].properties
     assert splits[1] is None
 
 

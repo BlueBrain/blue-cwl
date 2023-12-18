@@ -11,7 +11,6 @@ import urllib
 from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -403,22 +402,10 @@ def _cell_collection_from_frame(df: pd.DataFrame, population_name: str, orientat
     return cells
 
 
-@dataclass
-class SplitCollectionInfo:
-    """Dataclass for CellCollection splits."""
-
-    cells: voxcell.CellCollection
-    reverse_indices: np.ndarray
-
-    def as_dataframe(self) -> pd.DataFrame:
-        """Return split as dataframe."""
-        return self.cells.as_dataframe().set_index(self.reverse_indices)
-
-
 def bisect_cell_collection_by_properties(
     cell_collection: voxcell.CellCollection,
     properties: dict[str, list[str]],
-) -> list[SplitCollectionInfo | None]:
+) -> list[voxcell.CellCollection | None]:
     """Split cell collection in two based on properties mask.
 
     The mask to split is constructed in two steps:
@@ -442,7 +429,7 @@ def bisect_cell_collection_by_properties(
         A tuple with two elements of type SplitCellCollectionInfo or None.
     """
 
-    def split(df: pd.DataFrame, mask: np.ndarray) -> SplitCollectionInfo | None:
+    def split(df: pd.DataFrame, mask: np.ndarray) -> voxcell.CellCollection | None:
         """Create a CellCollection from the masked dataframe.
 
         Returns:
@@ -451,17 +438,18 @@ def bisect_cell_collection_by_properties(
         if not mask.any():
             return None
 
-        masked_df = df[mask]
+        if mask.all():
+            return cell_collection
+
+        # store split node indices to reconstruct later
+        masked_df = df[mask].reset_index(names="split_index", drop=False)
 
         cells = _cell_collection_from_frame(
             df=masked_df,
             population_name=cell_collection.population_name,
             orientation_format=cell_collection.orientation_format,
         )
-        return SplitCollectionInfo(
-            cells=cells,
-            reverse_indices=masked_df.index.values,
-        )
+        return cells
 
     # reset index because dataframe starts at 1
     df = cell_collection.as_dataframe().reset_index(drop=True)
@@ -475,21 +463,22 @@ def bisect_cell_collection_by_properties(
         mask = np.logical_and.reduce(
             [df[name].isin(values).values for name, values in properties.items()]
         )
+
     return split(df, mask), split(df, ~mask)
 
 
 def merge_cell_collections(
-    splits: Sequence[SplitCollectionInfo | None],
+    splits: Sequence[voxcell.CellCollection | None],
     population_name: str,
     orientation_format: str = "quaternions",
 ) -> voxcell.CellCollection:
-    """Merge cell collections using their reverse indices."""
+    """Merge cell collections using their 'split_index' column."""
     filtered = list(filter(lambda s: s is not None, splits))
 
     if len(filtered) == 1:
         return filtered[0].cells
 
-    dataframes = [split.as_dataframe() for split in splits]
+    dataframes = [split.as_dataframe().set_index("split_index") for split in splits]
 
     result = pd.concat(dataframes, ignore_index=False, join="outer").sort_index()
     return _cell_collection_from_frame(result, population_name, orientation_format)

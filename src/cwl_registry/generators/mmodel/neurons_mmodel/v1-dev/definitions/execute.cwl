@@ -9,12 +9,8 @@ baseCommand: ['cwl-registry', 'execute', 'mmodel-neurons']
 
 
 environment:
-  env_type: MODULE
-  modulepath: /gpfs/bbp.cscs.ch/ssd/apps/bsd/pulls/2135/config/modules/_meta
-  modules:
-    - unstable
-    - py-cwl-registry
-    - py-region-grower
+  env_type: VENV
+  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv310-mmodel
   enable_internet: true
 
 
