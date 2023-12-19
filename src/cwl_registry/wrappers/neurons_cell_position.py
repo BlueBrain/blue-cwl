@@ -22,6 +22,20 @@ EXECUTE_DIR_NAME = "build"
 L = logging.getLogger(__name__)
 
 
+OUTPUT_POPULATION_COLUMNS = [
+    "etype",
+    "hemisphere",
+    "morph_class",
+    "mtype",
+    "region",
+    "subregion",
+    "synapse_class",
+    "x",
+    "y",
+    "z",
+]
+
+
 @click.command()
 @click.option("--region", required=True)
 @click.option("--variant-config", required=False)
@@ -178,6 +192,9 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
     )
 
     validation.check_population_name_in_nodes(node_population_name, nodes_file)
+    validation.check_properties_in_population(
+        node_population_name, nodes_file, OUTPUT_POPULATION_COLUMNS
+    )
 
     node_sets_file = _generate_node_sets(
         nodes_file=nodes_file,

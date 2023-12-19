@@ -21,8 +21,20 @@ from cwl_registry.variant import Variant
 L = logging.getLogger(__name__)
 
 
+INPUT_POPULATION_COLUMNS = [
+    "etype",
+    "mtype",
+    "region",
+    "subregion",
+    "morphology",
+]
+
+
 ASSIGN_PROPERTIES = ["model_template"]
-ADAPT_PROPERTIES = ["dynamics_params/AIS_scaler", "dynamics_params/soma_scaler"]
+ADAPT_PROPERTIES = [
+    "dynamics_params/AIS_scaler",
+    "dynamics_params/soma_scaler",
+]
 CURRENTS_PROPERTIES = [
     "dynamics_params/holding_current",
     "dynamics_params/input_resistance",
@@ -176,6 +188,7 @@ def _run_emodel_assign(circuit_config_file, recipe_file, output_nodes_file, work
         circuit_config_file=circuit_config_file,
         ext="asc",
     )
+    validation.check_properties_in_population(population_name, nodes_file, INPUT_POPULATION_COLUMNS)
 
     arglist = [
         "emodel-generalisation",
@@ -202,7 +215,7 @@ def _run_emodel_assign(circuit_config_file, recipe_file, output_nodes_file, work
     validation.check_properties_in_population(
         population_name=population_name,
         nodes_file=output_nodes_file,
-        property_names=ASSIGN_PROPERTIES,
+        property_names=INPUT_POPULATION_COLUMNS + ASSIGN_PROPERTIES,
     )
 
 
@@ -263,7 +276,7 @@ def _run_emodel_adapt(
     validation.check_properties_in_population(
         population_name=population_name,
         nodes_file=output_nodes_file,
-        property_names=ASSIGN_PROPERTIES + ADAPT_PROPERTIES,
+        property_names=INPUT_POPULATION_COLUMNS + ASSIGN_PROPERTIES + ADAPT_PROPERTIES,
     )
 
 
@@ -312,7 +325,10 @@ def _run_emodel_currents(
     validation.check_properties_in_population(
         population_name=population_name,
         nodes_file=output_nodes_file,
-        property_names=ASSIGN_PROPERTIES + ADAPT_PROPERTIES + CURRENTS_PROPERTIES,
+        property_names=INPUT_POPULATION_COLUMNS
+        + ASSIGN_PROPERTIES
+        + ADAPT_PROPERTIES
+        + CURRENTS_PROPERTIES,
     )
 
 

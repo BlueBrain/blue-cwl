@@ -27,13 +27,9 @@ L = logging.getLogger(__name__)
 # pylint: disable=too-many-arguments
 
 INPUT_POPULATION_COLUMNS = [
-    "etype",
-    "hemisphere",
-    "morph_class",
     "mtype",
     "region",
     "subregion",
-    "synapse_class",
     "x",
     "y",
     "z",

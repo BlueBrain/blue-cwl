@@ -9,13 +9,40 @@ import numpy as np
 import voxcell
 from entity_management.nexus import load_by_id
 
-from cwl_registry import brain_regions, connectome, nexus, recipes, registering, staging, utils
+from cwl_registry import (
+    brain_regions,
+    connectome,
+    nexus,
+    recipes,
+    registering,
+    staging,
+    utils,
+    validation,
+)
 from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.variant import Variant
 
 L = logging.getLogger(__name__)
 
 # pylint: disable=R0801
+
+INPUT_NODE_POPULATION_COLUMNS = [
+    "etype",
+    "hemisphere",
+    "morph_class",
+    "mtype",
+    "region",
+    "subregion",
+    "synapse_class",
+    "x",
+    "y",
+    "z",
+    "morphology",
+    "orientation_w",
+    "orientation_x",
+    "orientation_y",
+    "orientation_z",
+]
 
 
 @click.command()
@@ -39,7 +66,10 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
     circuit_resource = nexus.get_resource(forge, partial_circuit)
     config_path = circuit_resource.circuitConfigPath.url.removeprefix("file://")
     config = utils.load_json(config_path)
-    _, node_population_name = utils.get_biophysical_partial_population_from_config(config)
+    nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(config)
+    validation.check_properties_in_population(
+        node_population_name, nodes_file, INPUT_NODE_POPULATION_COLUMNS
+    )
 
     variant = Variant.from_resource_id(forge, variant_config)
 

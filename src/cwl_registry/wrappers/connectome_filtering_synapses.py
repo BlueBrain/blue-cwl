@@ -18,6 +18,25 @@ L = logging.getLogger(__name__)
 # pylint: disable=unused-argument
 
 
+INPUT_NODE_POPULATION_COLUMNS = [
+    "etype",
+    "hemisphere",
+    "morph_class",
+    "mtype",
+    "region",
+    "subregion",
+    "synapse_class",
+    "x",
+    "y",
+    "z",
+    "morphology",
+    "orientation_w",
+    "orientation_x",
+    "orientation_y",
+    "orientation_z",
+]
+
+
 @click.command()
 @click.option("--configuration", required=True)
 @click.option("--variant-config", required=False)
@@ -43,6 +62,9 @@ def connectome_filtering_synapses(
     partial_circuit = nexus.get_resource(forge, partial_circuit)
 
     nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(config)
+    validation.check_properties_in_population(
+        node_population_name, nodes_file, INPUT_NODE_POPULATION_COLUMNS
+    )
 
     validation.check_properties_in_population(
         population_name=node_population_name,
