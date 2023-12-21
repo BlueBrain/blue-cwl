@@ -442,7 +442,6 @@ def _run_placeholder_assignment(
     placeholders, input_nodes_file, output_morphologies_dir, output_nodes_file=None
 ):
     cells = voxcell.CellCollection.load_sonata(input_nodes_file)
-    properties = cells.properties
 
     df_placeholders = pd.DataFrame(
         [
@@ -464,10 +463,15 @@ def _run_placeholder_assignment(
     assert set(df_placeholders.columns) == {"region", "mtype", SONATA_MORPHOLOGY}
 
     # add morphology column via merge with the placeholder entries
-    properties = pd.merge(properties, df_placeholders, how="left", on=["region", "mtype"])
-    assert not properties[SONATA_MORPHOLOGY].isnull().any()
+    cells.properties = pd.merge(
+        cells.properties,
+        df_placeholders,
+        how="left",
+        on=["region", "mtype"],
+    )
+    assert not cells.properties[SONATA_MORPHOLOGY].isnull().any()
 
-    properties[SONATA_MORPHOLOGY_PRODUCER] = MorphologyProducer.PLACEHOLDER
+    cells.properties[SONATA_MORPHOLOGY_PRODUCER] = MorphologyProducer.PLACEHOLDER
 
     # use morphology unique paths to copy the placeholder morphologies to the morphologies directory
     for morphology_path in unique_morphology_paths:
@@ -476,7 +480,7 @@ def _run_placeholder_assignment(
         convert(morphology_path, output_morphologies_dir / f"{morphology_name}.asc")
 
     # add unit orientations
-    cells.orientations = np.broadcast_to(np.identity(3), (len(properties), 3, 3))
+    cells.orientations = np.broadcast_to(np.identity(3), (len(cells.properties), 3, 3))
 
     cells.save_sonata(output_nodes_file)
 
