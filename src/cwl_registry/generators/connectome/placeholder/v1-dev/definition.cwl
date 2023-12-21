@@ -20,6 +20,42 @@ environment:
   enable_internet: true
 
 
+resources:
+
+  default:
+
+    partition: prod
+    nodes: 5
+    ntasks_per_node: 1
+    cpus_per_task: 40
+    exclusive: true
+    time: '1-00:00:00'
+    mem: 0
+    account: proj134
+
+  sub-tasks:
+
+    # connectome-manipulator
+    - partition: prod
+      nodes: 5
+      ntasks_per_node: 1
+      cpus_per_task: 40
+      exclusive: true
+      time: '16:00:00'
+      mem: 0
+      account: proj134
+
+    # parquet to sonata conversion
+    - partition: prod
+      nodes: 2
+      ntasks_per_node: 10
+      cpus_per_task: 4
+      exclusive: true
+      time: '8:00:00'
+      mem: 0
+      account: proj134
+
+
 inputs:
 
     - id: configuration

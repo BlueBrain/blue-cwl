@@ -479,9 +479,9 @@ def test_build_variant_allocation_command(tmp_path):
 
     variant = Mock()
     variant.tool_definition.environment = {"env_vars": {"A": "foo", "B": "bar"}}
+    variant.content = config
 
-    with patch("cwl_registry.utils.load_yaml", return_value=config):
-        res = tested.build_variant_allocation_command("echo foo", variant)
+    res = tested.build_variant_allocation_command("echo foo", variant)
 
     assert res == (
         "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
@@ -506,9 +506,9 @@ def test_build_variant_allocation_command__empty_env_vars(tmp_path):
 
     variant = Mock()
     variant.tool_definition.environment = {}
+    variant.content = config
 
-    with patch("cwl_registry.utils.load_yaml", return_value=config):
-        res = tested.build_variant_allocation_command("echo foo", variant)
+    res = tested.build_variant_allocation_command("echo foo", variant)
 
     assert res == (
         "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
@@ -559,10 +559,9 @@ def test_morphologies_dir__asc(morph_config):
 
 def test_get_variant_resources_config__default():
     variant = Mock()
-    config = {"resources": {"default": "foo"}}
+    variant.content = {"resources": {"default": "foo"}}
 
-    with patch("cwl_registry.utils.load_yaml", return_value=config):
-        res = tested._get_variant_resources_config(variant)
+    res = tested._get_variant_resources_config(variant)
 
     assert res == "foo"
 
@@ -571,8 +570,8 @@ def test_get_variant_resources_config__subtask():
     config = {"resources": {"default": "foo", "sub-tasks": ["foo", "bar"]}}
 
     variant = Mock()
+    variant.content = config
 
-    with patch("cwl_registry.utils.load_yaml", return_value=config):
-        res = tested._get_variant_resources_config(variant, sub_task_index=1)
+    res = tested._get_variant_resources_config(variant, sub_task_index=1)
 
     assert res == "bar"

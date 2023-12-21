@@ -1,10 +1,5 @@
 """Constants."""
 
-CONFIGS_DIR_NAME = "configs"
-RESOURCES_DIR_NAME = "resources"
-DEFINITIONS_DIR_NAME = "definitions"
-DEFINITION_FILENAME = "execute.cwl"
-
 DEFAULT_CIRCUIT_BUILD_PARAMETERS = {
     "place_cells": {
         "soma_placement": "basic",

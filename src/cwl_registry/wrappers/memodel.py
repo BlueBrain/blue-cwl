@@ -61,7 +61,7 @@ def mono_execution(configuration, partial_circuit, variant_config, output_dir):
 def _mono_execution(configuration, partial_circuit, variant_config, output_dir):
     output_dir = utils.create_dir(output_dir)
 
-    variant = Variant.from_resource_id(get_forge(), variant_config)
+    variant = Variant.from_id(variant_config, cross_bucket=True)
     staging_dir = utils.create_dir(output_dir / "stage")
     build_dir = utils.create_dir(output_dir / "build")
 

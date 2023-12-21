@@ -14,6 +14,7 @@ from voxcell.nexus.voxelbrain import Atlas
 from cwl_registry import Variant, nexus, recipes, registering, staging, utils, validation
 from cwl_registry.statistics import mtype_etype_url_mapping, node_population_composition_summary
 
+SEED = 42
 STAGE_DIR_NAME = "stage"
 TRANSFORM_DIR_NAME = "transform"
 EXECUTE_DIR_NAME = "build"
@@ -72,13 +73,12 @@ def _extract(
 ) -> Dict[str, Any]:
     """Stage resources from the knowledge graph."""
     staging_dir = utils.create_dir(output_dir / STAGE_DIR_NAME)
-    variant_dir = utils.create_dir(staging_dir / "variant")
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     me_type_densities_file = staging_dir / "mtype-densities.json"
 
     forge = nexus.get_forge()
 
-    variant = Variant.from_resource_id(forge, variant_config_id, staging_dir=variant_dir)
+    variant = Variant.from_id(variant_config_id, cross_bucket=True)
 
     region = nexus.get_region_resource_acronym(forge, brain_region_id)
 
@@ -107,7 +107,6 @@ def _extract(
 def _transform(staged_data: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
     """Trasform the staged resources into the algorithm's inputs, if needed."""
     region = staged_data["region"]
-    variant = staged_data["variant"]
 
     me_type_densities = utils.load_json(staged_data["me-type-densities-file"])
 
@@ -124,7 +123,6 @@ def _transform(staged_data: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
     transformed_data = deepcopy(staged_data)
     transformed_data.update(
         {
-            "parameters": utils.load_yaml(variant.get_config_file("parameters.yml"))["place_cells"],
             "composition-file": composition_file,
             "mtype-taxonomy-file": mtype_taxonomy_file,
         }
@@ -137,7 +135,6 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
     build_dir = utils.create_dir(output_dir / "build")
 
     region = transformed_data["region"]
-    parameters = transformed_data["parameters"]
 
     nodes_file = build_dir / "nodes.h5"
     node_population_name = f"{region}__neurons"
@@ -164,17 +161,17 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
                 "--region",
                 region,
                 "--soma-placement",
-                parameters["soma_placement"],
+                "basic",
                 "--density-factor",
-                parameters["density_factor"],
+                1.0,
                 "--atlas-property",
                 "region ~brain_regions",
                 "--atlas-property",
                 "hemisphere hemisphere",
                 "--sort-by",
-                ",".join(parameters["sort_by"]),
+                "region,mtype",
                 "--seed",
-                parameters["seed"],
+                SEED,
                 "--output",
                 nodes_file,
                 "--input",

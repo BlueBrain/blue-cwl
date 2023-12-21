@@ -103,7 +103,7 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
     )
     validation.check_properties_in_population(population_name, nodes_file, INPUT_POPULATION_COLUMNS)
 
-    variant = Variant.from_resource_id(forge, variant_config)
+    variant = Variant.from_id(variant_config, cross_bucket=True)
 
     output_nodes_file = build_dir / "nodes.h5"
     _assign_morphologies(

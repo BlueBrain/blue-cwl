@@ -352,46 +352,6 @@ def test_refresh_token_on_failure():
             new_token = tested._refresh_token_on_failure(mock_raiser)(token=token)
 
 
-def test_retrieve_variant_data(mock_forge):
-    data = tested.retrieve_variant_data(mock_forge, "variant-config-id")
-
-    assert data["configs"] == {
-        "parameters1.yml": mock_forge.tdir / "parameters1.yml",
-        "parameters2.yml": mock_forge.tdir / "parameters2.yml",
-    }
-    assert data["definitions"] == {
-        "definitions1.cwl": mock_forge.tdir / "definitions1.cwl",
-    }
-    assert data["resources"] == {}
-
-
-def test_retrieve_variant_data__with_staging(mock_forge):
-    with tempfile.TemporaryDirectory() as tdir:
-        tdir = Path(tdir)
-        data = tested.retrieve_variant_data(mock_forge, "variant-config-id", staging_dir=tdir)
-
-        assert data["configs"] == {
-            "parameters1.yml": tdir / "configs/parameters1.yml",
-            "parameters2.yml": tdir / "configs/parameters2.yml",
-        }
-        assert data["configs"]["parameters1.yml"].is_symlink()
-        assert data["configs"]["parameters2.yml"].is_symlink()
-
-        assert data["configs"]["parameters1.yml"].resolve() == mock_forge.tdir / "parameters1.yml"
-        assert data["configs"]["parameters2.yml"].resolve() == mock_forge.tdir / "parameters2.yml"
-
-        assert data["definitions"] == {
-            "definitions1.cwl": tdir / "definitions/definitions1.cwl",
-        }
-        assert data["definitions"]["definitions1.cwl"].is_symlink()
-        assert (
-            data["definitions"]["definitions1.cwl"].resolve()
-            == mock_forge.tdir / "definitions1.cwl"
-        )
-
-        assert data["resources"] == {}
-
-
 def test_get_config_path_from_circuit_resource__direct_path():
     forge = Mock()
     forge.retrieve.return_value = Mock(circuitConfigPath="file:///some-path")

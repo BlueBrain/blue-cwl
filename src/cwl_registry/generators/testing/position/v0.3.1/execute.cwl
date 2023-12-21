@@ -14,6 +14,21 @@ environment:
   enable_internet: true
 
 
+resources:
+    default:
+        partition: prod_small
+        nodes: 1
+        exclusive: true
+        time: '1:00:00'
+        ntasks: 1
+        ntasks_per_node: 1
+        cpus_per_task: 1
+    region:
+        'http://api.brain-map.org/api/v2/data/Structure/997':
+            partition: prod
+            time: '2:00:00'
+
+
 inputs:
 
     - id: region

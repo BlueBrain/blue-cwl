@@ -71,7 +71,7 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
         node_population_name, nodes_file, INPUT_NODE_POPULATION_COLUMNS
     )
 
-    variant = Variant.from_resource_id(forge, variant_config)
+    variant = Variant.from_id(variant_config, cross_bucket=True)
 
     recipe_file = _create_recipe(
         forge,

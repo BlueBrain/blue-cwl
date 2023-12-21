@@ -120,8 +120,8 @@ def load_yaml(filepath: os.PathLike) -> dict:
     return yaml.safe_load(Path(filepath).read_bytes())
 
 
-def write_yaml(filepath: os.PathLike, data: dict) -> None:
-    """Writes dict data to yaml."""
+def dump_yaml(data: dict) -> str:
+    """Serialize a dictionary into a yaml string."""
 
     class Dumper(yaml.SafeDumper):
         """Custom dumper that adds an empty line between root level entries."""
@@ -137,8 +137,12 @@ def write_yaml(filepath: os.PathLike, data: dict) -> None:
 
     Dumper.add_multi_representer(pathlib.PurePath, path_representer)
 
-    with open(filepath, mode="w", encoding="utf-8") as out_file:
-        yaml.dump(data, out_file, Dumper=Dumper, sort_keys=False, default_flow_style=False)
+    return yaml.dump(data, Dumper=Dumper, sort_keys=False, default_flow_style=False)
+
+
+def write_yaml(filepath: os.PathLike, data: dict) -> None:
+    """Writes dict data to yaml."""
+    Path(filepath).write_text(dump_yaml(data), encoding="utf-8")
 
 
 def load_arrow(filepath: os.PathLike) -> pd.DataFrame:
@@ -504,7 +508,7 @@ def _parse_slurm_config(config):
 
 def _get_variant_resources_config(variant, sub_task_index=None) -> dict:
     """Return variant resources config."""
-    resources_dict = load_yaml(variant.get_resources_file("variant_config.yml"))["resources"]
+    resources_dict = variant.content.get("resources", {})
 
     if sub_task_index is None:
         resources = resources_dict["default"]

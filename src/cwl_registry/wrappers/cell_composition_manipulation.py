@@ -148,7 +148,7 @@ def app(  # pylint: disable=too-many-arguments
 
     utils.write_resource_to_definition_output(
         json_resource=forge.as_json(resource),
-        variant=Variant.from_resource_id(forge, variant_config),
+        variant=Variant.from_id(variant_config, cross_bucket=True),
         output_dir=output_dir,
     )
 

@@ -9,12 +9,20 @@ baseCommand: ['cwl-registry', 'execute', 'mmodel-neurons']
 
 
 environment:
-  env_type: MODULE
-  modules:
-    - unstable
-    - py-cwl-registry
-    - py-region-grower
+  env_type: VENV
+  path: /gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv310-mmodel
   enable_internet: true
+
+
+resources:
+    default:
+        partition: prod
+        account: proj134
+        exclusive: true
+        time: '1-0:00:00'
+        ntasks: 400
+        cpus_per_task: 2
+        mem: 0
 
 
 inputs:
