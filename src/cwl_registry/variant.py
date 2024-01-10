@@ -23,11 +23,22 @@ L = logging.getLogger(__name__)
 
 @attributes(
     {
+        "hasPart": AttrOf(list[dict]),
+    }
+)
+class _CompatEntity(Entity):
+    pass
+
+
+@attributes(
+    {
         "generator_name": AttrOf(str),
         "variant_name": AttrOf(str),
         "version": AttrOf(str),
         "name": AttrOf(str, default=None),
         "distribution": AttrOf(DataDownload, default=None),
+        "allocation_resources": AttrOf(_CompatEntity, default=None),
+        "definitions": AttrOf(_CompatEntity, default=None),
     },
     repr=False,
 )
@@ -50,7 +61,7 @@ class Variant(Entity):
 
     def get_content(self, *, token: str | None = None) -> dict:
         """Return definition content."""
-        return _load_variant_distribution(self.distribution, token=token)
+        return _load_variant_distribution(self, token=token)
 
     @classmethod
     def from_id(
@@ -231,10 +242,32 @@ def _create_local_variant_distribution(path):
 
 
 def _load_variant_distribution(
-    distribution,
+    variant,
     *,
     token: str | None = None,
 ):
+    distribution = variant.distribution
+
+    # backwards compatibility to old format
+    if distribution is None:
+        assert variant.allocation_resources and variant.definitions
+
+        payload = load_yaml(
+            unquote_uri_path(
+                variant.definitions.hasPart[0]["distribution"]["atLocation"]["location"]
+            )
+        )
+        payload.update(
+            load_yaml(
+                unquote_uri_path(
+                    variant.allocation_resources.hasPart[0]["distribution"]["atLocation"][
+                        "location"
+                    ]
+                )
+            )
+        )
+        return payload
+
     # local distribution
     if distribution.url is not None:
         return load_yaml(unquote_uri_path(distribution.url))
