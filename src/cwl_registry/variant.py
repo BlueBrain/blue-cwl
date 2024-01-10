@@ -1,32 +1,38 @@
 """Variant entry."""
 import importlib.resources
+import io
 import logging
 import tempfile
 from copy import deepcopy
-from dataclasses import dataclass
 from pathlib import Path
 
 from cwl_luigi import cwl
-from entity_management.core import DataDownload
+from entity_management.base import attributes
+from entity_management.core import DataDownload, Entity
 from entity_management.nexus import sparql_query
-from entity_management.util import unquote_uri_path
+from entity_management.util import AttrOf, unquote_uri_path
 
-from cwl_registry.entity import Variant as VariantEntity
 from cwl_registry.exceptions import CWLRegistryError
-from cwl_registry.nexus import get_forge, get_resource
 from cwl_registry.utils import dump_yaml, load_yaml, write_yaml
 
 L = logging.getLogger(__name__)
 
 
-@dataclass
-class Variant:
-    """Variant class."""
+# pylint: disable=no-member
 
-    generator_name: str
-    variant_name: str
-    version: str
-    content: dict
+
+@attributes(
+    {
+        "generator_name": AttrOf(str),
+        "variant_name": AttrOf(str),
+        "version": AttrOf(str),
+        "name": AttrOf(str, default=None),
+        "distribution": AttrOf(DataDownload, default=None),
+    },
+    repr=False,
+)
+class Variant(Entity):
+    """Variant class."""
 
     def __repr__(self):
         """Return repr string."""
@@ -39,34 +45,37 @@ class Variant:
             f"generator_name: {self.generator_name}\n"
             f"variant_name  : {self.variant_name}\n"
             f"version       : {self.version}\n\n"
-            f"content\n-------\n\n{dump_yaml(self.content)}"
+            f"content\n-------\n\n{dump_yaml(self.get_content())}"
         )
+
+    def get_content(self, *, token: str | None = None) -> dict:
+        """Return definition content."""
+        return _load_variant_distribution(self.distribution, token=token)
 
     @classmethod
     def from_id(
         cls,
-        resource_id,
+        resource_id: str,
         *,
-        base: str = None,
-        org: str = None,
-        proj: str = None,
-        token: str = None,
-        cross_bucket: bool = False,
-    ):
-        """Create a Variant object from a nexus definition resource."""
-        generator_name, variant_name, version, content = _get_variant_data(
-            resource_id,
+        base: str | None = None,
+        org: str | None = None,
+        proj: str | None = None,
+        token: str | None = None,
+        **kwargs,
+    ):  # pylint: disable=arguments-differ
+        """Load entity from resource id."""
+
+        def raise_on_no_result(resource_id: str, *_, **__) -> None:
+            raise CWLRegistryError(f"Variant id {resource_id} was not found.")
+
+        return super().from_id(
+            resource_id=resource_id,
+            on_no_result=raise_on_no_result,
             base=base,
             org=org,
             proj=proj,
-            token=token,
-            cross_bucket=cross_bucket,
-        )
-        return cls(
-            generator_name=generator_name,
-            variant_name=variant_name,
-            version=version,
-            content=content,
+            use_auth=token,
+            **kwargs,
         )
 
     @classmethod
@@ -76,13 +85,13 @@ class Variant:
         variant_name: str,
         version: str,
         *,
-        base: str = None,
-        org: str = None,
-        proj: str = None,
-        token: str = None,
+        base: str | None = None,
+        org: str | None = None,
+        proj: str | None = None,
+        token: str | None = None,
     ) -> "Variant":
         """Create a Variant instance by searching the Knowledge Graph."""
-        resource_id = _find_variant_id_from_nexus(
+        resource_id = search_variant_in_nexus(
             generator_name=generator_name,
             variant_name=variant_name,
             version=version,
@@ -90,6 +99,7 @@ class Variant:
             org=org,
             proj=proj,
             token=token,
+            raise_if_not_found=True,
         )
         return cls.from_id(resource_id=resource_id, base=base, org=org, proj=proj, token=token)
 
@@ -102,15 +112,15 @@ class Variant:
             generator_name=generator_name,
             variant_name=variant_name,
             version=version,
-            content=load_yaml(filepath),
+            distribution=_create_local_variant_distribution(path=filepath),
+            name=f"{generator_name}|{variant_name}|{version}",
         )
 
     @classmethod
     def from_registry(cls, generator_name: str, variant_name: str, version: str) -> "Variant":
         """Create Variant object from registry entry."""
-        filepath = _get_variant_file(generator_name, variant_name, version)
         return cls.from_file(
-            filepath=filepath,
+            filepath=_get_variant_file(generator_name, variant_name, version),
             generator_name=generator_name,
             variant_name=variant_name,
             version=version,
@@ -119,47 +129,76 @@ class Variant:
     @property
     def tool_definition(self):
         """Return the cwl definition for this variant."""
-        content = deepcopy(self.content)
+        content = deepcopy(self.get_content())
 
         # workaround until the cwl supports executors/resources within the definition
         if "resources" in content:
             del content["resources"]
 
+        # TODO: make CommandLineTool constructor work with both the data and the file
         with tempfile.NamedTemporaryFile(suffix=".cwl") as tfile:
             write_yaml(data=content, filepath=tfile.name)
             return cwl.CommandLineTool.from_cwl(tfile.name)
+
+    def evolve(self, **changes) -> "Variant":
+        """Create a new Variant instance with updated attributes.
+
+        Note: if 'path' is passed, a local distribution will be added in the new instance.
+        """
+        if "path" in changes:
+            changes["distribution"] = _create_local_variant_distribution(path=changes.pop("path"))
+
+        changes["name"] = (
+            f"{changes.get('generator_name', self.generator_name)}|"
+            f"{changes.get('variant_name', self.variant_name)}|"
+            f"{changes.get('version', self.version)}"
+        )
+        return super().evolve(**changes)
 
     def publish(
         self,
         *,
         update: bool = False,
-        base: str = None,
-        org: str = None,
-        proj: str = None,
-        token: str = None,
-    ):
+        base: str | None = None,
+        org: str | None = None,
+        proj: str | None = None,
+        token: str | None = None,
+        **kwargs,
+    ):  # pylint: disable=arguments-differ
         """Publish or update Variant entity."""
-        try:
-            existing_id = _find_variant_id_from_nexus(
-                self.generator_name,
-                self.variant_name,
-                self.version,
+        resource_id = self._id
+
+        # Variants are assumed unique within each bucket. If the variant is local, a search is made
+        # to get the remote variant id, if any, and update it.
+        if not resource_id:
+            resource_id = search_variant_in_nexus(
+                generator_name=self.generator_name,
+                variant_name=self.variant_name,
+                version=self.version,
                 base=base,
                 org=org,
                 proj=proj,
                 token=token,
+                raise_if_not_found=False,
             )
-        except RuntimeError:
-            existing_id = None
 
-        if existing_id and not update:
-            raise CWLRegistryError(f"Variant {self} already registered in KG with id {existing_id}")
+        if resource_id and not update:
+            raise CWLRegistryError(
+                (
+                    f"Variant {self} already registered with id {resource_id}. "
+                    "To update the existing resource set update=True."
+                )
+            )
 
-        with tempfile.NamedTemporaryFile(suffix=".cwl") as tfile:
-            write_yaml(data=self.content, filepath=tfile.name)
+        variant = self
 
+        # local distribution not yet registered in nexus
+        if variant.distribution.url is not None:
+            buffer = io.BytesIO(Path(unquote_uri_path(variant.distribution.url)).read_bytes())
+
+            # the from_file classmethod uploads the distribution file to nexus
             distribution = DataDownload.from_file(
-                tfile.name,
+                file_like=buffer,
                 name="definition.cwl",
                 content_type="application/cwl",
                 base=base,
@@ -168,78 +207,45 @@ class Variant:
                 use_auth=token,
             )
 
-        if existing_id and update:
-            variant = VariantEntity.from_id(
-                existing_id, base=base, org=org, proj=proj, use_auth=token, cross_bucket=True
-            ).evolve(distribution=distribution)
-        else:
-            variant = VariantEntity(
-                name=f"{self.generator_name}|{self.variant_name}|{self.version}",
-                generator_name=self.generator_name,
-                variant_name=self.variant_name,
-                version=self.version,
-                distribution=distribution,
-            )
+            # make a new DataDownload instance replacing the local with the remote distribution
+            variant = variant.evolve(distribution=distribution)
 
-        return variant.publish(base=base, org=org, proj=proj, use_auth=token)
-
-
-def _get_variant_data(
-    resource_id,
-    *,
-    base: str = None,
-    org: str = None,
-    proj: str = None,
-    token: str = None,
-    cross_bucket: bool = False,
-):
-    try:
-        variant_entity = VariantEntity.from_id(
-            resource_id,
+        return super(Variant, variant).publish(
+            resource_id=resource_id,
             base=base,
             org=org,
             proj=proj,
             use_auth=token,
-            cross_bucket=cross_bucket,
-        )
-
-        assert variant_entity is not None, f"{resource_id} failed to instantiate."
-
-        with tempfile.TemporaryDirectory() as tdir:
-            filepath = variant_entity.distribution.download(path=tdir, use_auth=token)
-            content = load_yaml(filepath)
-
-        return (
-            variant_entity.generator_name,
-            variant_entity.variant_name,
-            variant_entity.version,
-            content,
-        )
-    except TypeError:
-        # legacy resources
-        forge = get_forge(nexus_base=base, nexus_org=org, nexus_project=proj, nexus_token=token)
-        resource = get_resource(forge, resource_id)
-        assert resource is not None
-
-        definitions = get_resource(forge, resource.definitions.id)
-        path = unquote_uri_path(definitions.hasPart[0].distribution.atLocation.location)
-
-        content = load_yaml(path)
-
-        resources = get_resource(forge, resource.allocation_resources.id)
-        path = unquote_uri_path(resources.hasPart[0].distribution.atLocation.location)
-
-        content["resources"] = load_yaml(path)["resources"]
-
-        return (
-            resource.generator_name,
-            resource.variant_name,
-            resource.version,
-            content,
+            **kwargs,
         )
 
 
-def _find_variant_id_from_nexus(
+def _create_local_variant_distribution(path):
+    path = Path(path).resolve()
+    assert path.exists() and path.suffix == ".cwl"
+    return DataDownload(
+        url=f"file://{path}",
+        name="definition.cwl",
+        encodingFormat="application/cwl",
+    )
+
+
+def _load_variant_distribution(
+    distribution,
+    *,
+    token: str | None = None,
+):
+    # local distribution
+    if distribution.url is not None:
+        return load_yaml(unquote_uri_path(distribution.url))
+
+    # remote distribution
+    with tempfile.TemporaryDirectory() as tdir:
+        filepath = distribution.download(path=tdir, use_auth=token)
+        return load_yaml(filepath)
+
+
+def search_variant_in_nexus(
     generator_name: str,
     variant_name: str,
     version: str,
@@ -248,7 +254,23 @@ def _find_variant_id_from_nexus(
     org: str = None,
     proj: str = None,
     token: str = None,
-) -> str:
+    raise_if_not_found: bool = False,
+) -> str | None:
+    """Search for a variant with the given generator_name, variant_name, and version in nexus.
+
+    Args:
+        generator_name: Generator's name. Example: 'cell_position'
+        variant_name: Variant's name. Example: 'neurons_cell_position'
+        version: The version of this variant's definition. Example: 'v1-dev'
+        base: Nexus instance base url.
+        org: Nexus organization.
+        proj: Nexus project.
+        token: Optional OAuth token.
+        raise_if_not_found: If True it raises an error if no variant is found.
+
+    Returns:
+        Variant's id if a variant is found, None otherwise.
+    """
     query = f"""
         PREFIX sch: <http://schema.org/>
         PREFIX bmo: <https://bbp.epfl.ch/ontologies/core/bmo/>
@@ -283,13 +305,16 @@ def _find_variant_id_from_nexus(
             version,
         )
         return resource_id
-    raise RuntimeError(
-        f"No variant definition found:\n"
-        f"Generator Name: {generator_name}\n"
-        f"Variant Name  : {variant_name}\n"
-        f"Version       : {version}\n"
-        f"Sparql Query:\n{query}"
-    )
+
+    if raise_if_not_found:
+        raise RuntimeError(
+            f"No variant definition found:\n"
+            f"Generator Name: {generator_name}\n"
+            f"Variant Name  : {variant_name}\n"
+            f"Version       : {version}\n"
+            f"Sparql Query:\n{query}"
+        )
+    return result
 
 
 def _get_variant_directory(generator_name: str, variant_name: str, version: str):
