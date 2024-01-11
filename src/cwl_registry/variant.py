@@ -177,11 +177,11 @@ class Variant(Entity):
         **kwargs,
     ):  # pylint: disable=arguments-differ
         """Publish or update Variant entity."""
-        resource_id = self._id
+        variant = self
 
         # Variants are assumed unique within each bucket. If the variant is local, a search is made
         # to get the remote variant id, if any, and update it.
-        if not resource_id:
+        if not variant.get_id():
             resource_id = search_variant_in_nexus(
                 generator_name=self.generator_name,
                 variant_name=self.variant_name,
@@ -192,16 +192,18 @@ class Variant(Entity):
                 token=token,
                 raise_if_not_found=False,
             )
+            if resource_id:
+                variant = variant.evolve()
+                # pylint: disable=protected-access
+                variant._force_attr("_id", resource_id)
 
-        if resource_id and not update:
+        if variant.get_id() and not update:
             raise CWLRegistryError(
                 (
-                    f"Variant {self} already registered with id {resource_id}. "
+                    f"Variant {self} already registered with id {variant.get_id()}. "
                     "To update the existing resource set update=True."
                 )
             )
-
-        variant = self
 
         # local distribution not yet registered in nexus
         if variant.distribution.url is not None:
@@ -222,7 +224,6 @@ class Variant(Entity):
             variant = variant.evolve(distribution=distribution)
 
         return super(Variant, variant).publish(
-            resource_id=resource_id,
             base=base,
             org=org,
             proj=proj,

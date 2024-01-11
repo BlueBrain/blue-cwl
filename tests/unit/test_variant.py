@@ -313,7 +313,7 @@ def test_variant__publish__local_variant(
         "_mediaType": "application/cwl",
         "_self": "https://bbp.epfl.ch/nexus/v1/files/bbp/mmb-point-neuron-framework-model/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2F13466787-0fbd-4bbb-b17b-a453b72608a4",
     }
-    query_response = {"results": {"bindings": [{"id": {"value": "not-None"}}]}}
+    query_response = {"results": {"bindings": None}}
 
     with (
         patch("cwl_registry.variant.sparql_query", return_value=query_response),
