@@ -508,7 +508,7 @@ def _parse_slurm_config(config):
 
 def _get_variant_resources_config(variant, sub_task_index=None) -> dict:
     """Return variant resources config."""
-    resources_dict = variant.content.get("resources", {})
+    resources_dict = variant.get_content().get("resources", {})
 
     if sub_task_index is None:
         resources = resources_dict["default"]

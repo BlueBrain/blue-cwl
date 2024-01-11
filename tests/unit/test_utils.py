@@ -17,6 +17,7 @@ from numpy import testing as npt
 from cwl_registry import utils as tested
 from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry import constants
+from cwl_registry.variant import Variant
 
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -462,57 +463,63 @@ def test_bisect_recombine_cycle(cells_100):
     pdt.assert_frame_equal(cells_100.properties, res.properties)
 
 
-def test_build_variant_allocation_command(tmp_path):
-    config = {
-        "resources": {
-            "default": {
-                "exclusive": True,
-                "account": "proj134",
-                "cpus_per_task": 2,
-                "time": "1-0:00:00",
-                "mem": 0,
-                "partition": "prod",
-                "ntasks": 400,
-            }
-        }
-    }
+@pytest.fixture
+def variant_1():
+    return Variant.from_registry("testing", "position", "v0.3.1")
 
-    variant = Mock()
-    variant.tool_definition.environment = {"env_vars": {"A": "foo", "B": "bar"}}
-    variant.content = config
 
-    res = tested.build_variant_allocation_command("echo foo", variant)
+@pytest.fixture
+def variant_2():
+    return Variant.from_registry("testing", "position", "v1")
+
+
+@pytest.fixture
+def variant_3():
+    return Variant.from_registry("testing", "connectome", "v1")
+
+
+@pytest.fixture
+def variant_4():
+    return Variant.from_registry("testing", "connectome_filtering", "v1")
+
+
+def test_build_variant_allocation_command__wout_subtasks__wout_env_vars(tmp_path, variant_1):
+    res = tested.build_variant_allocation_command("echo foo", variant_1)
 
     assert res == (
-        "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
-        "--mem=0 --partition=prod --ntasks=400 srun env A=foo B=bar echo foo"
+        "stdbuf -oL -eL salloc --partition=prod_small --nodes=1 --exclusive --time=1:00:00 "
+        "--ntasks=1 --ntasks-per-node=1 --cpus-per-task=1 "
+        "srun echo foo"
     )
 
 
-def test_build_variant_allocation_command__empty_env_vars(tmp_path):
-    config = {
-        "resources": {
-            "default": {
-                "exclusive": True,
-                "account": "proj134",
-                "cpus_per_task": 2,
-                "time": "1-0:00:00",
-                "mem": 0,
-                "partition": "prod",
-                "ntasks": 400,
-            }
-        }
-    }
-
-    variant = Mock()
-    variant.tool_definition.environment = {}
-    variant.content = config
-
-    res = tested.build_variant_allocation_command("echo foo", variant)
+def test_build_variant_allocation_command__wout_subtasks__with_env_vars(tmp_path, variant_2):
+    res = tested.build_variant_allocation_command("echo foo", variant_2)
 
     assert res == (
-        "stdbuf -oL -eL salloc --exclusive --account=proj134 --cpus-per-task=2 --time=1-0:00:00 "
-        "--mem=0 --partition=prod --ntasks=400 srun echo foo"
+        "stdbuf -oL -eL salloc --partition=prod_small --nodes=1 --exclusive --time=1:00:00 "
+        "--ntasks=1 --ntasks-per-node=1 --cpus-per-task=1 "
+        "srun env foo=1 bar=test echo foo"
+    )
+
+
+def test_build_variant_allocation_command__with_subtasks__with_env_vars(tmp_path, variant_3):
+    res = tested.build_variant_allocation_command("echo foo", variant_3)
+
+    assert res == (
+        "stdbuf -oL -eL salloc --partition=prod --nodes=300 --ntasks-per-node=1 "
+        "--cpus-per-task=40 --exclusive --time=1-00:00:00 --mem=0 --account=proj134 "
+        "srun env OMP_NUM_THREADS=40 MPI_OPENMP_INTEROP=1 echo foo"
+    )
+
+
+def test_build_variant_allocation_command__with_subtasks__wout_env_vars(tmp_path, variant_4):
+    res = tested.build_variant_allocation_command("echo foo", variant_4)
+
+    assert res == (
+        "stdbuf -oL -eL salloc --partition=prod --account=proj134 --nodes=20 "
+        "--time=12:00:00 --ntasks-per-node=1 --mem=0 --exclusive --constraint=nvme "
+        "srun echo foo"
     )
 
 
@@ -557,21 +564,41 @@ def test_morphologies_dir__asc(morph_config):
     assert res == "asc"
 
 
-def test_get_variant_resources_config__default():
-    variant = Mock()
-    variant.content = {"resources": {"default": "foo"}}
+def test_get_variant_resources_config__default(variant_1):
+    res = tested._get_variant_resources_config(variant_1)
 
-    res = tested._get_variant_resources_config(variant)
+    assert res == {
+        "partition": "prod_small",
+        "nodes": 1,
+        "exclusive": True,
+        "time": "1:00:00",
+        "ntasks": 1,
+        "ntasks_per_node": 1,
+        "cpus_per_task": 1,
+    }
 
-    assert res == "foo"
 
+def test_get_variant_resources_config__subtask(variant_4):
+    res1 = tested._get_variant_resources_config(variant_4, sub_task_index=0)
+    res2 = tested._get_variant_resources_config(variant_4, sub_task_index=1)
 
-def test_get_variant_resources_config__subtask():
-    config = {"resources": {"default": "foo", "sub-tasks": ["foo", "bar"]}}
-
-    variant = Mock()
-    variant.content = config
-
-    res = tested._get_variant_resources_config(variant, sub_task_index=1)
-
-    assert res == "bar"
+    assert res1 == {
+        "partition": "prod",
+        "account": "proj134",
+        "nodes": 20,
+        "time": "16:00:00",
+        "ntasks_per_node": 1,
+        "mem": 0,
+        "exclusive": True,
+        "constraint": "nvme",
+    }
+    assert res2 == {
+        "partition": "prod",
+        "nodes": 100,
+        "ntasks_per_node": 10,
+        "cpus_per_task": 4,
+        "exclusive": True,
+        "time": "8:00:00",
+        "mem": 0,
+        "account": "proj134",
+    }
