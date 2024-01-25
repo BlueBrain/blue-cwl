@@ -1,4 +1,6 @@
 """MEModel recipe generation."""
+import hashlib
+import json
 from copy import deepcopy
 
 
@@ -8,7 +10,30 @@ def build_me_model_recipe(me_model_config):
     overrides = me_model_config["overrides"]["neurons_me_model"]
     result = _convert_to_labels(defaults, leaf_func=_default_strategy)
     result = _apply_overrides(defaults, overrides, result)
-    return result
+    return _create_library(result)
+
+
+def _create_library(recipe):
+    emodel_library = {}
+
+    configuration = deepcopy(recipe)
+    for region_data in configuration.values():
+        for mtype_data in region_data.values():
+            for etype_data in mtype_data.values():
+                emodel = etype_data["eModel"]
+
+                json_string = json.dumps(emodel, sort_keys=True)
+                json_hash = hashlib.blake2b(json_string.encode("utf-8"), digest_size=3).hexdigest()
+
+                if json_hash not in emodel_library:
+                    emodel_library[json_hash] = emodel
+
+                etype_data["eModel"] = json_hash
+
+    return {
+        "library": {"eModel": emodel_library},
+        "configuration": configuration,
+    }
 
 
 def _default_strategy(data):
