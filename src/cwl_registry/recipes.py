@@ -4,7 +4,6 @@ import itertools
 import re
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List
 
 import lxml.etree as ET
 import numpy as np
@@ -15,32 +14,24 @@ from cwl_registry import utils
 from cwl_registry.exceptions import CWLWorkflowError
 
 
-def build_cell_composition_from_me_densities(region: str, me_type_densities: Dict[str, Any]):
+def build_cell_composition_from_me_densities(region: str, me_type_densities: pd.DataFrame):
     """Create cell composition file from KG me densities."""
-    composition = {"version": "v2", "neurons": []}
-
-    for _, mtype in me_type_densities["mtypes"].items():
-        mtype_name = mtype["label"]
-
-        for _, etype in mtype["etypes"].items():
-            density = etype["path"]
-            etype_name = etype["label"]
-
-            composition["neurons"].append(
-                {
-                    "density": density,
-                    "region": region,
-                    "traits": {
-                        "mtype": mtype_name,
-                        "etype": etype_name,
-                    },
-                }
-            )
-
+    composition = {"version": "v2"}
+    composition["neurons"] = [
+        {
+            "density": row.path,
+            "region": region,
+            "traits": {
+                "mtype": row.mtype,
+                "etype": row.etype,
+            },
+        }
+        for row in me_type_densities.itertuples(index=False)
+    ]
     return composition
 
 
-def build_mtype_taxonomy(mtypes: List[str]):
+def build_mtype_taxonomy(mtypes: list[str]):
     """A temporary solution in creating a taxonomy for circuit-build."""
     tokens = {
         "DAC": ("INT", "INH"),

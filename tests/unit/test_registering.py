@@ -10,36 +10,6 @@ from entity_management import nexus
 from entity_management.atlas import AtlasBrainRegion, AtlasRelease
 from entity_management.base import BrainLocation
 from entity_management.core import DataDownload
-from tests.unit.mocking import LocalForge
-
-
-def test_as_reference():
-    forge = LocalForge()
-    forge.storage["entity-id"] = Resource.from_json(
-        {"id": "entity-id", "type": "MyType", "label": "MyLabel"}
-    )
-
-    res = test_module._as_reference(forge, "entity-id")
-
-    assert res.id == "entity-id"
-    assert res.type == "MyType"
-    assert not hasattr(res, "label")
-
-    res = test_module._as_reference(forge, "entity-id", properties=["label"])
-
-    assert res.label == "MyLabel"
-    assert not hasattr(res, "id")
-    assert not hasattr(res, "type")
-
-
-def test_circuit_config_path():
-    path = Path("my-path")
-    res = test_module._circuit_config_path(path)
-
-    expected_path = str(path.resolve())
-
-    assert res.type == "DataDownload"
-    assert res.url == f"file://{expected_path}"
 
 
 def test_brain_location(monkeypatch):
@@ -54,23 +24,6 @@ def test_brain_location(monkeypatch):
     assert isinstance(res, BrainLocation)
     assert res.brainRegion.url == "foo"
     assert res.brainRegion.label == "bar"
-
-
-def test_subject():
-    forge = LocalForge()
-    forge.storage["entity-id"] = Resource.from_json(
-        {"id": "entity-id", "type": "MyType", "label": "my-label"}
-    )
-
-    res = test_module._subject(forge, None)
-    assert res.type == "Subject"
-    assert res.species.id == "http://purl.obolibrary.org/obo/NCBITaxon_10090"
-    assert res.species.label == "Mus musculus"
-
-    res = test_module._subject(forge, "entity-id")
-    assert res.type == "Subject"
-    assert res.species.id == "entity-id"
-    assert res.species.label == "my-label"
 
 
 def test_register_partial_circuit(monkeypatch):
@@ -90,14 +43,12 @@ def test_register_partial_circuit(monkeypatch):
                 "@type": "AtlasRelease",
                 "label": "my-atlas",
                 "name": "foo",
-                "brainTemplateDataLayer": {"@id": "template-id", "@type": "BrainTemplateDataLayer"},
-                "parcellationOntology": {"@id": "ontology-id", "@type": "ParcellationOntology"},
-                "parcellationVolume": {"@id": "volume-id", "@type": "ParcellationVolume"},
-                "subject": {"@id": "subject-id", "@type": "Subject"},
-                "spatialReferenceSystem": {"@id": "ref-id", "@type": "SpatialReferenceSystem"},
+                "brainTemplateDataLayer": {"@id": "template-id", "@type": "braintemplatedatalayer"},
+                "parcellationOntology": {"@id": "ontology-id", "@type": "parcellationontology"},
+                "parcellationVolume": {"@id": "volume-id", "@type": "parcellationvolume"},
+                "subject": {"@id": "subject-id", "@type": "subject"},
+                "spatialReferenceSystem": {"@id": "ref-id", "@type": "spatialreferencesystem"},
             }
-        if "foo" in url:
-            breakpoint()
         raise
 
     def create(base_url, payload, *args, **kwargs):
@@ -126,80 +77,83 @@ def test_register_partial_circuit(monkeypatch):
 
 
 def test_register_cell_composition_summary():
-    with tempfile.TemporaryDirectory() as tdir:
-        tdir = Path(tdir)
-
-        forge = LocalForge(output_dir=tdir)
-
-        forge.storage["brain-region-id"] = Resource.from_json(
-            {
-                "id": "brain-region-id",
-                "type": "Class",
+    def mock_load_by_id(resource_id, *args, **kwargs):
+        if resource_id == "brain-region-id":
+            return {
+                "@id": "brain-region-id",
+                "@type": "Class",
                 "label": "my-region",
                 "notation": "myr",
             }
-        )
-        forge.storage["atlas-release-id"] = Resource.from_json(
-            {
-                "id": "atlas-release-id",
-                "type": "AtlasRelease",
+
+        if resource_id == "atlas-release-id":
+            return {
+                "@id": "atlas-release-id",
+                "@type": "AtlasRelease",
                 "label": "my-atlas",
                 "name": "foo",
-                "brainTemplateDataLayer": "foo",
-                "parcellationOntology": "bar",
-                "parcellationVolume": "zoo",
-                "spatialReferenceSystem": "tak",
+                "brainTemplateDataLayer": {"@id": "template-id", "@type": "braintemplatedatalayer"},
+                "parcellationOntology": {"@id": "ontology-id", "@type": "parcellationontology"},
+                "parcellationVolume": {"@id": "volume-id", "@type": "parcellationvolume"},
+                "subject": {"@id": "subject-id", "@type": "subject"},
+                "spatialReferenceSystem": {"@id": "ref-id", "@type": "spatialreferencesystem"},
             }
-        )
-        forge.storage["circuit-id"] = Resource.from_json(
-            {
-                "id": "circuit-id",
-                "type": "DetailedCircuit",
+
+        if resource_id == "circuit-id":
+            return {
+                "@id": "circuit-id",
+                "@type": "DetailedCircuit",
             }
-        )
+
+        raise ValueError(resource_id)
+
+    file_metadata = {
+        "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/5bea6348-9e59-4fc3-9a33-bcefa3264461",
+        "@type": "File",
+        "_bytes": 35052232,
+        "_digest": {
+            "_algorithm": "SHA-256",
+            "_value": "3cb2ab9350f5a69f7e070b061d0f8cd2f4948350bd51dd87f3353262e0c4ef91",
+        },
+        "_filename": "summary_file.json",
+        "_location": "file:///gpfs/cell_composition_summary_distribution.json",
+        "_mediaType": "application/json",
+        "_rev": 1,
+        "_self": "https://bbp.epfl.ch/nexus/v1/files/bbp/mmb-point-neuron-framework-model/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2F5bea6348-9e59-4fc3-9a33-bcefa3264461",
+    }
+
+    def create(base_url, payload, *args, **kwargs):
+        return payload
+
+    with tempfile.TemporaryDirectory() as tdir:
+        tdir = Path(tdir)
 
         summary_file = tdir / "summary_file.json"
         summary_file.touch()
 
-        res = test_module.register_cell_composition_summary(
-            forge=forge,
-            name="my-summary",
-            summary_file=summary_file,
-            atlas_release_id="atlas-release-id",
-            derivation_entity_id="circuit-id",
-        )
+        with (
+            patch("entity_management.nexus.load_by_id", side_effect=mock_load_by_id),
+            patch("entity_management.nexus.upload_file", return_value=file_metadata),
+            patch("entity_management.nexus.create", side_effect=create),
+        ):
+            res = test_module.register_cell_composition_summary(
+                name="my-summary",
+                summary_file=summary_file,
+                atlas_release_id="atlas-release-id",
+                derivation_entity_id="circuit-id",
+            )
 
         assert res.name == "my-summary"
-        assert res.type == ["CellCompositionSummary", "Entity"]
+        assert res._type == "CellCompositionSummary"
         assert res.description == "Statistical summary of the model cell composition."
         assert res.about == ["nsg:Neuron", "nsg:Glia"]
 
-        assert res.atlasRelease.id == "atlas-release-id"
-        assert res.atlasRelease.type == "AtlasRelease"
+        assert res.atlasRelease.get_id() == "atlas-release-id"
+        assert res.atlasRelease._type == "AtlasRelease"
 
         assert res.distribution.name == "summary_file.json"
-        assert res.distribution.type == "DataDownload"
+        assert res.distribution._type == "DataDownload"
         assert res.distribution.encodingFormat == "application/json"
-        assert Path(res.distribution.atLocation.location[7:]).exists()
 
-        assert res.derivation.type == "Derivation"
-        assert res.derivation.entity.id == "circuit-id"
-        assert res.derivation.entity.type == "DetailedCircuit"
-
-
-@patchenv(NEXUS_WORKFLOW="my-id")
-def test_add_workflow_influence():
-    res = Resource()
-    test_module._add_workflow_influence(res)
-
-    assert hasattr(res, "wasInfluencedBy")
-    assert res.wasInfluencedBy.id == "my-id"
-    assert res.wasInfluencedBy.type == "WorkflowExecution"
-
-
-@patchenv()
-def test_add_workflow_influeces__no_workflow():
-    res = Resource()
-    test_module._add_workflow_influence(res)
-
-    assert not hasattr(res, "wasInfluencedBy")
+        assert res.derivation.entity.get_id() == "circuit-id"
+        assert res.derivation.entity._type == "DetailedCircuit"

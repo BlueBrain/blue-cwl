@@ -11,11 +11,11 @@ MOCK_CANONICAL_ID = "https://bbp.epfl.ch/my-canonical-id"
 
 
 def test_get_parameter_distributions():
-    def get_path(_, entry_id):
+    def get_path(entry_id, *args, **kwargs):
         if entry_id == "distr-id":
-            return {"path": "distr-path"}
+            return "distr-path"
         if entry_id == "param-id?rev=2":
-            return {"path": "param-path"}
+            return "param-path"
 
         raise ValueError(entry_id)
 
@@ -29,13 +29,13 @@ def test_get_parameter_distributions():
     }
 
     with (
-        patch("cwl_registry.mmodel.staging.get_resource_json_ld", return_value=metadata),
-        patch(
-            "cwl_registry.mmodel.staging.get_distribution_path_from_resource", side_effect=get_path
-        ),
+        patch("cwl_registry.mmodel.staging.load_by_id", return_value=metadata),
+        patch("cwl_registry.mmodel.staging.get_distribution_location_path", side_effect=get_path),
     ):
         res = test_module._get_parameters_distributions(
-            "my-id", {"overrides": "my-overrides"}, None, model_class=dict
+            entry_id="my-id",
+            entry_data={"overrides": "my-overrides"},
+            model_class=dict,
         )
 
         assert res == {
@@ -94,7 +94,7 @@ def materialized_canonical_config():
     return {
         "hasPart": {
             "http://api.brain-map.org/api/v2/data/Structure/935": {
-                "label": "ACAd1",
+                "notation": "ACAd1",
                 "hasPart": {
                     "http://uri.interlex.org/base/ilx_0383192": {
                         "label": "L1_DAC",
@@ -119,7 +119,7 @@ def materialized_canonical_config():
                 },
             },
             "http://api.brain-map.org/api/v2/data/Structure/614454342": {
-                "label": "ACAd2",
+                "notation": "ACAd2",
                 "hasPart": {
                     "http://uri.interlex.org/base/ilx_0383198": {
                         "label": "L23_BP",
@@ -138,7 +138,7 @@ def materialized_canonical_config():
 
 
 def test__materialize_canonical_config(canonicals_config, materialized_canonical_config):
-    def get_params_distrs(entry_id, entry_data, forge, model_class):
+    def get_params_distrs(entry_id, entry_data, model_class, *args, **kwargs):
         if entry_id == f"{MOCK_CANONICAL_ID}?rev=3":
             return {
                 "parameters": "foo",
@@ -150,7 +150,7 @@ def test__materialize_canonical_config(canonicals_config, materialized_canonical
     with patch(
         "cwl_registry.mmodel.staging._get_parameters_distributions", side_effect=get_params_distrs
     ):
-        res = test_module._materialize_canonical_config(canonicals_config, None, None)
+        res = test_module._materialize_canonical_config(canonicals_config, None)
         assert res == materialized_canonical_config
 
 
@@ -163,7 +163,6 @@ def test_materialize_canonical_config(canonicals_config, materialized_canonical_
     ):
         res = test_module.materialize_canonical_config(
             canonicals_config,
-            None,
             output_file=output_file,
             labels_only=True,
             model_class=dict,
@@ -217,7 +216,7 @@ def materialized_config():
     return {
         "hasPart": {
             "http://api.brain-map.org/api/v2/data/Structure/23": {
-                "label": "AAA",
+                "notation": "AAA",
                 "hasPart": {
                     "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType": {
                         "label": "GEN_mtype",
@@ -230,7 +229,7 @@ def materialized_config():
                 },
             },
             "http://api.brain-map.org/api/v2/data/Structure/935": {
-                "label": "ACAd1",
+                "notation": "ACAd1",
                 "hasPart": {
                     "http://uri.interlex.org/base/ilx_0383192": {
                         "label": "L1_DAC",
@@ -280,7 +279,7 @@ def test_materialize_placeholders_config(placeholders_config, materialized_confi
         return_value=materialized_config,
     ):
         res = test_module.materialize_placeholders_config(
-            placeholders_config, None, output_file=output_file, labels_only=True
+            placeholders_config, output_file=output_file, labels_only=True
         )
 
         assert res == {
@@ -292,11 +291,12 @@ def test_materialize_placeholders_config(placeholders_config, materialized_confi
 
 
 def test__materialize_placeholders_config(placeholders_config, materialized_config):
-    def get_path(_, entry_id):
+    def get_path(entry_id, *args, **kwargs):
         if entry_id == f"{MORPH_ID}?rev=4":
             return {"path": "foo"}
 
         raise ValueError()
 
-    with patch("cwl_registry.staging.get_distribution_path_from_resource", side_effect=get_path):
-        res = test_module._materialize_placeholders_config(placeholders_config, None)
+    with patch("cwl_registry.mmodel.staging.get_distribution_path_entry", side_effect=get_path):
+        res = test_module._materialize_placeholders_config(placeholders_config)
+        assert res == materialized_config

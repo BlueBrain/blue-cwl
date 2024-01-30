@@ -1,45 +1,61 @@
 """Staging utils for mmodel."""
 from functools import partial
 
+from entity_management.nexus import load_by_id
+
 from cwl_registry import utils
-from cwl_registry.nexus import get_resource_json_ld
+from cwl_registry.nexus import get_distribution_location_path
 from cwl_registry.staging import (
-    get_distribution_path_from_resource,
+    get_distribution_path_entry,
     get_entry_id,
-    get_morphology_paths,
+    get_entry_property,
     transform_cached,
     transform_nested_dataset,
 )
 
 
 @transform_cached
-def _get_parameters_distributions(entry_id: str, entry_data: dict, forge, model_class):
+def _get_parameters_distributions(
+    entry_id: str, entry_data: dict, *, model_class, base=None, org=None, proj=None, token=None
+):
     """Extract parameters and distributions data from resources."""
-    json_data = get_resource_json_ld(resource_id=entry_id, forge=forge)
-
+    json_data = load_by_id(
+        entry_id,
+        cross_bucket=True,
+        base=base,
+        org=org,
+        proj=proj,
+        token=token,
+    )
     params_id = get_entry_id(json_data["morphologyModelParameter"])
     distrs_id = get_entry_id(json_data["morphologyModelDistribution"])
 
     return model_class(
-        parameters=get_distribution_path_from_resource(forge, params_id)["path"],
-        distributions=get_distribution_path_from_resource(forge, distrs_id)["path"],
+        parameters=get_distribution_location_path(
+            params_id, base=base, org=org, proj=proj, token=token
+        ),
+        distributions=get_distribution_location_path(
+            distrs_id, base=base, org=org, proj=proj, token=token
+        ),
         overrides=entry_data.get("overrides", None),
     )
 
 
-def _get_existing_region_notation(_, entry_data):
-    return {"label": entry_data["notation"]}
-
-
-def _get_existing_label(_, entry_data):
-    return {"label": entry_data["label"]}
-
-
 def materialize_canonical_config(
-    dataset: dict, forge, model_class, output_file=None, labels_only=False
+    dataset: dict,
+    model_class,
+    *,
+    output_file=None,
+    labels_only=False,
+    base=None,
+    org=None,
+    proj=None,
+    token=None,
 ) -> dict:
     """Materialize canonical morphology model config."""
-    result = _materialize_canonical_config(dataset, forge, model_class)
+    result = _materialize_canonical_config(
+        dataset, model_class, base=base, org=org, proj=proj, token=token
+    )
 
     if labels_only:
         result = _convert_to_labels(result, leaf_func=lambda e: list(e.values())[0])
@@ -50,11 +66,24 @@ def materialize_canonical_config(
     return result
 
 
-def _materialize_canonical_config(dataset, forge, model_class):
+def _materialize_canonical_config(
+    dataset, model_class, *, base=None, org=None, proj=None, token=None
+):
     levels = (
-        _get_existing_region_notation,
-        _get_existing_label,
-        partial(_get_parameters_distributions, forge=forge, model_class=model_class),
+        partial(
+            get_entry_property, property_name="notation", base=base, org=org, proj=proj, token=token
+        ),
+        partial(
+            get_entry_property, property_name="label", base=base, org=org, proj=proj, token=token
+        ),
+        partial(
+            _get_parameters_distributions,
+            model_class=model_class,
+            base=base,
+            org=org,
+            proj=proj,
+            token=token,
+        ),
     )
 
     result = transform_nested_dataset(dataset, levels)
@@ -64,7 +93,7 @@ def _materialize_canonical_config(dataset, forge, model_class):
 
 def _convert_to_labels(nested_data: dict, leaf_func) -> dict:
     return {
-        region_data["label"]: {
+        region_data["notation"]: {
             mtype_data["label"]: leaf_func(mtype_data["hasPart"])
             for mtype_data in region_data["hasPart"].values()
         }
@@ -74,12 +103,16 @@ def _convert_to_labels(nested_data: dict, leaf_func) -> dict:
 
 def materialize_placeholders_config(
     dataset: dict,
-    forge,
+    *,
     output_file=None,
     labels_only=False,
+    base=None,
+    org=None,
+    proj=None,
+    token=None,
 ) -> dict:
     """Materialize placeholders config."""
-    result = _materialize_placeholders_config(dataset, forge)
+    result = _materialize_placeholders_config(dataset, base=base, org=org, proj=proj, token=token)
 
     if labels_only:
         result = _convert_to_labels(result, leaf_func=lambda e: [v["path"] for v in e.values()])
@@ -90,15 +123,19 @@ def materialize_placeholders_config(
     return result
 
 
-def _materialize_placeholders_config(dataset, forge):
+def _materialize_placeholders_config(dataset, *, base=None, org=None, proj=None, token=None):
     """Materialize v2 placeholder config.
 
     In v2 it is guaranteed that notation and label are present in the config.
     """
     levels = (
-        _get_existing_region_notation,
-        _get_existing_label,
-        partial(get_morphology_paths, forge=forge),
+        partial(
+            get_entry_property, property_name="notation", base=base, org=org, proj=proj, token=token
+        ),
+        partial(
+            get_entry_property, property_name="label", base=base, org=org, proj=proj, token=token
+        ),
+        partial(get_distribution_path_entry, base=base, org=org, proj=proj, token=token),
     )
 
     result = transform_nested_dataset(dataset, levels)

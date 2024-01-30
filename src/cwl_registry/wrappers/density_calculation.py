@@ -3,11 +3,11 @@ import multiprocessing
 
 import click
 import libsonata
+import pandas as pd
 import voxcell
 from voxcell.nexus.voxelbrain import Atlas
 
 from cwl_registry import statistics, utils
-from cwl_registry.nexus import get_forge
 
 
 @click.group()
@@ -36,8 +36,7 @@ def from_nodes_file(nodes_path, population_name, output, atlas_dir):
 
     population = ns.open_population(population_name)
 
-    forge = get_forge()
-    mtype_urls, etype_urls = statistics.mtype_etype_url_mapping_from_nexus(forge)
+    mtype_urls, etype_urls = statistics.mtype_etype_url_mapping_from_nexus()
 
     summary_statistics = statistics.node_population_composition_summary(
         population, atlas, mtype_urls, etype_urls
@@ -61,10 +60,15 @@ def from_nodes_file(nodes_path, population_name, output, atlas_dir):
 )
 def from_atlas_density(output_file, hierarchy, annotation, density_distribution, processes):
     """Calculate counts."""
+    _from_atlas_density(output_file, hierarchy, annotation, density_distribution, processes)
+    click.secho(f"Wrote {output_file}", fg="green")
+
+
+def _from_atlas_density(output_file, hierarchy, annotation, density_distribution, processes):
     brain_regions = voxcell.VoxelData.load_nrrd(annotation)
     region_map = voxcell.RegionMap.load_json(hierarchy)
 
-    density_distribution = utils.load_json(density_distribution)
+    density_distribution = pd.read_parquet(density_distribution)
 
     with multiprocessing.Pool(processes=processes) as pool:
         summary_statistics = statistics.atlas_densities_composition_summary(
@@ -75,5 +79,3 @@ def from_atlas_density(output_file, hierarchy, annotation, density_distribution,
         )
 
     utils.write_json(filepath=output_file, data=summary_statistics)
-
-    click.secho(f"Wrote {output_file}", fg="green")

@@ -1,59 +1,36 @@
 """Nexus stuff."""
 import logging
 import os
-from dataclasses import dataclass
 from datetime import datetime
 from functools import wraps
-from pathlib import Path
-from typing import Dict, Optional
+from typing import List, TypeVar
 
 import jwt
 import requests
 from entity_management import state
-from entity_management.nexus import (
-    _print_nexus_error,
-    file_as_dict,
-    get_unquoted_uri_path,
-    load_by_id,
-)
-from entity_management.util import unquote_uri_path
+from entity_management.core import AttrOf, DataDownload, Entity, attributes
+from entity_management.nexus import _print_nexus_error, load_by_id
 from kgforge.core import KnowledgeGraphForge
 
 from cwl_registry.exceptions import CWLRegistryError
-from cwl_registry.utils import load_arrow
-
-ext_to_format = {
-    ".json": "application/json",
-    ".yaml": "application/yaml",
-    ".yml": "application/yaml",
-    ".cwl": "application/yaml",
-}
-
 
 L = logging.getLogger(__name__)
 
-
-@dataclass(frozen=True)
-class NexusConfig:
-    """Nexus configuration dataclass."""
-
-    base: str
-    org: str
-    proj: str
-
-    @property
-    def bucket(self):
-        """Get nexus bucket."""
-        return f"{self.org}/{self.proj}"
-
-
-DEFAULT_NEXUS_CONFIG = NexusConfig(
-    base=state.get_base(), org=state.get_org(), proj=state.get_proj()
-)
-
-
 # Renew the token if it expires in 5 minutes from now
 SECONDS_TO_EXPIRATION = 5 * 60
+
+
+TEntity = TypeVar("TEntity")
+
+
+@attributes(
+    {
+        "name": AttrOf(str, default=None),
+        "distribution": AttrOf(List[DataDownload]),
+    }
+)
+class _MultiDistributionEntity(Entity):
+    pass
 
 
 def _decode(token):
@@ -89,7 +66,7 @@ def _refresh_token_on_failure(func):
     return wrapper
 
 
-def _get_valid_token(token: Optional[str] = None, force_refresh: bool = False) -> str:
+def _get_valid_token(token: str | None = None, force_refresh: bool = False) -> str:
     """Return a valid token if possible."""
     if token is None:
         token = state.get_token()
@@ -110,7 +87,17 @@ def get_forge(
     nexus_token: str = None,
     force_refresh: bool = False,
 ):  # pragma: no cover
-    """Get KG forge."""
+    """Create a KnowledgeGraphForge instance.
+
+    Args:
+        nexus_base: The nexus instance endpoint.
+        nexus_org: The nexus organization.
+        nexus_project: The nexus project.
+        force_refresh: Whether to attempt renew the token (Requires offline token).
+
+    Returns:
+        KnowledgeGraphForge instance
+    """
     nexus_base = nexus_base or os.getenv("NEXUS_BASE")
     nexus_org = nexus_org or state.get_org()
     nexus_project = nexus_project or state.get_proj()
@@ -134,26 +121,38 @@ def get_forge(
     )
 
 
-def forge_to_config(forge):
-    """Get nexus configuration from forge instance."""
+def forge_to_config(forge) -> tuple[str, str, str, str]:
+    """Get nexus configuration from forge instance.
+
+    Args:
+        forge: The KnowledgeGraphForge instance.
+
+    Returns:
+        (base, org, proj, token) tuple
+    """
     store = forge._store  # pylint: disable=protected-access
-    return store.endpoint, store.bucket, store.token
-
-
-def find_variants(forge, generator_name, variant_name, version):
-    """Return variants from KG."""
-    return forge.search(
-        {
-            "type": "Variant",
-            "generator_name": generator_name,
-            "variant_name": variant_name,
-            "version": version,
-        }
+    org, proj = store.bucket.split("/")
+    return (
+        store.endpoint,
+        org,
+        proj,
+        store.token,
     )
 
 
-def get_resource(forge, resource_id):
-    """Get resource from knowledge graph."""
+def get_resource(forge: KnowledgeGraphForge, resource_id: str):
+    """Get resource from knowledge graph.
+
+    Args:
+        forge: The KnowledgeGraphForge instance.
+        resource_id: The string id of the resource to retrieve.
+
+    Returns:
+        kgforge resource.
+
+    Raises:
+        CWLRegistryError if resource is not found.
+    """
     resource = forge.retrieve(resource_id, cross_bucket=True)
 
     if resource is None:
@@ -166,111 +165,181 @@ def get_resource(forge, resource_id):
     return resource
 
 
-def get_resource_json_ld(resource_id: str, forge, cross_bucket=True) -> dict:
-    """Get json-ld dictionary from resource id."""
-    endpoint, bucket, token = forge_to_config(forge)
-    org, proj = bucket.split("/")
-    return load_by_id(
-        resource_id=resource_id,
-        cross_bucket=cross_bucket,
-        base=endpoint,
+def get_entity(
+    resource_id: str,
+    *,
+    cls: TEntity = Entity,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> TEntity:
+    """Instantiate an entity from a resource id.
+
+    Args:
+        resource_id: The string id of the KG resource.
+        cls: entity-management class to instantiate. Default is Entity.
+
+    Returns:
+        Instantiated entity from given id.
+
+    Raises:
+        CWLRegistryError if entity is not found.
+    """
+    try:
+        entity = cls.from_id(
+            resource_id,
+            cross_bucket=True,
+            base=base,
+            org=org,
+            proj=proj,
+            use_auth=token,
+        )
+    except Exception as e:
+        raise CWLRegistryError(
+            f"Entity {cls} failed to be instantiated from id {resource_id}."
+        ) from e
+
+    if entity is None:
+        raise CWLRegistryError(
+            f"Resource id {resource_id} could not be retrieved.\n"
+            f"endpoint: {base}\n"
+            f"bucket  : {org}/{proj}"
+        )
+    return entity
+
+
+def get_distribution(
+    id_or_entity: str | Entity,
+    *,
+    cls: TEntity = _MultiDistributionEntity,
+    encoding_format: str | None = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> DataDownload:
+    """Return the distribution's location path from the resource.
+
+    Args:
+        id_or_entity: Either the id to retrieve the entity or the entity.
+        cls: entity-management class to instantiate. Default is Entity.
+        encoding_format: The format to match in case of multiple distributions.
+
+    Returns:
+        Instantiated entity from given id.
+
+    Raises:
+        CWLRegistryError:
+            * If entity is not found.
+            * If multiple distributions and no matching encoding format.
+    """
+    if isinstance(id_or_entity, str):
+        entity = get_entity(id_or_entity, cls=cls, base=base, org=org, proj=proj, token=token)
+    else:
+        entity = id_or_entity
+
+    distribution = entity.distribution
+
+    if isinstance(distribution, list):
+        if len(distribution) > 1:
+            for d in distribution:
+                if d.encodingFormat == encoding_format:
+                    return d
+            raise CWLRegistryError(
+                f"Multiple distributions in resource {entity.get_id()}.\n"
+                f"Encoding format {encoding_format} did not correspond to any distribution."
+            )
+        return distribution[0]
+
+    if encoding_format and encoding_format != distribution.encodingFormat:
+        raise CWLRegistryError(
+            "Entity {entity.get_id()} distribution's "
+            "encoding format '{encoding_format}' does not match "
+            "distribution's format '{distribution.encodingFormat}'"
+        )
+
+    return entity.distribution
+
+
+def get_distribution_location_path(
+    id_or_entity: str | TEntity,
+    *,
+    cls: TEntity = _MultiDistributionEntity,
+    encoding_format: str | None = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> str:
+    """Return the distribution's location path from the resource.
+
+    Args:
+        id_or_entity: Either the id to retrieve the entity or the entity.
+        cls: entity-management class to instantiate. Default is Entity.
+
+    Returns:
+        Instantiated entity from given id.
+
+    Raises:
+        CWLRegistryError if entity is not found.
+    """
+    distribution = get_distribution(
+        id_or_entity,
+        cls=cls,
+        encoding_format=encoding_format,
+        base=base,
         org=org,
         proj=proj,
         token=token,
     )
+    return distribution.get_location_path(use_auth=token)
 
 
-def _remove_prefix(prefix, path):
-    if path.startswith(prefix):
-        return path[len(prefix) :]
-    return path
+def get_distribution_as_dict(
+    id_or_entity: str | TEntity,
+    *,
+    cls: TEntity = _MultiDistributionEntity,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> dict:
+    """Return the distribution json payload as a dictionary.
 
+    Args:
+        id_or_entity: Either the id to retrieve the entity or the entity.
+        cls: entity-management class to instantiate. Default is Entity.
 
-def _without_file_prefix(path):
-    return _remove_prefix("file://", path)
+    Returns:
+        Instantiated entity from given id.
 
-
-def _get_distribution(resource):
-    if isinstance(resource.distribution, list):
-        assert len(resource.distribution) == 1
-        distribution = resource.distribution[0]
-    else:
-        distribution = resource.distribution
-
-    return distribution
-
-
-def read_json_file_from_resource_id(forge, resource_id: str) -> dict:
-    """Read json file from kg resource id."""
-    return read_json_file_from_resource(get_resource(forge, resource_id))
-
-
-def read_json_file_from_resource(resource) -> dict:
-    """Read json file from kg resource."""
-    distribution = _get_distribution(resource)
-    return file_as_dict(distribution.contentUrl)
-
-
-def read_arrow_file_from_resource(resource):
-    """Read arrow file from kg resource."""
-    distribution = _get_distribution(resource)
-    gpfs_location = get_unquoted_uri_path(distribution.contentUrl)
-    return load_arrow(gpfs_location)
-
-
-def _stage_into_subdir(subdir_path: Path, paths_dict: Dict[str, Path]):
-    new_paths_dict = {}
-    subdir_path.mkdir(parents=True, exist_ok=True)
-    for filename, path in paths_dict.items():
-        new_path = subdir_path / filename
-        L.debug("%s - > %s", path, new_path)
-
-        new_path.unlink(missing_ok=True)
-
-        os.symlink(path, new_path)
-        new_paths_dict[filename] = new_path
-    return new_paths_dict
-
-
-def _get_files(resource):
-    files = {}
-    for part in resource.hasPart:
-        if hasattr(part, "distribution"):
-            distribution = part.distribution
-            files[distribution.name] = Path(unquote_uri_path(distribution.atLocation.location))
-
-    return files
-
-
-def get_config_path_from_circuit_resource(forge, resource_id: str) -> Path:
-    """Get config path from resource.
-
-    Note:
-        It supports the following representations of circuitConfigPath:
-            - A single string with or without a file prefix.
-            - A DataDownload resource with the config path as a url with or without file prefix.
+    Raises:
+        CWLRegistryError if entity is not found.
     """
-    partial_circuit_resource = get_resource(forge, resource_id)
-
-    config_path = partial_circuit_resource.circuitConfigPath
-
-    # DataDownload resource with a url
-    try:
-        path = config_path.url
-    # A single string
-    except AttributeError:
-        path = config_path
-
-    return Path(unquote_uri_path(path))
+    distribution = get_distribution(
+        id_or_entity,
+        cls=cls,
+        encoding_format="application/json",
+        base=base,
+        org=org,
+        proj=proj,
+        token=token,
+    )
+    return distribution.as_dict(use_auth=token)
 
 
-def get_region_resource_acronym(forge, resource_id: str) -> str:
+def get_region_acronym(
+    resource_id: str,
+    *,
+    base: str | None = None,
+    token: str | None = None,
+) -> str:
     """Retrieve the hierarchy acronym from a KG registered region."""
-    endpoint, _, token = forge_to_config(forge)
     return load_by_id(
         resource_id=resource_id,
         cross_bucket=False,
-        base=endpoint,
+        base=base,
         org="neurosciencegraph",
         proj="datamodels",
         token=token,

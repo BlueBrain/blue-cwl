@@ -71,7 +71,7 @@ def test_materialize_me_model_config(
 
     with (
         patch(
-            "cwl_registry.me_model.staging.read_json_file_from_resource_id",
+            "cwl_registry.me_model.staging.get_distribution_as_dict",
             return_value=emodel_config,
         ),
         patch("cwl_registry.me_model.staging._materialize_emodel", side_effect=mock_get_emodel),
@@ -79,7 +79,6 @@ def test_materialize_me_model_config(
         res1 = test_module.materialize_me_model_config(
             me_model_config,
             staging_dir=staging_dir,
-            forge=None,
             output_file=output_file,
         )
 
@@ -112,7 +111,7 @@ def test_materialize_me_model_config__empty_overrides(
 
     with (
         patch(
-            "cwl_registry.me_model.staging.read_json_file_from_resource_id",
+            "cwl_registry.me_model.staging.get_distribution_as_dict",
             return_value=emodel_config,
         ),
         patch("cwl_registry.me_model.staging._materialize_emodel", side_effect=mock_get_emodel),
@@ -120,7 +119,6 @@ def test_materialize_me_model_config__empty_overrides(
         res1 = test_module.materialize_me_model_config(
             me_model_config,
             staging_dir=staging_dir,
-            forge=None,
             output_file=output_file,
         )
 

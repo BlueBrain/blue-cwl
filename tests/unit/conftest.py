@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 import voxcell
 
@@ -63,25 +64,25 @@ def density_distribution_file(tmpdir_factory, annotation):
     path2 = tdir / "L5_TPCA__cADpyr_density.nrrd"
     annotation.with_data(v2_raw).save_nrrd(path2)
 
-    distribution = {
-        "mtypes": {
-            MTYPE_URIS["L23_BP"]: {
-                "label": "L23_BP",
-                "etypes": {ETYPE_URIS["dSTUT"]: {"label": "dSTUT", "path": path1}},
-            },
-            MTYPE_URIS["L5_TPC:A"]: {
-                "label": "L5_TPC:A",
-                "etypes": {ETYPE_URIS["cADpyr"]: {"label": "cADpyr", "path": path2}},
-            },
-        },
-    }
+    df = pd.DataFrame(
+        [
+            ("L23_BP", MTYPE_URIS["L23_BP"], "dSTUT", ETYPE_URIS["dSTUT"], str(path1)),
+            ("L5_TPC:A", MTYPE_URIS["L5_TPC:A"], "cADpyr", ETYPE_URIS["cADpyr"], str(path2)),
+        ],
+        columns=["mtype", "mtype_url", "etype", "etype_url", "path"],
+    )
 
-    distribution_file = tdir / "density_distribution.json"
-    write_json(filepath=distribution_file, data=distribution)
+    distribution_file = tdir / "density_distribution.parquet"
+    df.to_parquet(path=distribution_file)
 
     return distribution_file
 
 
 @pytest.fixture(scope="session")
 def density_distribution(density_distribution_file):
-    return load_json(density_distribution_file)
+    return pd.read_parquet(density_distribution_file)
+
+
+@pytest.fixture(scope="session")
+def cell_composition_summary():
+    return load_json(DATA_DIR / "schemas/cell_composition_summary_distribution.json")

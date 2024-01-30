@@ -8,6 +8,7 @@ import libsonata
 import numpy as np
 import voxcell
 from entity_management.nexus import load_by_id
+from entity_management.simulation import DetailedCircuit
 
 from cwl_registry import (
     brain_regions,
@@ -58,33 +59,36 @@ def app(configuration, partial_circuit, macro_connectome_config, variant_config,
 
 
 def _app(configuration, partial_circuit, macro_connectome_config, variant_config, output_dir):
-    forge = nexus.get_forge()
-
     staging_dir = utils.create_dir(output_dir / "stage")
     build_dir = utils.create_dir(output_dir / "build", clean_if_exists=True)
 
-    circuit_resource = nexus.get_resource(forge, partial_circuit)
-    config_path = circuit_resource.circuitConfigPath.url.removeprefix("file://")
-    config = utils.load_json(config_path)
-    nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(config)
+    input_circuit_entity = nexus.get_entity(
+        resource_id=partial_circuit,
+        cls=DetailedCircuit,
+    )
+    input_circuit_config = utils.load_json(
+        filepath=input_circuit_entity.circuitConfigPath.get_url_as_path(),
+    )
+    input_nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(
+        input_circuit_config
+    )
     validation.check_properties_in_population(
-        node_population_name, nodes_file, INPUT_NODE_POPULATION_COLUMNS
+        node_population_name, input_nodes_file, INPUT_NODE_POPULATION_COLUMNS
     )
 
-    variant = Variant.from_id(variant_config, cross_bucket=True)
+    variant = nexus.get_entity(variant_config, cls=Variant)
 
     recipe_file = _create_recipe(
-        forge,
-        macro_connectome_config,
-        configuration,
-        partial_circuit,
-        circuit_resource.atlasRelease.id,
-        staging_dir,
-        build_dir,
+        macro_config_id=macro_connectome_config,
+        micro_config_id=configuration,
+        circuit_id=partial_circuit,
+        atlas_release_id=input_circuit_entity.atlasRelease.get_id(),
+        staging_dir=staging_dir,
+        build_dir=build_dir,
     )
     L.info("Running connectome manipulator...")
     edge_population_name = f"{node_population_name}__{node_population_name}__chemical"
-    edges_file = output_dir / "edges.h5"
+    edges_file = build_dir / "edges.h5"
     _run_connectome_manipulator(
         recipe_file=recipe_file,
         output_dir=build_dir,
@@ -93,58 +97,60 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
         output_edge_population_name=edge_population_name,
     )
     L.info("Writing partial circuit config...")
-    sonata_config_file = output_dir / "circuit_config.json"
+    sonata_config_file = build_dir / "circuit_config.json"
     _write_partial_config(
-        config=config,
+        config=input_circuit_config,
         edges_file=edges_file,
         population_name=edge_population_name,
         output_file=sonata_config_file,
     )
 
-    forge = nexus.get_forge(force_refresh=True)
+    partial_circuit = nexus.get_entity(partial_circuit, cls=DetailedCircuit)
 
     # output circuit
     L.info("Registering partial circuit...")
-    circuit_resource = registering.register_partial_circuit(
+    partial_circuit = registering.register_partial_circuit(
         name="Partial circuit with connectivity",
-        brain_region_id=circuit_resource.brainLocation.brainRegion.id,
-        atlas_release_id=circuit_resource.atlasRelease.id,
+        brain_region_id=utils.get_partial_circuit_region_id(partial_circuit),
+        atlas_release_id=partial_circuit.atlasRelease.get_id(),
         description="Partial circuit with cell properties, emodels, morphologies and connectivity.",
         sonata_config_path=sonata_config_file,
     )
 
     utils.write_resource_to_definition_output(
-        json_resource=load_by_id(circuit_resource.get_id()),
+        json_resource=load_by_id(partial_circuit.get_id()),
         variant=variant,
         output_dir=output_dir,
     )
 
 
 def _create_recipe(
-    forge, macro_config_id, micro_config_id, circuit_id, atlas_release_id, staging_dir, build_dir
+    macro_config_id, micro_config_id, circuit_id, atlas_release_id, staging_dir, build_dir
 ):
     L.debug("Materializing macro connectome dataset configuration...")
     macro_config = staging.materialize_macro_connectome_config(
-        forge, macro_config_id, output_file=staging_dir / "materialized_macro_config.json"
+        macro_config_id, output_file=staging_dir / "materialized_macro_config.json"
     )
 
     L.debug("Materializing micro connectome dataset configuration...")
     micro_config = staging.materialize_micro_connectome_config(
-        forge, micro_config_id, output_file=staging_dir / "materialized_micro_config.json"
+        micro_config_id, output_file=staging_dir / "materialized_micro_config.json"
     )
 
     L.debug("Assembling macro matrix...")
     macro_matrix = connectome.assemble_macro_matrix(macro_config)
 
-    circuit_resource = nexus.get_resource(forge, circuit_id)
-    config_path = circuit_resource.circuitConfigPath.url.removeprefix("file://")
+    config_path = nexus.get_entity(
+        circuit_id, cls=DetailedCircuit
+    ).circuitConfigPath.get_url_as_path()
+
     nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(
         utils.load_json(config_path)
     )
 
     population = libsonata.NodeStorage(nodes_file).open_population(node_population_name)
 
-    atlas_info = staging.stage_atlas(forge, atlas_release_id, output_dir=staging_dir / "atlas")
+    atlas_info = staging.stage_atlas(atlas_release_id, output_dir=staging_dir / "atlas")
 
     regions = np.unique(population.get_attribute("region", population.select_all())).tolist()
     region_volumes = brain_regions.volumes(

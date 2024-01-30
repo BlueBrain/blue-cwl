@@ -4,13 +4,13 @@ import json
 from enum import Enum
 from pathlib import Path
 
-from cwl_registry import nexus
 from cwl_registry.mmodel.config import split_config
 from cwl_registry.mmodel.staging import (
     materialize_canonical_config,
     materialize_placeholders_config,
 )
 from cwl_registry.model import CustomBaseModel
+from cwl_registry.nexus import get_distribution_as_dict
 from cwl_registry.staging import get_entry_id
 
 
@@ -75,14 +75,26 @@ class CanonicalDistributionConfig(CustomBaseModel):
 
     data: dict
 
-    def materialize(self, forge, output_file=None, labels_only=False) -> dict:
+    def materialize(
+        self,
+        *,
+        output_file=None,
+        labels_only=False,
+        base=None,
+        org=None,
+        proj=None,
+        token=None,
+    ) -> dict:
         """Materialize distribution config."""
         return materialize_canonical_config(
             dataset=self.data,
-            forge=forge,
             model_class=CanonicalMorphologyModel,
             output_file=output_file,
             labels_only=labels_only,
+            base=base,
+            org=org,
+            proj=proj,
+            token=token,
         )
 
 
@@ -91,13 +103,25 @@ class PlaceholderDistributionConfig(CustomBaseModel):
 
     data: dict
 
-    def materialize(self, forge, output_file=None, labels_only=False) -> dict:
+    def materialize(
+        self,
+        *,
+        output_file=None,
+        labels_only=False,
+        base=None,
+        org=None,
+        proj=None,
+        token=None,
+    ) -> dict:
         """Materialize distribution config."""
         return materialize_placeholders_config(
             dataset=self.data,
-            forge=forge,
             output_file=output_file,
             labels_only=labels_only,
+            base=base,
+            org=org,
+            proj=proj,
+            token=token,
         )
 
 
@@ -129,11 +153,10 @@ class MModelConfigRaw(CustomBaseModel):
     defaults: dict[VariantEntry, dict]
     configuration: dict[VariantEntry, dict[str, dict[str, dict]]]
 
-    def expand(self, forge) -> MModelConfigExpanded:
+    def expand(self, *, base=None, org=None, proj=None, token=None) -> MModelConfigExpanded:
         """Expand the resources in the defaults with their json contents."""
-        # TODO: Switch forge with direct requests
         defaults = {
-            k: nexus.read_json_file_from_resource_id(forge, get_entry_id(v))
+            k: get_distribution_as_dict(get_entry_id(v), base=base, org=org, proj=proj, token=token)
             for k, v in self.defaults.items()
         }
 

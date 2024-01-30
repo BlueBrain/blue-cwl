@@ -63,20 +63,25 @@ def density_distribution(annotation):
         path2 = tdir / "L5_TPCA__cADpyr_density.nrrd"
         annotation.with_data(v2_raw).save_nrrd(path2)
 
-        distribution = {
-            "mtypes": {
-                MTYPE_URIS["L23_BP"]: {
-                    "label": "L23_BP",
-                    "etypes": {ETYPE_URIS["dSTUT"]: {"label": "dSTUT", "path": path1}},
-                },
-                MTYPE_URIS["L5_TPC:A"]: {
-                    "label": "L5_TPC:A",
-                    "etypes": {ETYPE_URIS["cADpyr"]: {"label": "cADpyr", "path": path2}},
-                },
-            },
-        }
-
-        yield distribution
+        yield pd.DataFrame(
+            [
+                [
+                    "L23_BP",
+                    "http://uri.interlex.org/base/ilx_0383198",
+                    "dSTUT",
+                    "http://uri.interlex.org/base/ilx_0738202",
+                    str(path1),
+                ],
+                [
+                    "L5_TPC:A",
+                    "http://uri.interlex.org/base/ilx_0381365",
+                    "cADpyr",
+                    "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+                    str(path2),
+                ],
+            ],
+            columns=["mtype", "mtype_url", "etype", "etype_url", "path"],
+        )
 
 
 @pytest.fixture
@@ -110,13 +115,6 @@ def population():
         cells.save_sonata(path, forced_library=["mtype", "etype", "region"])
 
         yield libsonata.NodeStorage(path).open_population("default")
-
-
-def test_mtype_etype_url_mapping(density_distribution):
-    res_mtype_urls, res_etype_urls = test_module.mtype_etype_url_mapping(density_distribution)
-
-    assert res_mtype_urls == {"L23_BP": MTYPE_URIS["L23_BP"], "L5_TPC:A": MTYPE_URIS["L5_TPC:A"]}
-    assert res_etype_urls == {"dSTUT": ETYPE_URIS["dSTUT"], "cADpyr": ETYPE_URIS["cADpyr"]}
 
 
 def test_node_population_composition_summary(population, atlas, mtype_urls, etype_urls):
@@ -329,43 +327,3 @@ def test_atlas_densities_composition_summary(density_distribution, region_map, a
             "count": 5.0,
         },
     }
-
-
-def test__cell_composition_summary_to_df(region_map, mtype_urls, etype_urls):
-    # try roundtrip of composition summary
-    df_region_mtype_etype = (
-        pd.DataFrame(
-            (
-                ("AAA", "L23_BP", "cADpyr", 10.0),
-                ("AAA", "L5_TPC:A", "cADpyr", 20.0),
-                ("AAA", "L23_BP", "dSTUT", 30.0),
-                ("AAA", "L5_TPC:A", "dSTUT", 40.0),
-                ("FRP1", "L23_BP", "cADpyr", 110.0),
-                ("FRP1", "L5_TPC:A", "cADpyr", 120.0),
-                ("FRP1", "L23_BP", "dSTUT", 130.0),
-                ("FRP1", "L5_TPC:A", "dSTUT", 140.0),
-            ),
-            columns=[
-                "region",
-                "mtype",
-                "etype",
-                "density",
-            ],
-        )
-        .set_index(["region", "mtype", "etype"])
-        .sort_index()
-    )
-
-    cell_composition_summary = test_module.density_summary_stats_region(
-        region_map, df_region_mtype_etype, mtype_urls, etype_urls
-    )
-
-    mtype_urls_inverse = {v: k for k, v in mtype_urls.items()}
-    etype_urls_inverse = {v: k for k, v in etype_urls.items()}
-
-    df = test_module.cell_composition_summary_to_df(
-        cell_composition_summary, region_map, mtype_urls_inverse, etype_urls_inverse
-    )
-    pd.testing.assert_frame_equal(
-        df.set_index(["region", "mtype", "etype"]).sort_index(), df_region_mtype_etype
-    )

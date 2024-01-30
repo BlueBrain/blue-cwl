@@ -350,35 +350,3 @@ def test_refresh_token_on_failure():
         with pytest.raises(requests.HTTPError):
             patched.return_value = {"access_token": _create_token("access", is_expired=True)}
             new_token = tested._refresh_token_on_failure(mock_raiser)(token=token)
-
-
-def test_get_config_path_from_circuit_resource__direct_path():
-    forge = Mock()
-    forge.retrieve.return_value = Mock(circuitConfigPath="file:///some-path")
-
-    path = tested.get_config_path_from_circuit_resource(forge, None)
-    assert path == Path("/some-path")
-
-    forge.retrieve.return_value = Mock(circuitConfigPath="/some-path")
-
-    path = tested.get_config_path_from_circuit_resource(forge, None)
-    assert path == Path("/some-path")
-
-
-def test_get_config_path_from_circuit_resource__data_download():
-    resource = Mock()
-    resource.circuitConfigPath = Mock(type="DataDownload", url="file:///some-path")
-
-    forge = Mock()
-    forge.retrieve.return_value = resource
-
-    path = tested.get_config_path_from_circuit_resource(forge, None)
-    assert path == Path("/some-path")
-
-    resource.circuitConfigPath = Mock(type="DataDownload", url="/some-path")
-
-    forge = Mock()
-    forge.retrieve.return_value = resource
-
-    path = tested.get_config_path_from_circuit_resource(forge, None)
-    assert path == Path("/some-path")

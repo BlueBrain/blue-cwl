@@ -3,7 +3,6 @@ import copy
 import itertools
 import logging
 import os
-from urllib.parse import parse_qs, urlsplit, urlunparse
 
 import joblib
 import numpy as np
@@ -15,40 +14,58 @@ from cwl_registry import statistics
 L = logging.getLogger(__name__)
 
 
-def _read_density_manipulation_recipe(recipe):
+def read_density_manipulation_recipe(recipe):
     """Read the density recipe dictionary, and transform it into a DataFrame"""
     assert recipe["version"] == 1
 
     df = []
-    for id_, mtype_etypes in recipe["overrides"].items():
+    for region_url, mtype_etypes in recipe["overrides"].items():
         assert (
-            "/Structure" in id_
-        ), f"ID should match something like api/v2/data/Structure/500, is {id_}"
-        region_id = int(id_.split("/")[-1])
-        for etypes in mtype_etypes["hasPart"].values():
+            "/Structure" in region_url
+        ), f"ID should match something like api/v2/data/Structure/500, is {region_url}"
+        region_id = int(region_url.split("/")[-1])
+        for mtype_url, etypes in mtype_etypes["hasPart"].items():
             mtype_label = etypes["label"]
-            for etype in etypes["hasPart"].values():
+            for etype_url, etype in etypes["hasPart"].items():
                 etype_label = etype["label"]
+
                 if "density" in etype:
-                    df.append((region_id, mtype_label, etype_label, "density", etype["density"]))
+                    operation = "density"
+                    value = etype["density"]
                 elif "density_ratio" in etype:
-                    df.append(
-                        (
-                            region_id,
-                            mtype_label,
-                            etype_label,
-                            "density_ratio",
-                            etype["density_ratio"],
-                        )
-                    )
+                    operation = "density_ratio"
+                    value = etype["density_ratio"]
                 else:
                     raise KeyError(
                         "Neither `density` or `density_ratio` exist in "
                         f"{(region_id, mtype_label, etype_label)}"
                     )
+                df.append(
+                    (
+                        region_id,
+                        region_url,
+                        mtype_label,
+                        mtype_url,
+                        etype_label,
+                        etype_url,
+                        operation,
+                        value,
+                    )
+                )
 
-    df = pd.DataFrame(df, columns=["region", "mtype", "etype", "operation", "value"])
-
+    df = pd.DataFrame(
+        df,
+        columns=[
+            "region_id",
+            "region_url",
+            "mtype",
+            "mtype_url",
+            "etype",
+            "etype_url",
+            "operation",
+            "value",
+        ],
+    )
     return df
 
 
@@ -81,8 +98,9 @@ def _create_updated_densities(output_dir, brain_regions, all_operations, materia
 
     worker_function = joblib.delayed(_create_updated_density)
 
-    work = []
+    materialized_densities = materialized_densities.set_index(["mtype", "etype"])
 
+    work = []
     updated = {}
     for (mtype, etype), operations in all_operations.groupby(
         [
@@ -90,10 +108,12 @@ def _create_updated_densities(output_dir, brain_regions, all_operations, materia
             "etype",
         ]
     ):
-        path = str(materialized_densities.loc[(mtype, etype)].path)
+        row = materialized_densities.loc[(mtype, etype)]
+
+        path = str(row.path)
         new_path = os.path.join(output_dir, os.path.basename(path))
 
-        updated[path] = mtype, etype, new_path
+        updated[path] = mtype, etype, new_path, row.mtype_url, row.etype_url
 
         work.append(
             worker_function(
@@ -107,16 +127,20 @@ def _create_updated_densities(output_dir, brain_regions, all_operations, materia
     L.debug("Densities to be updated: %d", len(updated))
 
     for path in p(work):
-        mtype, etype, _ = updated[path]
+        mtype, etype, *_ = updated[path]
         L.info("Completed: %s, %s: [%s]", mtype, etype, path)
 
-    return pd.DataFrame(list(updated.values()), columns=["mtype", "etype", "path"])
+    updated_densities = pd.DataFrame(
+        list(updated.values()), columns=["mtype", "etype", "path", "mtype_url", "etype_url"]
+    )
+
+    return updated_densities
 
 
 def _create_updated_density(input_nrrd_path, output_nrrd_path, operations, brain_regions):
     nrrd = voxcell.VoxelData.load_nrrd(input_nrrd_path)
     for row in operations.itertuples():
-        idx = np.nonzero(brain_regions.raw == row.region)
+        idx = np.nonzero(brain_regions.raw == row.region_id)
 
         if row.operation == "density":
             nrrd.raw[idx] = row.value
@@ -128,37 +152,25 @@ def _create_updated_density(input_nrrd_path, output_nrrd_path, operations, brain
     return input_nrrd_path
 
 
-def _update_density_release(original_density_release, updated_densities, mtype_urls, etype_urls):
+def _update_density_release(original_density_release, updated_densities):
     """For the updated densities, update the `original_density_release`
 
     * add `path` attribute, so it can be consumed by push_cellcomposition
     """
     density_release = copy.deepcopy(original_density_release)
 
-    def split_rev(id_):
-        split = urlsplit(id_)
-        rev = parse_qs(split.query).get("rev")
-        if rev:
-            rev = int(rev[0])
-        id_ = urlunparse((split.scheme, split.netloc, split.path, "", "", ""))
-        return id_, rev
-
-    def find_node(dataset, id_, rev):
+    def find_node(dataset, id_):
         for haystack in dataset["hasPart"]:
             if haystack["@id"] == id_:
-                if "_rev" in haystack and rev is not None and haystack["_rev"] != rev:
-                    continue
                 return haystack
         return None
 
-    for mtype_label, mtype_df in updated_densities.groupby("mtype"):
-        mtype_id, rev = split_rev(mtype_urls[mtype_label])
-        mtype_node = find_node(density_release, mtype_id, rev)
+    for mtype_id, mtype_df in updated_densities.groupby("mtype_url"):
+        mtype_node = find_node(density_release, mtype_id)
         assert mtype_node
-        for etype_label, etype_df in mtype_df.groupby("etype"):
+        for etype_id, etype_df in mtype_df.groupby("etype_url"):
             assert etype_df.shape[0] == 1
-            etype_id, rev = split_rev(etype_urls[etype_label])
-            node = find_node(mtype_node, etype_id, rev)
+            node = find_node(mtype_node, etype_id)
             assert len(node["hasPart"]) == 1
             node["hasPart"][0]["path"] = etype_df.iloc[0].path
             del node["hasPart"][0]["@id"]
@@ -171,10 +183,8 @@ def density_manipulation(
     output_dir,
     brain_regions,
     manipulation_recipe,
-    materialized_cell_composition_volume,
+    materialized_densities,
     original_density_release,
-    mtype_urls,
-    etype_urls,
 ):
     """Manipulate the densities in a CellCompositionVolume
 
@@ -189,22 +199,13 @@ def density_manipulation(
         mtype_urls(dict): mapping for mtype labels to mtype urls
         etype_urls(dict): mapping for etype labels to etype urls
     """
-    mtype_urls_inverse = {v: k for k, v in mtype_urls.items()}
-    etype_urls_inverse = {v: k for k, v in etype_urls.items()}
-
-    manipulation_operations = _read_density_manipulation_recipe(manipulation_recipe)
-    materialized_densities = _cell_composition_volume_to_df(
-        materialized_cell_composition_volume, mtype_urls_inverse, etype_urls_inverse
-    )
-
     updated_densities = _create_updated_densities(
-        output_dir, brain_regions, manipulation_operations, materialized_densities
+        output_dir, brain_regions, manipulation_recipe, materialized_densities
     )
-
     updated_density_release = _update_density_release(
-        original_density_release, updated_densities, mtype_urls, etype_urls
+        original_density_release,
+        updated_densities,
     )
-
     return updated_densities, updated_density_release
 
 
@@ -224,14 +225,14 @@ def _update_density_summary_statistics(
 
     work = []
 
-    for _, mtype_label, etype_label, nrrd_path in updated_densities.itertuples():
+    for row in updated_densities.itertuples():
         work.append(
             worker_function(
                 region_map,
                 brain_regions,
-                mtype_label,
-                etype_label,
-                nrrd_path,
+                row.mtype,
+                row.etype,
+                row.path,
             )
         )
 
@@ -241,7 +242,6 @@ def _update_density_summary_statistics(
         .combine_first(original_cell_composition_summary.set_index(["region", "mtype", "etype"]))
         .sort_index()
     )
-
     return res
 
 
@@ -250,8 +250,6 @@ def update_composition_summary_statistics(
     region_map,
     original_cell_composition_summary,
     updated_densities,
-    mtype_urls,
-    etype_urls,
 ):
     """Update the summary statistics, after manipulations
 
@@ -263,13 +261,6 @@ def update_composition_summary_statistics(
         mtype_urls(dict): mapping for mtype labels to mtype urls
         etype_urls(dict): mapping for etype labels to etype urls
     """
-    mtype_urls_inverse = {v: k for k, v in mtype_urls.items()}
-    etype_urls_inverse = {v: k for k, v in etype_urls.items()}
-
-    original_cell_composition_summary = statistics.cell_composition_summary_to_df(
-        original_cell_composition_summary, region_map, mtype_urls_inverse, etype_urls_inverse
-    )
-
     updated_summary = _update_density_summary_statistics(
         original_cell_composition_summary,
         brain_regions,
@@ -277,8 +268,6 @@ def update_composition_summary_statistics(
         updated_densities,
     )
 
-    cell_composition_summary = statistics.density_summary_stats_region(
-        region_map, updated_summary, mtype_urls, etype_urls
-    )
+    cell_composition_summary = statistics.density_summary_stats_region(updated_summary)
 
     return cell_composition_summary

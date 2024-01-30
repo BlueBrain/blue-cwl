@@ -7,7 +7,7 @@ from entity_management.core import Entity
 
 from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.me_model.entity import EModel
-from cwl_registry.nexus import read_json_file_from_resource_id
+from cwl_registry.nexus import get_distribution_as_dict, get_distribution_location_path, get_entity
 from cwl_registry.staging import get_entry_id, transform_cached, transform_nested_dataset
 from cwl_registry.utils import write_json
 
@@ -21,15 +21,25 @@ _MATERIALIZED_KEYS = {
 
 
 def materialize_me_model_config(
-    dataset: dict, staging_dir: Path, forge, output_file: Path | None = None
+    dataset: dict,
+    staging_dir: Path,
+    *,
+    output_file: Path | None = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
 ):
     """Materialize an MEModelConfig."""
     res = deepcopy(dataset)
     res["defaults"] = _materialize_defaults(
         dataset=res["defaults"],
         staging_dir=staging_dir,
-        forge=forge,
         output_dir=staging_dir if output_file else None,
+        base=base,
+        org=org,
+        proj=proj,
+        token=token,
     )
     res["overrides"] = _materialize_overrides(
         dataset=res.get("overrides", {}),
@@ -41,7 +51,16 @@ def materialize_me_model_config(
     return res
 
 
-def _materialize_defaults(dataset: dict, staging_dir: Path, forge, output_dir: Path | None = None):
+def _materialize_defaults(
+    dataset: dict,
+    staging_dir: Path,
+    *,
+    output_dir: Path | None = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+):
     variant_to_materializer = {
         "neurons_me_model": materialize_placeholder_emodel_config,
     }
@@ -55,7 +74,9 @@ def _materialize_defaults(dataset: dict, staging_dir: Path, forge, output_dir: P
     }
     return {
         variant: variant_to_materializer[variant](
-            dataset=read_json_file_from_resource_id(forge, get_entry_id(entry)),
+            dataset=get_distribution_as_dict(
+                get_entry_id(entry), base=base, org=org, proj=proj, token=token
+            ),
             staging_dir=staging_dir,
             labels_only=False,
             output_file=output_files[variant],
@@ -113,8 +134,9 @@ def _get_existing_label(_, entry_data):
 @transform_cached
 def _materialize_emodel(entry_id, _, output_dir):
     """Materialize an EModel entity."""
-    emodel = EModel.from_id(entry_id, cross_bucket=True)
-    emodel_path = _get_json_distribution(emodel.distribution).get_location_path()
+    emodel = get_entity(entry_id, cls=EModel)
+
+    emodel_path = get_distribution_location_path(emodel, encoding_format="application/json")
     emodel_dict = {"EModel": str(emodel_path)}
 
     # we also need the configurations from the attached EModelWofklow
@@ -152,28 +174,22 @@ def _materialize_emodel_workflow(dataset, staging_dir):
     assert emodel_configuration_id is not None, (dataset, emodel_configuration_id)
 
     return {
-        "ExtractionTargetsConfiguration": _get_location_path(targets_configuration_id),
-        "EModelPipelineSettings": _get_location_path(pipeline_settings_id),
-        "FitnessCalculatorConfiguration": _get_location_path(fitness_configuration_id),
+        "ExtractionTargetsConfiguration": get_distribution_location_path(targets_configuration_id),
+        "EModelPipelineSettings": get_distribution_location_path(pipeline_settings_id),
+        "FitnessCalculatorConfiguration": get_distribution_location_path(fitness_configuration_id),
         "EModelConfiguration": _materialize_emodel_configuration(
             emodel_configuration_id, staging_dir
         ),
     }
 
 
-def _get_location_path(entity_id):
-    entity = Entity.from_id(entity_id, cross_bucket=True)
-    assert entity is not None, entity_id
-    return entity.distribution.get_location_path()
-
-
 def _materialize_emodel_configuration(entity_id, output_dir):
     """Materialize the morphology id in the EModelConfiguration."""
-    entity = Entity.from_id(entity_id, cross_bucket=True)
-    dataset = entity.distribution.as_dict()
+    entity = get_entity(entity_id, cls=Entity)
+    dataset = get_distribution_as_dict(entity)
 
     # materialize morphology path
-    dataset["morphology"]["path"] = _get_location_path(dataset["morphology"]["id"])
+    dataset["morphology"]["path"] = get_distribution_location_path(dataset["morphology"]["id"])
     del dataset["morphology"]["id"]
 
     # materialize the mod files
@@ -182,21 +198,13 @@ def _materialize_emodel_configuration(entity_id, output_dir):
         if mechanism_id is None:
             path = None
         else:
-            path = _get_location_path(dataset["mechanisms"][i]["id"])
+            path = get_distribution_location_path(dataset["mechanisms"][i]["id"])
         dataset["mechanisms"][i]["path"] = path
         del dataset["mechanisms"][i]["id"]
 
-    out_path = Path(output_dir, Path(entity.distribution.get_location_path()).name)
+    out_path = Path(output_dir, Path(get_distribution_location_path(entity)).name)
     write_json(data=dataset, filepath=out_path)
     return out_path
-
-
-def _get_json_distribution(distributions):
-    """Get the json content from the list of distributions."""
-    for d in distributions:
-        if d.encodingFormat == "application/json":
-            return d
-    raise TypeError("No json distribution.")
 
 
 def _convert_to_labels(nested_data: dict, leaf_func) -> dict:

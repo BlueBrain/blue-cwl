@@ -5,42 +5,12 @@ from functools import partial
 import numpy as np
 import pandas as pd
 import voxcell
-
-from cwl_registry.utils import url_without_revision
+from entity_management.nexus import sparql_query
 
 L = logging.getLogger(__name__)
 
 
-def cell_composition_summary_to_df(
-    cell_composition_summary, region_map, mtype_urls_inverse, etype_urls_inverse
-):
-    """Load a cell composition summary json"""
-    assert cell_composition_summary["version"] == 1
-
-    ret = []
-
-    for region_url, mtype_payload in cell_composition_summary["hasPart"].items():
-        region_acronym = region_map.get(int(region_url.split("/")[-1]), "acronym")
-        for mtype_url, etype_payload in mtype_payload["hasPart"].items():
-            mtype_label = mtype_urls_inverse[url_without_revision(mtype_url)]
-            for etype_url, payload in etype_payload["hasPart"].items():
-                etype_label = etype_urls_inverse[url_without_revision(etype_url)]
-                composition = payload["composition"]["neuron"]
-                ret.append(
-                    (
-                        region_acronym,
-                        mtype_label,
-                        etype_label,
-                        composition["density"],
-                    )
-                )
-
-    ret = pd.DataFrame(ret, columns=["region", "mtype", "etype", "density"])
-
-    return ret
-
-
-def mtype_etype_url_mapping_from_nexus(forge):
+def mtype_etype_url_mapping_from_nexus(base: str = None, token: str = None) -> tuple[dict, dict]:
     """Get mtype and etype labels mapped to their uris, from nexus"""
 
     def get_type_ids(type_):
@@ -51,16 +21,21 @@ def mtype_etype_url_mapping_from_nexus(forge):
         assert type_ in known_types, f"type_ must be {known_types}"
 
         query = f"""
+        PREFIX nsg: <https://neuroshapes.org/>
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         SELECT ?type_id ?type_ ?revision
         WHERE {{
-            ?type_id label ?type_;
-            subClassOf* {type_} ;
-            _rev ?revision ;
-            _deprecated false .
+            ?type_id rdfs:label ?type_ ;
+            rdfs:subClassOf* nsg:{type_} ;
+            <https://bluebrain.github.io/nexus/vocabulary/rev> ?revision ;
+            <https://bluebrain.github.io/nexus/vocabulary/deprecated> false .
         }}
+        LIMIT 10000
         """
-        res = forge.sparql(query, limit=10000)
-        res = {a.type_: a.type_id for a in res}
+        res = sparql_query(
+            query, base=base, org="neurosciencegraph", proj="datamodels", token=token
+        )
+        res = {r["type_"]["value"]: r["type_id"]["value"] for r in res["results"]["bindings"]}
         return res
 
     mtype_urls = get_type_ids("MType")
@@ -69,20 +44,16 @@ def mtype_etype_url_mapping_from_nexus(forge):
     return mtype_urls, etype_urls
 
 
-def mtype_etype_url_mapping(density_distribution):
+def mtype_etype_url_mapping(density_distribution: pd.DataFrame) -> tuple[dict, dict]:
     """Get mtype and etype labels mapped to their uris."""
     mtype_urls = {}
     etype_urls = {}
 
-    for mtype_url, mtype_data in density_distribution["mtypes"].items():
-        mtype_label = mtype_data["label"]
-        assert mtype_label not in mtype_urls
-        mtype_urls[mtype_label] = mtype_url
+    df = density_distribution[["mtype", "mtype_url", "etype", "etype_url"]].drop_duplicates()
 
-        for etype_url, etype_data in mtype_data["etypes"].items():
-            if etype_url not in etype_urls:
-                etype_label = etype_data["label"]
-                etype_urls[etype_label] = etype_url
+    for row in df.itertuples(index=False):
+        mtype_urls[row.mtype] = row.mtype_url
+        etype_urls[row.etype] = row.etype_url
 
     return mtype_urls, etype_urls
 
@@ -99,10 +70,28 @@ def node_population_composition_summary(population, atlas, mtype_urls, etype_url
     cell_counts = pd.merge(node_counts, volumes, left_index=True, right_index=True)
     cell_counts["density"] = cell_counts["count"] / cell_counts["volume"] * 1e9
 
-    return density_summary_stats_region(region_map, cell_counts, mtype_urls, etype_urls)
+    # expand dataframe with additional information needed to construct the summary
+    cell_counts = _expand_me_dataframe(cell_counts, region_map, mtype_urls, etype_urls)
+
+    return density_summary_stats_region(cell_counts)
 
 
-def density_summary_stats_region(region_map, df_region_mtype_etype, mtype_urls, etype_urls):
+def _expand_me_dataframe(df, region_map, mtype_urls, etype_urls):
+    df = df.copy()
+
+    region_ids = [
+        next(iter(region_map.find(r, "acronym"))) for r in df.index.get_level_values("region")
+    ]
+    df["region_url"] = pd.Categorical([_region_url(rid) for rid in region_ids])
+    df["region_label"] = pd.Categorical([region_map.get(rid, "name") for rid in region_ids])
+
+    df["mtype_url"] = df.index.get_level_values("mtype").map(mtype_urls)
+    df["etype_url"] = df.index.get_level_values("etype").map(etype_urls)
+
+    return df
+
+
+def density_summary_stats_region(df_region_mtype_etype):
     """Serialize `df_region_mtype_etype` to required summary statistics format
 
     Args:
@@ -120,15 +109,15 @@ def density_summary_stats_region(region_map, df_region_mtype_etype, mtype_urls, 
         "hasPart": {},
     }
     hasPart = ret["hasPart"]
-    for acronym, df_mtype_etype in df_region_mtype_etype.groupby("region"):
-        region_id = next(iter(region_map.find(acronym, "acronym")))
-        hasPart[_region_url(region_id)] = {
-            "label": region_map.get(region_id, "name"),
-            "notation": acronym,
+
+    groups = df_region_mtype_etype.groupby(["region", "region_url", "region_label"])
+
+    for (region_notation, region_url, region_label), df_mtype_etype in groups:
+        hasPart[region_url] = {
+            "label": region_label,
+            "notation": region_notation,
             "about": "BrainRegion",
             "hasPart": _density_summary_stats_mtype(
-                mtype_urls,
-                etype_urls,
                 df_mtype_etype.droplevel(0),
             ),
         }
@@ -179,31 +168,22 @@ def _get_atlas_region_volumes(region_map, brain_regions):
     return volumes
 
 
-def _density_summary_stats_mtype(mtype_urls, etype_urls, df_mtype_etype):
-    ret = {}
-    for mtype, df_etype in df_mtype_etype.groupby("mtype", observed=True):
-        url = mtype_urls.get(mtype)
-        if url is None:
-            L.info("Missing: %s", mtype)
-            continue
-
-        ret[url] = {
+def _density_summary_stats_mtype(df_mtype_etype):
+    mtype_groups = df_mtype_etype.groupby(["mtype", "mtype_url"], observed=True)
+    return {
+        mtype_url: {
             "label": mtype,
             "about": "MType",
-            "hasPart": _density_summary_stats_etype(etype_urls, df_etype.droplevel(0)),
+            "hasPart": _density_summary_stats_etype(df_etype.droplevel(0)),
         }
-    return ret
+        for (mtype, mtype_url), df_etype in mtype_groups
+    }
 
 
-def _density_summary_stats_etype(etype_urls, df_etype):
+def _density_summary_stats_etype(df_etype):
     ret = {}
-    for etype, df in df_etype.groupby("etype", observed=True):
+    for (etype, etype_url), df in df_etype.groupby(["etype", "etype_url"], observed=True):
         assert len(df) == 1, df
-        url = etype_urls.get(etype)
-        if url is None:
-            L.info("Missing: %s", etype)
-            continue
-
         neuron = {
             "density": float(df["density"].iloc[0]),
         }
@@ -211,7 +191,7 @@ def _density_summary_stats_etype(etype_urls, df_etype):
         if "count" in df_etype and not np.isnan(df["count"].iloc[0]):
             neuron["count"] = int(df["count"].iloc[0])
 
-        ret[url] = {
+        ret[etype_url] = {
             "label": etype,
             "about": "EType",
             "composition": {
@@ -225,64 +205,50 @@ def atlas_densities_composition_summary(
     density_distribution, region_map, brain_regions, map_function=map
 ):
     """Calculate the composition summary statistics of a density distribution."""
-    mtype_urls, etype_urls = mtype_etype_url_mapping(density_distribution)
-
     L.info("Extracting statistics from density distribution.")
     nrrd_stats = _get_nrrd_statistics(
         region_map=region_map,
         brain_regions=brain_regions,
-        density_distribution=density_distribution,
+        densities=density_distribution,
         map_function=map_function,
     )
 
+    # expand dataframe with additional information needed to construct the summary
+    mtype_urls, etype_urls = mtype_etype_url_mapping(density_distribution)
+    nrrd_stats = _expand_me_dataframe(nrrd_stats, region_map, mtype_urls, etype_urls)
+
     L.info("Converting statistics from dataframe to json format.")
-    summary_statistics = density_summary_stats_region(
-        region_map, nrrd_stats, mtype_urls, etype_urls
-    )
+    summary_statistics = density_summary_stats_region(nrrd_stats)
     return summary_statistics
 
 
-def _get_nrrd_statistics(region_map, brain_regions, density_distribution, map_function):
-    def _triplets():
-        index = 0
-        res = []
-        for mtype in density_distribution["mtypes"].values():
-            for etype in mtype["etypes"].values():
-                res.append((index, (mtype["label"], etype["label"], etype["path"])))
-                index += 1
-        return res
-
-    return get_statistics_from_triplets(
-        triplets=_triplets(),
-        region_map=region_map,
-        brain_regions=brain_regions,
-        map_function=map_function,
-    )
-
-
-def get_statistics_from_triplets(triplets, region_map, brain_regions, map_function=map):
-    """Get statistics from (mtype, etype, nrrd_path) triplets."""
+def _get_nrrd_statistics(region_map, brain_regions, densities, map_function):
     result = map_function(
         partial(_worker_function, region_map=region_map, brain_regions=brain_regions),
-        triplets,
+        densities.iterrows(),
     )
 
-    n_triplets = len(triplets)
-    L.info("Statistics from %d nrrd volumes will be calculated.", n_triplets)
+    n_volumes = len(densities)
+    L.info("Statistics from %d nrrd volumes will be calculated.", n_volumes)
 
     df = []
     for i, (index, chunk) in enumerate(result):
         df.extend(chunk)
-        L.info("Completed [%d|%d] : %s", i + 1, n_triplets, triplets[index][1])
+        L.info(
+            "Completed [%d|%d] : %s",
+            i + 1,
+            n_volumes,
+            densities.iloc[index][["mtype", "etype", "path"]].values.tolist(),
+        )
 
     df = pd.DataFrame.from_records(df).set_index(["region", "mtype", "etype"])
     return df
 
 
 def _worker_function(data, region_map, brain_regions):
-    index, (mtype, etype, nrrd_path) = data
+    index, entry = data
     return index, get_statistics_from_nrrd_volume(
-        region_map, brain_regions, mtype, etype, nrrd_path
+        region_map, brain_regions, entry.mtype, entry.etype, entry.path
     )
 
 

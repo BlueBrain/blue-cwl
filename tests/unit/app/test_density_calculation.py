@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import numpy as np
@@ -8,7 +9,9 @@ from cwl_registry.cli import main
 from cwl_registry.utils import load_json, write_json
 
 
-def test_from_atlas_density(tmp_path, hierarchy_file, annotation_file, density_distribution_file):
+def test_from_atlas_density_cli(
+    tmp_path, hierarchy_file, annotation_file, density_distribution_file
+):
     out_file = str(tmp_path / "summary.json")
 
     result = CliRunner().invoke(

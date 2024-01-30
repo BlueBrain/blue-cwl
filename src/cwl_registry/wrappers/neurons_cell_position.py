@@ -7,7 +7,9 @@ from typing import Any, Dict
 
 import click
 import libsonata
+import pandas as pd
 import voxcell
+from entity_management.atlas import CellComposition
 from entity_management.nexus import load_by_id
 from voxcell.nexus.voxelbrain import Atlas
 
@@ -68,35 +70,31 @@ def app(region, variant_config, cell_composition, output_dir):
 def _extract(
     brain_region_id: str,
     variant_config_id: str,
-    cell_compositions_id: str,
+    cell_composition_id: str,
     output_dir: Path,
 ) -> Dict[str, Any]:
     """Stage resources from the knowledge graph."""
     staging_dir = utils.create_dir(output_dir / STAGE_DIR_NAME)
     atlas_dir = utils.create_dir(staging_dir / "atlas")
-    me_type_densities_file = staging_dir / "mtype-densities.json"
+    me_type_densities_file = staging_dir / "mtype-densities.parquet"
 
-    forge = nexus.get_forge()
+    variant = nexus.get_entity(variant_config_id, cls=Variant)
 
-    variant = Variant.from_id(variant_config_id, cross_bucket=True)
+    region = nexus.get_region_acronym(brain_region_id)
 
-    region = nexus.get_region_resource_acronym(forge, brain_region_id)
-
-    cell_composition = nexus.get_resource(forge, cell_compositions_id)
+    cell_composition = nexus.get_entity(cell_composition_id, cls=CellComposition)
 
     staging.stage_atlas(
-        forge=forge,
-        resource_id=cell_composition.atlasRelease.id,
+        cell_composition.atlasRelease,
         output_dir=atlas_dir,
     )
-    staging.stage_me_type_densities(
-        forge=forge,
-        resource_id=cell_composition.cellCompositionVolume.id,
-        output_file=me_type_densities_file,
+
+    staging.materialize_cell_composition_volume(
+        cell_composition.cellCompositionVolume, output_file=me_type_densities_file
     )
 
     return {
-        "atlas-id": cell_composition.atlasRelease.id,
+        "atlas-id": cell_composition.atlasRelease.get_id(),
         "region": region,
         "atlas-dir": atlas_dir,
         "me-type-densities-file": me_type_densities_file,
@@ -108,13 +106,13 @@ def _transform(staged_data: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
     """Trasform the staged resources into the algorithm's inputs, if needed."""
     region = staged_data["region"]
 
-    me_type_densities = utils.load_json(staged_data["me-type-densities-file"])
+    me_type_densities = pd.read_parquet(staged_data["me-type-densities-file"])
 
     composition_file = output_dir / "cell_composition.yaml"
     composition = recipes.build_cell_composition_from_me_densities(region, me_type_densities)
     utils.write_yaml(composition_file, composition)
 
-    mtypes = [mtype_data["label"] for _, mtype_data in me_type_densities["mtypes"].items()]
+    mtypes = me_type_densities["mtype"].drop_duplicates().values.tolist()
 
     mtype_taxonomy_file = output_dir / "mtype_taxonomy.tsv"
     mtype_taxonomy = recipes.build_mtype_taxonomy(mtypes)
@@ -212,9 +210,9 @@ def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, A
 
     L.info("Generating cell composition summary...")
     mtype_urls, etype_urls = mtype_etype_url_mapping(
-        utils.load_json(transformed_data["me-type-densities-file"])
+        pd.read_parquet(transformed_data["me-type-densities-file"])
     )
-    composition_summary_file = output_dir / "cell_composition_summary.json"
+    composition_summary_file = build_dir / "cell_composition_summary.json"
     _generate_cell_composition_summary(
         nodes_file=nodes_file,
         node_population_name=node_population_name,
@@ -318,8 +316,6 @@ def _register(
     output_dir,
 ):
     """Register outputs to nexus."""
-    forge = nexus.get_forge()
-
     circuit_resource = registering.register_partial_circuit(
         name="Cell properties partial circuit",
         brain_region_id=region_id,
@@ -335,7 +331,6 @@ def _register(
     )
     # pylint: disable=no-member
     registering.register_cell_composition_summary(
-        forge,
         name="Cell composition summary",
         summary_file=generated_data["composition-summary-file"],
         atlas_release_id=generated_data["atlas-id"],

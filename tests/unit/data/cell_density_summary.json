@@ -8,11 +8,11 @@
       "label": "Anterior cingulate area, dorsal part, layer 2",
       "about": "BrainRegion",
       "hasPart": {
-        "http://uri.interlex.org/base/ilx_0383202?rev=3": {
+        "http://uri.interlex.org/base/ilx_0383202": {
           "label": "L23_LBC",
           "about": "MType",
           "hasPart": {
-            "http://uri.interlex.org/base/ilx_0738199?rev=4": {
+            "http://uri.interlex.org/base/ilx_0738199": {
               "label": "bAC",
               "about": "EType",
               "composition": {
@@ -2582,7 +2582,7 @@
       "label": "root",
       "about": "BrainRegion",
       "hasPart": {
-        "http://uri.interlex.org/base/ilx_0383202?rev=3": {
+        "http://uri.interlex.org/base/ilx_0383202": {
           "label": "L23_LBC",
           "about": "MType",
           "hasPart": {

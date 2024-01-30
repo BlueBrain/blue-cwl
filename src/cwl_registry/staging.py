@@ -1,201 +1,253 @@
 """Staging utils."""
-import json
 import logging
 import os
 import shutil
 from collections import deque
-from collections.abc import Sequence
 from copy import deepcopy
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Union
+from typing import Callable
 
 import pandas as pd
-from entity_management.nexus import get_unquoted_uri_path
+from entity_management.atlas import AtlasRelease, CellCompositionSummary, CellCompositionVolume
+from entity_management.config import MacroConnectomeConfig, MicroConnectomeConfig, SynapseConfig
+from entity_management.core import Entity
+from entity_management.nexus import load_by_id
 from entity_management.util import unquote_uri_path
-from kgforge.core import Resource
 
-from cwl_registry import nexus, utils
+from cwl_registry import utils
 from cwl_registry.nexus import (
-    get_resource,
-    read_json_file_from_resource,
-    read_json_file_from_resource_id,
+    forge_to_config,
+    get_distribution,
+    get_distribution_as_dict,
+    get_distribution_location_path,
+    get_entity,
 )
 from cwl_registry.validation import validate_schema
-
-ENCODING_FORMATS = {
-    "json": "application/json",
-    "yaml": "application/yaml",
-    "jsonld": "application/ld+json",
-    "nrrd": "application/nrrd",
-    None: "application/octet-stream",
-    "x-neuron-hoc": "application/x-neuron-hoc",
-}
-
 
 L = logging.getLogger(__name__)
 
 
-def _distribution_as_list(distribution: Union[Resource, list[Resource]]) -> list[Resource]:
-    """Return the distribution always as a list."""
-    return distribution if isinstance(distribution, list) else [distribution]
-
-
-def _create_target_file(source_file: Path, output_dir: Path, basename: str | None = None):
-    if basename is None:
-        return output_dir / source_file.name
-    return output_dir / basename
-
-
-def _has_gpfs_path(distribution: Resource) -> bool:
-    """Return True if the distribution has a gpfs location."""
-    return hasattr(distribution, "atLocation") and distribution.atLocation.location.startswith(
-        "file:///gpfs"
-    )
-
-
-def _remove_prefix(prefix: str, path: str) -> str:
-    """Return the path without the prefix."""
-    if path.startswith(prefix):
-        return path[len(prefix) :]
-    return path
-
-
-def _find_first(predicate: Callable[[Any], bool], objects: Sequence[Any]) -> Any:
-    """Return the first encounter in the object list if the predicate is satisfied."""
-    for obj in objects:
-        if predicate(obj):
-            return obj
-    return None
-
-
-def _stage_distribution_with_atLocation(
-    distributions: list[Resource],
-    output_dir: Path,
-    basename: str,
-    encoding_format: str,
-    symbolic: bool,
+def stage_distribution_file(
+    id_or_entity,
+    output_dir: os.PathLike,
+    *,
+    encoding_format: str | None = None,
+    filename: str | None = None,
+    symbolic: bool = True,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
 ) -> Path:
-    """Stage the distribution of given encoding format when atLocation is available."""
-    distribution = _find_first(lambda d: d.encodingFormat == encoding_format, distributions)
-    source_file = Path(unquote_uri_path(distribution.atLocation.location))
-    target_file = _create_target_file(source_file, output_dir, basename)
-    stage_file(source_file, target_file, symbolic=symbolic)
+    """Stage a distribution file from a NEXUS resource.
+
+    Args:
+        id_or_entity: Nexus id of the entity or the entity itself.
+        output_dir: The output directory to copy the file or store the link.
+        encoding_format: The encoding format of the distribution. Example: application/json
+        filename: Filename to use. If None the source's filename will be used.
+        symbolic: Whether to make a symbolic link or copy the file.
+
+    Returns:
+        Path to the staged file.
+
+    Note:
+        A resource may have many distributions with a different encoding format. If that's the case
+        the encoding format argument is mandatory to select the respective distribution.
+    """
+    distribution = get_distribution(
+        id_or_entity,
+        encoding_format=encoding_format,
+        base=base,
+        org=org,
+        proj=proj,
+        token=token,
+    )
+    try:
+        source_file = Path(distribution.get_location_path(use_auth=token))
+        target_file = Path(output_dir, filename) if filename else Path(output_dir, source_file.name)
+        stage_file(
+            source=source_file,
+            target=target_file,
+            symbolic=symbolic,
+        )
+    except Exception:  # pylint: disable=broad-exception-caught
+        target_file = distribution.download(
+            path=output_dir,
+            file_name=filename,
+            use_auth=token,
+        )
+    target_file = Path(target_file)
+    assert target_file.exists()
     return target_file
 
 
-def _stage_distribution_wout_atLocation(
-    forge,
-    resource: Resource,
-    distributions: list[Resource],
-    output_dir: Path,
-    basename: str,
-    encoding_format: str,
-):
-    """Stage the distribution of given encoding when atLocation is not available."""
-    forge.download(resource, "distribution.contentUrl", output_dir, cross_bucket=True)
-    # cleanup all the files that we don't need, which were bundled along
+def materialize_cell_composition_volume(
+    obj,
+    *,
+    output_file: os.PathLike | None = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> pd.DataFrame:
+    """Materializa a cell composition volume distribution.
 
-    valid_distributions = filter(lambda d: isinstance(d, Resource), distributions)
+    Args:
+        obj: One of the following:
+            - Resource nexus id of entity to get distribution from1
+            - Dictiorary of the data
+            - Entity to get distribution from
+        output_file: Optional output file to write the dataframe.
 
-    for d in valid_distributions:
-        if d.encodingFormat == encoding_format:
-            if basename is not None:
-                target_path = output_dir / basename
-                os.rename(output_dir / d.name, target_path)
-            else:
-                target_path = output_dir / d.name
-        else:
-            os.remove(output_dir / d.name)
-    return target_path
-
-
-def stage_resource_distribution_file(
-    forge, resource_id, output_dir, encoding_type, basename=None, symbolic=True
-):
-    """Stage a file from a resource with given 'encoding_type'.
-
-    Note: A resource may have many distributions with a different encoding format.
+    Returns:
+        DataFrame with the following columns:
+            - mtype
+            - mtype_url
+            - etype
+            - etype_url
+            - path
     """
-    output_dir = Path(output_dir)
-    resource = get_resource(forge=forge, resource_id=resource_id)
-    encoding_format = ENCODING_FORMATS[encoding_type]
-    distributions = _distribution_as_list(resource.distribution)
-    have_gpfs_path = [_has_gpfs_path(d) for d in distributions]
+    dataset = _get_data(obj, cls=CellCompositionVolume, base=base, org=org, proj=proj, token=token)
 
-    if all(have_gpfs_path):
-        target_path = _stage_distribution_with_atLocation(
-            distributions=distributions,
-            output_dir=output_dir,
-            basename=basename,
-            encoding_format=encoding_format,
-            symbolic=symbolic,
-        )
-    else:
-        target_path = _stage_distribution_wout_atLocation(
-            forge=forge,
-            resource=resource,
-            distributions=distributions,
-            output_dir=output_dir,
-            basename=basename,
-            encoding_format=encoding_format,
-        )
-
-    assert target_path.exists()
-    return target_path
-
-
-def stage_me_type_densities(forge, resource_id: str, output_file: Path) -> None:
-    """Stage me type densities resource."""
-    resource = get_resource(forge=forge, resource_id=resource_id)
-
-    dataset = read_json_file_from_resource(resource)
-
-    materialize_density_distribution(forge, dataset, output_file=output_file)
-
-
-def materialize_json_file_from_resource(resource, output_file: Path) -> None:
-    """Materialize and optionally write a json file from a resource."""
-    data = read_json_file_from_resource(resource)
-
-    if output_file:
-        utils.write_json(filepath=output_file, data=data)
-
-    return data
-
-
-def materialize_density_distribution(
-    forge, dataset: dict, output_file: os.PathLike | None = None
-) -> dict:
-    """Materialize the me type densities distribution."""
     validate_schema(data=dataset, schema_name="cell_composition_volume_distribution.yml")
 
-    groups = apply_to_grouped_dataset(
-        forge,
-        dataset,
-        group_names=("mtypes", "etypes"),
-        apply_function=get_distribution_path_from_resource,
+    @transform_cached
+    def _materialize_me_type_density(entry_id, _):
+        return get_distribution_location_path(entry_id, base=base, org=org, proj=proj, token=token)
+
+    get_label = partial(
+        get_entry_property, property_name="label", base=base, org=org, proj=proj, token=token
+    )
+    levels = (
+        get_label,
+        get_label,
+        _materialize_me_type_density,
+    )
+    result = transform_nested_dataset(dataset, levels)
+
+    result = pd.DataFrame(
+        [
+            (
+                mtype_data["label"],
+                etype_data["label"],
+                mtype_url,
+                etype_url,
+                list(etype_data["hasPart"].values())[0],
+            )
+            for mtype_url, mtype_data in result["hasPart"].items()
+            for etype_url, etype_data in mtype_data["hasPart"].items()
+        ],
+        columns=["mtype", "etype", "mtype_url", "etype_url", "path"],
     )
 
     if output_file:
-        utils.write_json(filepath=output_file, data=groups)
+        result.to_parquet(path=output_file)
 
-    return groups
+    return result
 
 
-def get_distribution_path_from_resource(forge, resource_id):
-    """Get json file path from resource's distribution."""
-    resource = get_resource(forge=forge, resource_id=resource_id)
-    # pylint: disable=protected-access
-    return {
-        "path": get_unquoted_uri_path(
-            url=resource.distribution.contentUrl, token=forge._store.token
-        )
-    }
+def materialize_density_distribution(forge, dataset, output_file):
+    """Bacwards compatible function using forge."""
+    base, org, proj, token = forge_to_config(forge)
+    return materialize_cell_composition_volume(
+        dataset, output_file=output_file, base=base, org=org, proj=proj, token=token
+    )
+
+
+def materialize_cell_composition_summary(
+    obj,
+    *,
+    output_file: os.PathLike | None = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> pd.DataFrame:
+    """Materialize a cell composition summary distribution.
+
+    Args:
+        obj: One of the following:
+            - Resource nexus id of entity to get distribution from1
+            - Dictiorary of the data
+            - Entity to get distribution from
+        output_file: Optional output file to write the dataframe.
+
+    Returns:
+        DataFrame with the following columns:
+            - region
+            - region_url
+            - region_label
+            - mtype
+            - mtype_url
+            - etype
+            - etype_url
+            - density
+    """
+    dataset = _get_data(obj, cls=CellCompositionSummary, base=base, org=org, proj=proj, token=token)
+
+    validate_schema(data=dataset, schema_name="cell_composition_summary_distribution.yml")
+
+    get_notation = partial(
+        get_entry_property, property_name="notation", base=base, org=org, proj=proj, token=token
+    )
+
+    rows = []
+    for region_url, region_data in dataset["hasPart"].items():
+        region_label = region_data["label"]
+        region_notation = get_notation(region_url, region_data)["notation"]
+        for mtype_url, mtype_data in region_data["hasPart"].items():
+            mtype_label = mtype_data["label"]
+            for etype_url, etype_data in mtype_data["hasPart"].items():
+                etype_label = etype_data["label"]
+                cell_density = etype_data["composition"]["neuron"]["density"]
+                rows.append(
+                    (
+                        region_notation,
+                        region_url,
+                        region_label,
+                        mtype_label,
+                        mtype_url,
+                        etype_label,
+                        etype_url,
+                        cell_density,
+                    )
+                )
+
+    result = pd.DataFrame(
+        rows,
+        columns=[
+            "region",
+            "region_url",
+            "region_label",
+            "mtype",
+            "mtype_url",
+            "etype",
+            "etype_url",
+            "density",
+        ],
+    )
+
+    if output_file:
+        result.to_parquet(path=output_file)
+
+    return result
 
 
 def get_entry_id(entry: dict) -> str:
-    """Get entry id."""
+    """Get a NEXUS resource id from a dictionary entry.
+
+    This function makes sure that both the id and the revision are fetched and combined to create
+    the full resource's id with revision.
+
+    Args:
+        entry: The entry dictionary to extract the id with revision from.
+
+    Returns:
+        Full resource id with revision.
+    """
     if "@id" in entry:
         resource_id = entry["@id"]
     else:
@@ -226,52 +278,37 @@ def _iter_dataset_children(dataset, branch_token):
 def transform_nested_dataset(
     dataset: dict,
     level_transforms: list[Callable[[dict], tuple[str, dict]]],
-    branch_token: str | None = "hasPart",
-    collapse_leaves=False,
-):
-    """Transform a nested dataset via the level transforms."""
-    if branch_token is None:
-        assert collapse_leaves is False, "Compact datasets are already collapsed."
-        return _transform_compact_dataset(dataset, level_transforms)
+    branch_token: str = "hasPart",
+) -> dict:
+    """Transform a nested dataset using the level transforms.
 
-    return _transform_expanded_dataset(dataset, level_transforms, branch_token, collapse_leaves)
+    Args:
+        dataset: The nested dataset.
+        level_trasnform: A list of callables that transform each nested level.
+        branch_token: Token to access the children of each level. Default is 'hasPart'.
 
-
-def _transform_expanded_dataset(
-    dataset: dict,
-    level_transforms: list[Callable[[dict], tuple[str, dict]]],
-    branch_token: str | None = "hasPart",
-    collapse_leaves=False,
-):
+    Returns:
+        Transformed dataset.
+    """
     level = 0
-    last_level = len(level_transforms) - 1
-
     result = {}
 
     if branch_token not in dataset:
-        dataset = {"hasPart": dataset}
+        dataset = {branch_token: dataset}
 
-    q = deque([(dataset["hasPart"], result, level)])
+    q = deque([(dataset[branch_token], result, level)])
 
     while q:
         source, target, level = q.pop()
 
         transform_func = level_transforms[level]
 
-        is_collapsible_leaf = level == last_level and collapse_leaves
-
-        if is_collapsible_leaf:
-            target_level = target
-        else:
-            target_level = target[branch_token] = {}
+        target_level = target[branch_token] = {}
 
         for child_id, child_data, child_children in _iter_dataset_children(source, branch_token):
             target_data = transform_func(child_id, child_data)
 
-            if is_collapsible_leaf:
-                target_level.update(target_data)
-            else:
-                target_level[utils.url_without_revision(child_id)] = target_data
+            target_level[utils.url_without_revision(child_id)] = target_data
 
             if child_children:
                 q.append((child_children, target_data, level + 1))
@@ -279,7 +316,8 @@ def _transform_expanded_dataset(
     return result
 
 
-def _split_entry(entry, branch_token):
+def _split_entry(entry: dict, branch_token: str):
+    """Split a level entry by separating the id, entry information, and its children data."""
     children = entry.get(branch_token, None)
     entry = {k: v for k, v in entry.items() if k != branch_token}
 
@@ -302,158 +340,52 @@ def _split_entry(entry, branch_token):
     return resource_id, entry, children
 
 
-def _transform_compact_dataset(
-    dataset: dict,
-    level_transforms: list[Callable[[dict], tuple[str, dict]]],
-):
-    level = 0
-    last_level = len(level_transforms) - 1
-    result = {}
-
-    q = deque([(dataset, result, level)])
-
-    while q:
-        source, target, level = q.pop()
-
-        transform_func = level_transforms[level]
-
-        if level == last_level:
-            source_id, source_data, _ = _split_entry(source, None)
-            target_data = transform_func(source_id, source_data)
-            target.update(target_data)
-        else:
-            target_level = target["hasPart"] = {}
-            for child_id, children in source.items():
-                target_data = transform_func(child_id, {})
-                target_level[utils.url_without_revision(child_id)] = target_data
-                q.append((children, target_data, level + 1))
-
-    return result
-
-
 _TRANSFORM_CACHE = {}
 
 
 def transform_cached(func):
-    """Cache for trasnform functions."""
+    """Cache for transform functions."""
 
-    def wrapped(entry_id, entry_data, *args, **kwargs):
-        key = entry_id
+    def wrapped(entry_id, entry_data, **kwargs):
+        if entry_id in _TRANSFORM_CACHE:
+            return deepcopy(_TRANSFORM_CACHE[entry_id])
 
-        if entry_data:
-            key += json.dumps(entry_data, sort_keys=True)
-
-        if key in _TRANSFORM_CACHE:
-            return deepcopy(_TRANSFORM_CACHE[key])
-
-        result = func(entry_id, entry_data, *args, **kwargs)
-
-        _TRANSFORM_CACHE[key] = deepcopy(result)
-
+        result = func(entry_id, entry_data, **kwargs)
+        _TRANSFORM_CACHE[entry_id] = deepcopy(result)
         return result
 
     return wrapped
 
 
 @transform_cached
-def get_region_label(entry_id, entry_data=None, forge=None):  # pylint: disable=unused-argument
-    """Get region acronym as label."""
-    return {"label": nexus.get_region_resource_acronym(forge, entry_id)}
+def get_entry_property(
+    entry_id, entry_data, *, property_name, base=None, org=None, proj=None, token=None
+) -> tuple[str, str]:
+    """Get a level's property by key or fetch the entity and retrieve the attribute.
+
+    Args:
+        entry_id: The level's id key.
+        entry_data: The level's data dictionary.
+        property_name: The property to get from 'entry_data' if exists or retrieve using 'entry_id'.
+
+    Returns:
+        A dictionary with the property name as a key. Example: {"label": "my-label"}
+    """
+    try:
+        value = entry_data[property_name]
+    except KeyError:
+        value = load_by_id(entry_id, cross_bucket=True, base=base, org=org, proj=proj, token=token)[
+            property_name
+        ]
+    return {property_name: value}
 
 
 @transform_cached
-def get_label(entry_id, entry_data=None, forge=None):  # pylint: disable=unused-argument
-    """Get entry resource label."""
-    return {"label": nexus.get_resource_json_ld(entry_id, forge)["label"]}
-
-
-@transform_cached
-def get_morphology_paths(entry_id, entry_data=None, forge=None):  # pylint: disable=unused-argument
-    """Get morphology paths."""
-    return {"path": get_distribution_path_from_resource(forge, entry_id)["path"]}
-
-
-def apply_to_grouped_dataset(
-    forge,
-    dataset,
-    group_names: list | None = None,
-    apply_function=get_distribution_path_from_resource,
-):
-    """Materialize a grouped dataset with resource ids."""
-    visited = {}
-
-    def materialize(data, index):
-        if "hasPart" in data:
-            # collapse the bottom most list which always has one element
-            if len(data["hasPart"]) == 1 and "hasPart" not in data["hasPart"][0]:
-                return materialize(data["hasPart"][0], index + 1)
-
-            contents = {}
-            for entry in data["hasPart"]:
-                res = materialize(entry, index + 1)
-                contents[entry["@id"]] = {"label": _get_label(entry), **res}
-
-            level_name = "hasPart" if group_names is None else group_names[index + 1]
-
-            return {level_name: contents}
-
-        resource_id = _get_id(data)
-
-        if resource_id in visited:
-            value = visited[resource_id]
-        else:
-            value = apply_function(forge, resource_id)
-            visited[resource_id] = value
-
-        return value
-
-    def _get_id(entry):
-        """Get id with revision if available."""
-        resource_id = entry["@id"]
-
-        if "_rev" in entry:
-            assert "?rev" not in resource_id
-            resource_id = f"{resource_id}?rev={entry['_rev']}"
-
-        return resource_id
-
-    def _get_label(entry):
-        """Get label if available or fetch it from the resource."""
-        if "label" not in entry:
-            return get_resource(forge=forge, resource_id=entry["@id"]).label
-        return entry["label"]
-
-    return materialize(dataset, index=-1)
-
-
-def stage_dataset_groups(forge, dataset_resource_id, staging_function):
-    """Stage the groups in a KG dataset."""
-    data = {}
-
-    resource = get_resource(forge=forge, resource_id=dataset_resource_id)
-    dataset = read_json_file_from_resource(resource)
-
-    existing: dict[str, str] = {}
-
-    for identifier, group in dataset.items():
-        # sometimes the entries start with @context for example
-        if identifier not in {"@context", "@type", "@id"}:
-            entries = []
-            for part in group["hasPart"]:
-                entry_id = part["@id"]
-                if entry_id in existing:
-                    value = existing[entry_id]
-                else:
-                    value = staging_function(resource_id=entry_id)
-                    existing[entry_id] = value
-
-                entries.append(value)
-
-            # TODO: Use identifiers to always get the correct label
-            label = group["label"]
-            data[label] = entries
-
-    return data
+def get_distribution_path_entry(entry_id, _, *, base=None, org=None, proj=None, token=None):
+    """Return distribution path entry."""
+    return {
+        "path": get_distribution_location_path(entry_id, base=base, org=org, proj=proj, token=token)
+    }
 
 
 @dataclass
@@ -469,93 +401,122 @@ class AtlasInfo:
 
 
 def stage_atlas(
-    forge,
-    resource_id: str,
+    id_or_entity: str,
     output_dir: Path,
+    *,
     parcellation_ontology_basename: str = "hierarchy.json",
     parcellation_volume_basename: str = "brain_regions.nrrd",
     parcellation_hemisphere_basename: str = "hemisphere.nrrd",
     cell_orientation_field_basename: str = "orientation.nrrd",
     symbolic=True,
-):
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> AtlasInfo:
     """Stage an atlas to the given output_dir.
 
     Args:
-        forge: KnowledgeGraphForge instance.
-        resource_id: The resource id of the entity.
+        id_or_entity: The resource id or the entity.
         output_dir: The output directory to put the files in.
         parcellation_ontology_basename: The filename of the retrieved hierarchy.
         parcellation_volume_basename: The filename of the retrieved brain annotations
         parcellation_hemisphere_basename: The filename of the retrieved hemisphere volume.
         symbolic: If True symbolic links will be attempted if the datasets exist on gpfs
             otherwise the files will be downloaded.
+
+    Return:
+        An AtlasInfo instance with the staged file paths.
     """
-    atlas = get_resource(forge=forge, resource_id=resource_id)
-    assert "BrainAtlasRelease" in atlas.type
+    if isinstance(id_or_entity, str):
+        atlas = get_entity(
+            id_or_entity, cls=AtlasRelease, base=base, org=org, proj=proj, token=token
+        )
+    elif isinstance(id_or_entity, AtlasRelease):
+        atlas = id_or_entity
+    else:
+        raise TypeError("Incorrect argument id_or_entity={id_or_entity}")
+
+    resource_id = atlas.get_id()
 
     ontology_path = str(
-        stage_resource_distribution_file(
-            forge,
-            atlas.parcellationOntology.id,
+        stage_distribution_file(
+            atlas.parcellationOntology,
             output_dir=output_dir,
-            encoding_type="json",
-            basename=parcellation_ontology_basename,
+            encoding_format="application/json",
+            filename=parcellation_ontology_basename,
             symbolic=symbolic,
+            base=base,
+            proj=proj,
+            org=org,
+            token=token,
         )
     )
     annotation_path = str(
-        stage_resource_distribution_file(
-            forge,
-            atlas.parcellationVolume.id,
+        stage_distribution_file(
+            atlas.parcellationVolume,
             output_dir=output_dir,
-            encoding_type="nrrd",
-            basename=parcellation_volume_basename,
+            encoding_format="application/nrrd",
+            filename=parcellation_volume_basename,
             symbolic=symbolic,
+            base=base,
+            proj=proj,
+            org=org,
+            token=token,
         )
     )
 
-    try:
+    if atlas.hemisphereVolume:
         hemisphere_path = str(
-            stage_resource_distribution_file(
-                forge,
-                atlas.hemisphereVolume.id,
+            stage_distribution_file(
+                atlas.hemisphereVolume,
                 output_dir=output_dir,
-                encoding_type="nrrd",
-                basename=parcellation_hemisphere_basename,
+                encoding_format="application/nrrd",
+                filename=parcellation_hemisphere_basename,
                 symbolic=symbolic,
+                base=base,
+                proj=proj,
+                org=org,
+                token=token,
             )
         )
-    except AttributeError:
+    else:
         L.warning("Atlas Release %s has no hemisphereVolume.", resource_id)
         hemisphere_path = None
 
-    try:
+    if atlas.placementHintsDataCatalog:
         ph_catalog = materialize_ph_catalog(
-            forge,
-            atlas.placementHintsDataCatalog.id,
+            atlas.placementHintsDataCatalog,
             output_dir=output_dir,
             output_filenames={
                 "placement_hints": ["[PH]1", "[PH]2", "[PH]3", "[PH]4", "[PH]5", "[PH]6"],
                 "voxel_distance_to_region_bottom": "[PH]y",
             },
             symbolic=symbolic,
+            base=base,
+            proj=proj,
+            org=org,
+            token=token,
         )
-    except AttributeError:
+    else:
         L.warning("Atlas Release %s has no placementHintsDataCatalog", resource_id)
         ph_catalog = None
 
-    try:
+    if atlas.cellOrientationField:
         cell_orientation_field_path = str(
-            stage_resource_distribution_file(
-                forge,
-                atlas.cellOrientationField.id,
+            stage_distribution_file(
+                atlas.cellOrientationField,
                 output_dir=output_dir,
-                encoding_type="nrrd",
-                basename=cell_orientation_field_basename,
+                encoding_format="application/nrrd",
+                filename=cell_orientation_field_basename,
                 symbolic=symbolic,
+                base=base,
+                proj=proj,
+                org=org,
+                token=token,
             )
         )
-    except AttributeError:
+    else:
         L.warning("Atlas Release %s has no cellOrientationField", resource_id)
         cell_orientation_field_path = None
 
@@ -599,33 +560,62 @@ def stage_file(source: Path, target: Path, symbolic: bool = True) -> None:
         L.debug("Copy %s -> %s", source, target)
 
 
-def _url_from_config(config: dict) -> str:
-    """Return a url from a dictionary config entry.
-
-    Examples:
-        {"id": my-id, "rev": 2} -> my-id?rev=2
-        {"id": "my-id"} -> my-id
-    """
-    assert "id" in config, config
-    return utils.url_with_revision(
-        url=config["id"],
-        rev=config.get("rev", None),
+def _config_to_path(
+    config: dict,
+    *,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> str:
+    """Return gpfs path of arrow file from config entry."""
+    return get_distribution_location_path(
+        get_entry_id(config),
+        base=base,
+        org=org,
+        proj=proj,
+        token=token,
     )
 
 
-def _config_to_path(forge, config: dict) -> str:
-    """Return gpfs path of arrow file from config entry."""
-    resource_id = _url_from_config(config)
-    return get_distribution_path_from_resource(forge, resource_id)["path"]
+def _get_data(
+    obj: str | dict | Entity,
+    cls=Entity,
+    *,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+):
+    if isinstance(obj, dict):
+        return obj
+
+    return get_distribution_as_dict(
+        obj,
+        cls=cls,
+        base=base,
+        org=org,
+        proj=proj,
+        token=token,
+    )
 
 
 def materialize_macro_connectome_config(
-    forge, resource_id: str, output_file: Path | None = None
+    obj: str | dict | Entity,
+    output_file: Path | None = None,
+    *,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
 ) -> dict:
     """Materialize the macro connectome config.
 
     Args:
-        resource_id: Id of KG resource.
+        obj: One of the following:
+            - Resource nexus id of entity to get distribution from1
+            - Dictiorary of the data
+            - Entity to get distribution from
         output_file: Optional path to write the result to a file. Default is None.
 
     Returns:
@@ -637,7 +627,7 @@ def materialize_macro_connectome_config(
 
     Note: overrides key is mandatory but can be empty.
     """
-    data = read_json_file_from_resource_id(forge, resource_id)
+    data = _get_data(obj, cls=MacroConnectomeConfig, base=base, org=org, proj=proj, token=token)
 
     # make it similar to micro config
     if "bases" in data:
@@ -646,15 +636,23 @@ def materialize_macro_connectome_config(
         L.warning("Legacy 'bases' key found and was converted to 'initial'.")
 
     data["initial"]["connection_strength"] = _config_to_path(
-        forge, data["initial"]["connection_strength"]
+        config=data["initial"]["connection_strength"],
+        base=base,
+        org=org,
+        proj=proj,
+        token=token,
     )
 
     if "connection_strength" in data["overrides"]:
         data["overrides"]["connection_strength"] = _config_to_path(
-            forge, data["overrides"]["connection_strength"]
+            config=data["overrides"]["connection_strength"],
+            base=base,
+            org=org,
+            proj=proj,
+            token=token,
         )
     else:
-        L.warning("No overrides found for resource: %s", resource_id)
+        L.warning("No overrides found for MacroConnectomeConfig.")
 
     if output_file:
         utils.write_json(filepath=output_file, data=data)
@@ -663,14 +661,22 @@ def materialize_macro_connectome_config(
 
 
 def materialize_micro_connectome_config(
-    forge, resource_id: str, output_file: pd.DataFrame | None = None
+    obj,
+    output_file: pd.DataFrame | None = None,
+    *,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
 ) -> dict:
     """Materialize micro connectome config.
 
     Args:
-        forge: KnowledgeGraphForge instance.
-        resource_id: KG resource id.
-        output_file: Optional output file to write the dictionary.
+        obj: One of the following:
+            - Resource nexus id of entity to get distribution from1
+            - Dictiorary of the data
+            - Entity to get distribution from
+        output_file: Optional filepath to write dictionary as json.
 
     Returns:
         Materialized dictionary of the micro connectome configuration. Example:
@@ -709,13 +715,17 @@ def materialize_micro_connectome_config(
             if entry_name == "configuration":
                 for variant_name, variant_data in entry_data.items():
                     if variant_data:
-                        resolved_section[variant_name] = _config_to_path(forge, variant_data)
+                        resolved_section[variant_name] = _config_to_path(
+                            config=variant_data, base=base, org=org, proj=proj, token=token
+                        )
             else:
-                resolved_section[entry_name] = _config_to_path(forge, entry_data)
+                resolved_section[entry_name] = _config_to_path(
+                    config=entry_data, base=base, org=org, proj=proj, token=token
+                )
 
         return resolved_section
 
-    data = read_json_file_from_resource_id(forge, resource_id)
+    data = _get_data(obj, cls=MicroConnectomeConfig, base=base, org=org, proj=proj, token=token)
 
     for section in ("initial", "overrides"):
         data[section] = convert_section(data[section])
@@ -726,22 +736,45 @@ def materialize_micro_connectome_config(
     return data
 
 
-def materialize_synapse_config(forge, resource_id, output_dir):
-    """Materialize a synapse editor config."""
-    data = read_json_file_from_resource_id(forge, resource_id)
+def materialize_synapse_config(
+    obj,
+    output_dir,
+    *,
+    output_file: os.PathLike | None = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> dict:
+    """Materialize a synapse editor config.
+
+    Args:
+        obj: One of the following:
+            - Resource nexus id of entity to get distribution from1
+            - Dictiorary of the data
+            - Entity to get distribution from
+        output_dir: Output directory to stage data.
+
+    Returns:
+        Materialized dataset dictionary.
+    """
+    data = _get_data(obj, cls=SynapseConfig, base=base, org=org, proj=proj, token=token)
 
     # backwards compatibility with placeholder empty configs
     if not data:
         return {"configuration": {}}
 
-    return {
+    result = {
         section_name: {
-            dset_name: stage_resource_distribution_file(
-                forge,
-                resource_id=get_entry_id(dset_data),
+            dset_name: stage_distribution_file(
+                get_entry_id(dset_data),
                 output_dir=output_dir,
-                encoding_type="json",
+                encoding_format="application/json",
                 symbolic=False,
+                base=base,
+                org=org,
+                proj=proj,
+                token=token,
             )
             for dset_name, dset_data in section_data.items()
         }
@@ -749,18 +782,40 @@ def materialize_synapse_config(forge, resource_id, output_dir):
         if section_name in {"defaults", "configuration"}
     }
 
+    if output_file:
+        utils.write_json(data=result, filepath=output_file)
+
+    return result
+
 
 def materialize_ph_catalog(
-    forge,
-    resource_id,
+    obj,
+    *,
     output_dir=None,
     output_filenames={
         "placement_hints": ["[PH]1", "[PH]2", "[PH]3", "[PH]4", "[PH]5", "[PH]6"],
         "voxel_distance_to_region_bottom": "[PH]y",
     },
     symbolic=True,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
 ):  # pylint: disable=dangerous-default-value
-    """Materialize placement hints catalog resources."""
+    """Materialize placement hints catalog resources.
+
+    Args:
+        obj: One of the following:
+            - Resource nexus id of entity to get distribution from1
+            - Dictiorary of the data
+            - Entity to get distribution from
+        output_dir: Output directory to stage the files.
+        output_filenames: Filenames to use for the output datasets.
+        symbolic: Make symlinks where possible.
+
+    Returns:
+        Materialized dataset dictionary.
+    """
 
     def get_file_path(entry):
         return unquote_uri_path(entry["distribution"]["atLocation"]["location"])
@@ -786,7 +841,7 @@ def materialize_ph_catalog(
         }
         return {"path": path, "regions": regions}
 
-    data = read_json_file_from_resource_id(forge, resource_id)
+    data = _get_data(obj, cls=Entity, base=base, org=org, proj=proj, token=token)
 
     phs = [materialize_ph(i, p) for i, p in enumerate(data["placementHints"])]
 

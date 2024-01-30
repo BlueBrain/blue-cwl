@@ -14,8 +14,9 @@ from cwl_registry import registering, utils, validation
 from cwl_registry.me_model.entity import MEModelConfig
 from cwl_registry.me_model.recipe import build_me_model_recipe
 from cwl_registry.me_model.staging import materialize_me_model_config
-from cwl_registry.nexus import get_forge, get_resource
+from cwl_registry.nexus import get_distribution_as_dict, get_entity
 from cwl_registry.staging import stage_file
+from cwl_registry.utils import get_partial_circuit_region_id
 from cwl_registry.variant import Variant
 
 L = logging.getLogger(__name__)
@@ -61,13 +62,14 @@ def mono_execution(configuration, partial_circuit, variant_config, output_dir):
 def _mono_execution(configuration, partial_circuit, variant_config, output_dir):
     output_dir = utils.create_dir(output_dir)
 
-    variant = Variant.from_id(variant_config, cross_bucket=True)
+    variant = get_entity(variant_config, cls=Variant)
     staging_dir = utils.create_dir(output_dir / "stage")
     build_dir = utils.create_dir(output_dir / "build")
 
     configuration_file = staging_dir / "materialized_me_model_config.json"
-    _stage_configuration(
-        configuration=configuration,
+
+    materialize_me_model_config(
+        dataset=get_distribution_as_dict(configuration, cls=MEModelConfig),
         staging_dir=staging_dir,
         output_file=configuration_file,
     )
@@ -138,18 +140,8 @@ def _rmdir_if_exists(path: Path) -> Path:
     return path
 
 
-def _stage_configuration(configuration, staging_dir, output_file):
-    entity = MEModelConfig.from_id(configuration, cross_bucket=True)
-    materialize_me_model_config(
-        dataset=entity.distribution.as_dict(),
-        staging_dir=staging_dir,
-        forge=get_forge(),
-        output_file=output_file,
-    )
-
-
 def _stage_circuit(partial_circuit, output_file):
-    entity = DetailedCircuit.from_id(partial_circuit, cross_bucket=True)
+    entity = get_entity(partial_circuit, cls=DetailedCircuit)
     stage_file(
         source=unquote_uri_path(entity.circuitConfigPath.url), target=output_file, symbolic=True
     )
@@ -372,21 +364,19 @@ def _register(
     circuit = _register_circuit(partial_circuit, output_circuit_config_file)
 
     utils.write_resource_to_definition_output(
-        json_resource=load_by_id(circuit.get_id(), cross_bucket=True),
+        json_resource=load_by_id(circuit.get_id()),
         variant=variant,
         output_dir=output_dir,
     )
 
 
 def _register_circuit(partial_circuit, output_circuit_config_file):
-    forge = get_forge(force_refresh=True)
-
-    partial_circuit = get_resource(forge, partial_circuit)
+    partial_circuit = get_entity(partial_circuit, cls=DetailedCircuit)
 
     circuit = registering.register_partial_circuit(
         name="Partial circuit with biohysical emodel properties",
-        brain_region_id=partial_circuit.brainLocation.brainRegion.id,
-        atlas_release_id=partial_circuit.atlasRelease.id,
+        brain_region_id=get_partial_circuit_region_id(partial_circuit),
+        atlas_release_id=partial_circuit.atlasRelease.get_id(),
         description="Partial circuit with cell properties, morphologies, and biophysical models.",
         sonata_config_path=output_circuit_config_file,
     )

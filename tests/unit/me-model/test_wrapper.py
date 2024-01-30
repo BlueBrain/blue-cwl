@@ -25,38 +25,6 @@ def test_get_biophysical_population_info(circuit_config_file):
     assert morph_dir == "morphologies"
 
 
-def test_stage_configuration(
-    tmp_path,
-    me_model_config,
-    materialized_me_model_config,
-    mock_get_emodel,
-    emodel_config,
-):
-    output_file = tmp_path / "materialized_configuration.json"
-    staging_dir = tmp_path / "staging"
-    staging_dir.mkdir()
-
-    entity = Mock()
-    entity.distribution.as_dict = lambda: me_model_config
-
-    with (
-        patch("cwl_registry.wrappers.memodel.get_forge"),
-        patch("cwl_registry.wrappers.memodel.MEModelConfig.from_id", return_value=entity),
-        patch("cwl_registry.me_model.staging._materialize_emodel", side_effect=mock_get_emodel),
-        patch(
-            "cwl_registry.me_model.staging.read_json_file_from_resource_id",
-            return_value=emodel_config,
-        ),
-    ):
-        test_module._stage_configuration(
-            configuration=None,
-            staging_dir=staging_dir,
-            output_file=output_file,
-        )
-    res = load_json(output_file)
-    assert res == materialized_me_model_config
-
-
 def test_stage_circuit(tmp_path, detailed_circuit_metadata, circuit_config_file):
     output_file = tmp_path / "circuit_config.json"
 

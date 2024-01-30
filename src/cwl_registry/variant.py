@@ -71,7 +71,7 @@ class Variant(Entity):
         base: str | None = None,
         org: str | None = None,
         proj: str | None = None,
-        token: str | None = None,
+        use_auth: str | None = None,
         **kwargs,
     ):  # pylint: disable=arguments-differ
         """Load entity from resource id."""
@@ -85,7 +85,7 @@ class Variant(Entity):
             base=base,
             org=org,
             proj=proj,
-            use_auth=token,
+            use_auth=use_auth,
             **kwargs,
         )
 
@@ -112,7 +112,7 @@ class Variant(Entity):
             token=token,
             raise_if_not_found=True,
         )
-        return cls.from_id(resource_id=resource_id, base=base, org=org, proj=proj, token=token)
+        return cls.from_id(resource_id=resource_id, base=base, org=org, proj=proj, use_auth=token)
 
     @classmethod
     def from_file(

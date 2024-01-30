@@ -568,3 +568,9 @@ def _get_population(node_list, population_name):
     raise CWLWorkflowError(
         f"Population {population_name} does not exist in circuit config's node list: {node_list}."
     )
+
+
+def get_partial_circuit_region_id(partial_circuit):
+    """Return brain region id."""
+    url = partial_circuit.brainLocation.brainRegion.url
+    return url.replace("mba:", "http://api.brain-map.org/api/v2/data/Structure/")

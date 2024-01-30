@@ -8,7 +8,6 @@ import click
 from voxcell.nexus.voxelbrain import LocalAtlas
 
 from cwl_registry import registering, staging, statistics, utils
-from cwl_registry.nexus import get_forge
 
 L = logging.getLogger(__name__)
 
@@ -28,26 +27,23 @@ def from_density_distribution(
     output_dir,
 ):
     """Calculate summary statistics from density distribution."""
-    forge = get_forge()
     output_dir = utils.create_dir(output_dir)
 
     atlas_dir = utils.create_dir(output_dir / "atlas")
     staging.stage_atlas(
-        forge=forge,
-        resource_id=atlas_release,
+        atlas_release,
         output_dir=atlas_dir,
         parcellation_ontology_basename="hierarchy.json",
         parcellation_volume_basename="brain_regions.nrrd",
     )
     atlas = LocalAtlas.open(str(atlas_dir))
 
-    density_distribution_file = Path(output_dir / "density_distribution.json")
-    staging.stage_me_type_densities(
-        forge=forge,
-        resource_id=density_distribution,
+    density_distribution_file = Path(output_dir / "density_distribution.parquet")
+
+    densities = staging.materialize_cell_composition_volume(
+        density_distribution,
         output_file=density_distribution_file,
     )
-    densities = utils.load_json(density_distribution_file)
 
     composition_summary_file = output_dir / "cell_composition_summary.json"
     _run_summary(
@@ -58,7 +54,6 @@ def from_density_distribution(
 
     # pylint: disable=no-member
     registering.register_cell_composition_summary(
-        forge,
         name="Cell composition summary",
         summary_file=composition_summary_file,
         atlas_release_id=atlas_release,

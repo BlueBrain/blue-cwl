@@ -1,6 +1,7 @@
 from unittest.mock import patch
 import voxcell
 import numpy as np
+import numpy.testing as npt
 import tempfile
 import pytest
 
@@ -9,6 +10,7 @@ from pathlib import Path
 from voxcell.nexus.voxelbrain import Atlas
 from cwl_registry import density_manipulation as test_module
 from cwl_registry import statistics, utils
+from cwl_registry.staging import materialize_cell_composition_summary
 import pandas as pd
 import pandas.testing as pdt
 
@@ -97,39 +99,11 @@ def brain_regions(atlas):
 
 
 @pytest.fixture
-def cell_composition_volume(tmpdir, brain_regions):
-    ones = brain_regions.with_data(np.ones_like(brain_regions.raw, dtype=float))
-
-    # make "Nucleus raphe obscurus" have no density
-    ones.raw[brain_regions.raw == 222] = 0
-    for i in range(3):
-        ones.save_nrrd(tmpdir / f"{i}.nrrd")
-
-    return {
-        "mtypes": {
-            "http://uri.interlex.org/base/ilx_0383202": {  # L23_LBC
-                "etypes": {"http://uri.interlex.org/base/ilx_0738199": {"path": tmpdir / "0.nrrd"}}
-            },
-            "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType": {
-                "etypes": {
-                    "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronEType": {
-                        "path": tmpdir / "1.nrrd"
-                    }
-                }
-            },
-            "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronMType": {
-                "etypes": {
-                    "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronEType": {
-                        "path": tmpdir / "2.nrrd"
-                    }
-                }
-            },
-        }
-    }
+def manipulation_recipe():
+    return test_module.read_density_manipulation_recipe(DENSITY_MANIPULATION_RECIPE)
 
 
-def test__read_density_manipulation_recipe():
-    res = test_module._read_density_manipulation_recipe(DENSITY_MANIPULATION_RECIPE)
+def test__read_density_manipulation_recipe(manipulation_recipe):
     expected = pd.DataFrame(
         [
             (23, "GEN_mtype", "GEN_etype", "density", 10),
@@ -150,43 +124,58 @@ def test__read_density_manipulation_recipe():
             ),
         ],
         columns=[
-            "region",
+            "region_id",
             "mtype",
             "etype",
             "operation",
             "value",
         ],
     )
-    pdt.assert_frame_equal(res, expected)
-
-
-def test__cell_composition_volume_to_df(tmpdir, cell_composition_volume):
-    res = test_module._cell_composition_volume_to_df(
-        cell_composition_volume, MTYPE_URLS_INVERSE, ETYPE_URLS_INVERSE
+    pdt.assert_frame_equal(
+        manipulation_recipe.loc[:, ["region_id", "mtype", "etype", "operation", "value"]], expected
     )
-    expected = pd.DataFrame(
-        [
-            ("L23_LBC", "bAC", tmpdir / "0.nrrd"),
-            ("GEN_mtype", "GEN_etype", tmpdir / "1.nrrd"),
-            ("GIN_mtype", "GIN_etype", tmpdir / "2.nrrd"),
-        ],
-        columns=[
-            "mtype",
-            "etype",
-            "path",
-        ],
-    ).set_index(["mtype", "etype"])
-
-    pdt.assert_frame_equal(res, expected)
 
 
-def test__create_updated_densities(tmpdir, brain_regions, cell_composition_volume):
-    all_operations = test_module._read_density_manipulation_recipe(DENSITY_MANIPULATION_RECIPE)
-    materialized_densities = test_module._cell_composition_volume_to_df(
-        cell_composition_volume, MTYPE_URLS_INVERSE, ETYPE_URLS_INVERSE
-    )
+@pytest.fixture
+def materialized_cell_composition_volume(tmpdir, brain_regions):
+    ones = brain_regions.with_data(np.ones_like(brain_regions.raw, dtype=float))
+
+    # make "Nucleus raphe obscurus" have no density
+    ones.raw[brain_regions.raw == 222] = 0
+    for i in range(3):
+        ones.save_nrrd(tmpdir / f"{i}.nrrd")
+
+    df_rows = [
+        (
+            "L23_LBC",
+            "http://uri.interlex.org/base/ilx_0383202",
+            "bAC",
+            "http://uri.interlex.org/base/ilx_0738199",
+            str(tmpdir / "0.nrrd"),
+        ),
+        (
+            "GEN_mtype",
+            "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType",
+            "GEN_etype",
+            "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronEType",
+            str(tmpdir / "1.nrrd"),
+        ),
+        (
+            "GIN_mtype",
+            "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronMType",
+            "GIN_etype",
+            "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronEType",
+            str(tmpdir / "2.nrrd"),
+        ),
+    ]
+    return pd.DataFrame(df_rows, columns=["mtype", "mtype_url", "etype", "etype_url", "path"])
+
+
+def test__create_updated_densities(
+    tmpdir, brain_regions, manipulation_recipe, materialized_cell_composition_volume
+):
     updated_densities = test_module._create_updated_densities(
-        tmpdir, brain_regions, all_operations, materialized_densities
+        tmpdir, brain_regions, manipulation_recipe, materialized_cell_composition_volume
     )
 
     nrrd_files = set(Path(tmpdir).glob("*"))
@@ -209,36 +198,46 @@ def test__create_updated_densities(tmpdir, brain_regions, cell_composition_volum
     assert ((data.raw == 0) == (brain_regions.raw == 222)).all()
 
 
-def test__update_density_summary_statistics(tmpdir, region_map, brain_regions):
-    original_density_release = None
+@pytest.fixture
+def materialized_cell_composition_summary(cell_composition_summary):
+    return materialize_cell_composition_summary(cell_composition_summary)
 
+
+@pytest.fixture
+def updated_densities(tmpdir, brain_regions):
     path = tmpdir / "L23_LBC.nrrd"
     raw = 0.1 * np.ones_like(brain_regions.raw)
     brain_regions.with_data(raw).save_nrrd(path)
-    updated_densities = pd.DataFrame([["L23_LBC", "bAC", path]], columns=["mtype", "etype", "path"])
-
-    original_cell_composition_summary = utils.load_json(DATA_DIR / "cell_density_summary.json")
-    original_cell_composition_summary = statistics.cell_composition_summary_to_df(
-        original_cell_composition_summary, region_map, MTYPE_URLS_INVERSE, ETYPE_URLS_INVERSE
+    updated_densities = pd.DataFrame(
+        [
+            [
+                "L23_LBC",
+                "http://uri.interlex.org/base/ilx_0383202",
+                "bAC",
+                "http://uri.interlex.org/base/ilx_0738199",
+                str(path),
+            ]
+        ],
+        columns=["mtype", "mtype_url", "etype", "etype_url", "path"],
     )
+    return updated_densities
+
+
+def test__update_density_summary_statistics(
+    tmpdir, region_map, brain_regions, materialized_cell_composition_summary, updated_densities
+):
+    original_density_release = None
+
     res = test_module._update_density_summary_statistics(
-        original_cell_composition_summary,
-        brain_regions,
-        region_map,
-        updated_densities,
+        original_cell_composition_summary=materialized_cell_composition_summary,
+        brain_regions=brain_regions,
+        region_map=region_map,
+        updated_densities=updated_densities,
     )
-    assert np.allclose(res.loc[("RSPagl2", "L23_LBC", "bAC")][["count", "density"]], (0.0, 0.1))
-    assert np.allclose(res.loc[("RSPagl3", "L23_LBC", "bAC")][["count", "density"]], (0.0, 0.1))
 
-
-# def density_manipulation(output_dir,
-#                         region_map,
-#                         brain_regions,
-#                         manipulation_recipe,
-#                         materialized_cell_composition_volume,
-#                         original_density_release,
-#                         mtype_urls,
-#                         etype_urls):
-#
-# def update_composition_summary_statistics(
-#    original_stats, brain_regions, region_map, updated_densities, mtype_urls, etype_urls
+    npt.assert_allclose(
+        res.loc[("RSPagl2", "L23_LBC", "bAC")][["count", "density"]].values.tolist(), (0.0, 0.1)
+    )
+    npt.assert_allclose(
+        res.loc[("RSPagl3", "L23_LBC", "bAC")][["count", "density"]].values.tolist(), (0.0, 0.1)
+    )

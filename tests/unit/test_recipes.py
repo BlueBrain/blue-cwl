@@ -12,32 +12,14 @@ DATA_DIR = Path(__file__).parent / "data"
 
 
 def test_build_cell_composition_from_me_densities():
-    dataset = {
-        "mtypes": {
-            "http://uri.interlex.org/base/ilx_0383198": {
-                "label": "L23_BP",
-                "etypes": {
-                    "http://uri.interlex.org/base/ilx_0738202": {
-                        "label": "dSTUT",
-                        "path": "L23_BP-DSTUT_densities_v3.nrrd",
-                    },
-                    "http://uri.interlex.org/base/ilx_0738206": {
-                        "label": "bIR",
-                        "path": "L23_BP-BIR_densities_v3.nrrd",
-                    },
-                },
-            },
-            "http://uri.interlex.org/base/ilx_0383201": {
-                "label": "L23_DBC",
-                "etypes": {
-                    "http://uri.interlex.org/base/ilx_0738206": {
-                        "label": "bIR",
-                        "path": "L23_DBC-BIR_densities_v3.nrrd",
-                    },
-                },
-            },
-        },
-    }
+    dataset = pd.DataFrame(
+        [
+            ("L23_BP", "dSTUT", "L23_BP-DSTUT_densities_v3.nrrd"),
+            ("L23_BP", "bIR", "L23_BP-BIR_densities_v3.nrrd"),
+            ("L23_DBC", "bIR", "L23_DBC-BIR_densities_v3.nrrd"),
+        ],
+        columns=["mtype", "etype", "path"],
+    )
     res = tested.build_cell_composition_from_me_densities(
         region="my-region",
         me_type_densities=dataset,
