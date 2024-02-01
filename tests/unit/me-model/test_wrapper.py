@@ -48,29 +48,29 @@ def test_build_recipe(tmp_path, materialized_me_model_config_file):
     assert res == {
         "library": {
             "eModel": {
-                "8f840b": "AAA__GEN_mtype__GEN_etype__emodel",
-                "23da5a": "AAA__GIN_mtype__GIN_etype__emodel",
-                "371f77": "ACAd1__L1_DAC__bNAC__override",
-                "0ed829": "ACAd1__L1_DAC__cNAC",
+                "emodel_8f840b": "AAA__GEN_mtype__GEN_etype__emodel",
+                "emodel_23da5a": "AAA__GIN_mtype__GIN_etype__emodel",
+                "emodel_371f77": "ACAd1__L1_DAC__bNAC__override",
+                "emodel_0ed829": "ACAd1__L1_DAC__cNAC",
             }
         },
         "configuration": {
             "AAA": {
                 "GEN_mtype": {
-                    "GEN_etype": {"assignmentAlgorithm": "assignOne", "eModel": "8f840b"}
+                    "GEN_etype": {"assignmentAlgorithm": "assignOne", "eModel": "emodel_8f840b"}
                 },
                 "GIN_mtype": {
-                    "GIN_etype": {"assignmentAlgorithm": "assignOne", "eModel": "23da5a"}
+                    "GIN_etype": {"assignmentAlgorithm": "assignOne", "eModel": "emodel_23da5a"}
                 },
             },
             "ACAd1": {
                 "L1_DAC": {
                     "bNAC": {
                         "assignmentAlgorithm": "assignOne",
-                        "eModel": "371f77",
+                        "eModel": "emodel_371f77",
                         "axonInitialSegmentAssignment": {"fixedValue": {"value": 1}},
                     },
-                    "cNAC": {"assignmentAlgorithm": "assignOne", "eModel": "0ed829"},
+                    "cNAC": {"assignmentAlgorithm": "assignOne", "eModel": "emodel_0ed829"},
                 }
             },
         },

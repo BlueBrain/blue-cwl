@@ -25,10 +25,14 @@ def _create_library(recipe):
                 json_string = json.dumps(emodel, sort_keys=True)
                 json_hash = hashlib.blake2b(json_string.encode("utf-8"), digest_size=3).hexdigest()
 
-                if json_hash not in emodel_library:
-                    emodel_library[json_hash] = emodel
+                # prepend a prefix because NEURON expects an alphanumeric that starts from a letter
+                # as an emodel name
+                emodel_id = f"emodel_{json_hash}"
 
-                etype_data["eModel"] = json_hash
+                if emodel_id not in emodel_library:
+                    emodel_library[emodel_id] = emodel
+
+                etype_data["eModel"] = emodel_id
 
     return {
         "library": {"eModel": emodel_library},
