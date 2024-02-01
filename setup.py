@@ -36,7 +36,7 @@ setup(
         "pandas",
         "voxcell",
         "joblib",
-        "bba_data_push>=1.0.4,<2",
+        "bba_data_push>=2.0.0",
         "cwl-luigi>=0.3.1,<1",
         "entity_management>=1.2.40",
         "pyarrow",

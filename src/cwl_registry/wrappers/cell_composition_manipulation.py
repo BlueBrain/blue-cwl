@@ -8,6 +8,7 @@ import voxcell
 
 # pylint: disable=no-name-in-module
 from bba_data_push.bba_dataset_push import push_cellcomposition
+from bba_data_push.push_cellComposition import register_densities
 from entity_management.atlas import CellComposition
 from entity_management.config import CellCompositionConfig
 from entity_management.nexus import load_by_id
@@ -15,7 +16,7 @@ from entity_management.nexus import load_by_id
 from cwl_registry import density_manipulation, staging, utils
 from cwl_registry.density_manipulation import read_density_manipulation_recipe
 from cwl_registry.exceptions import CWLRegistryError, CWLWorkflowError, SchemaValidationError
-from cwl_registry.nexus import get_distribution_as_dict, get_entity, get_forge
+from cwl_registry.nexus import get_distribution_as_dict, get_entity, get_forge, get_resource
 from cwl_registry.validation import validate_schema
 from cwl_registry.variant import Variant
 
@@ -108,17 +109,11 @@ def app(  # pylint: disable=too-many-arguments
         filepath=updated_cell_composition_summary_path,
     )
 
-    cell_composition_id = push_cellcomposition(
-        forge=get_forge(force_refresh=True),
-        atlasrelease_id=cell_composition.atlasRelease.get_id(),
+    cell_composition_id = _register_cell_composition(
         volume_path=updated_density_release_path,
         summary_path=updated_cell_composition_summary_path,
-        densities_dir=updated_densities_dir,
-        name="Cell Composition",
-        description="Cell Composition",
-        resource_tag=None,
-        output_dir=build_dir,
-        L=L,
+        base_cell_composition=cell_composition,
+        hierarchy_path=atlas_info.ontology_path,
     )
 
     cell_composition = get_entity(cell_composition_id, cls=CellComposition)
@@ -129,6 +124,73 @@ def app(  # pylint: disable=too-many-arguments
         variant=get_entity(variant_config, cls=Variant),
         output_dir=output_dir,
     )
+
+
+def _register_cell_composition(volume_path, summary_path, hierarchy_path, base_cell_composition):
+    L.info("Registering nrrd densities...")
+
+    forge = get_forge(force_refresh=True)
+
+    atlas_release_id = base_cell_composition.atlasRelease.get_id()
+    atlas_release_rev = base_cell_composition.atlasRelease.get_rev()
+    atlas_release = get_resource(
+        forge=forge,
+        resource_id=utils.url_with_revision(
+            url=atlas_release_id,
+            rev=atlas_release_rev,
+        ),
+    )
+
+    # convert the entity to forge resource to pass into the push module
+    base_cell_composition = get_resource(
+        forge=forge,
+        resource_id=utils.url_with_revision(
+            url=base_cell_composition.get_id(),
+            rev=base_cell_composition.get_rev(),
+        ),
+    )
+
+    L.debug("Atlas release id in CellComposition: %s", atlas_release.id)
+
+    output_volume_path = Path(str(volume_path).replace(".json", "_id_only.json"))
+
+    L.info("Registering nrrd densities...")
+    register_densities(
+        volume_path=volume_path,
+        atlas_release_prop=atlas_release,
+        forge=forge,
+        subject=atlas_release.subject,
+        brain_location_prop=atlas_release.brainLocation,
+        reference_system_prop=None,
+        contribution=None,
+        derivation=None,
+        resource_tag=None,
+        force_registration=True,
+        dryrun=False,
+        output_volume_path=output_volume_path,
+    )
+
+    L.info("Registering CellComposition...")
+    cell_composition_resource = push_cellcomposition(
+        forge=get_forge(force_refresh=True),
+        atlas_release_id=atlas_release_id,
+        atlas_release_rev=atlas_release_rev,
+        cell_composition_id=None,
+        brain_region=atlas_release.brainLocation.brainRegion.id,
+        hierarchy_path=hierarchy_path,
+        reference_system_id=base_cell_composition.atlasSpatialReferenceSystem.id,
+        volume_path=output_volume_path,
+        species=base_cell_composition.subject.species.id,
+        summary_path=summary_path,
+        name=("CellComposition", "CellCompositionSummary", "CellCompositionVolume"),
+        description="Cell Composition",
+        resource_tag=None,
+        logger=L,
+        force_registration=True,
+        dryrun=False,
+    )
+
+    return cell_composition_resource.id
 
 
 def _get_summary_id(entry):
