@@ -16,6 +16,7 @@ DATA_DIR = Path(__file__).parent / "data/schemas"
         "morphology_assignment_config_distribution",
         "me_model_config_distribution",
         "placeholder_emodel_config_distribution",
+        "brain_region_selector_config_distribution",
     ],
 )
 def test_schema(name):

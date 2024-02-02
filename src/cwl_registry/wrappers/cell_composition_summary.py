@@ -1,7 +1,5 @@
 """Cell composition summary app."""
 import logging
-import multiprocessing
-from functools import partial
 from pathlib import Path
 
 import click
@@ -62,19 +60,10 @@ def from_density_distribution(
 
 
 def _run_summary(dataset, atlas, output_file):
-    n_procs = multiprocessing.cpu_count() - 1
-
-    n_items = sum(len(mtype_data["etypes"]) for mtype_data in dataset["mtypes"].values())
-
-    n_chunks = n_items // n_procs
-    L.debug("n_processes: %d, n_items: %d, n_batches %d", n_procs, n_items, n_chunks)
-
-    with multiprocessing.Pool(processes=n_procs) as pool:
-        summary = statistics.atlas_densities_composition_summary(
-            density_distribution=dataset,
-            region_map=atlas.load_region_map(),
-            brain_regions=atlas.load_data("brain_regions"),
-            map_function=partial(pool.imap, chunksize=n_chunks),
-        )
-
+    summary = statistics.atlas_densities_composition_summary(
+        density_distribution=dataset,
+        region_map=atlas.load_region_map(),
+        brain_regions=atlas.load_data("brain_regions"),
+        map_function="auto",
+    )
     utils.write_json(filepath=output_file, data=summary)

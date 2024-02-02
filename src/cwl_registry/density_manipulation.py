@@ -1,6 +1,5 @@
 """Density Manipulation of nrrd files"""
 import copy
-import itertools
 import logging
 import os
 
@@ -8,8 +7,6 @@ import joblib
 import numpy as np
 import pandas as pd
 import voxcell
-
-from cwl_registry import statistics
 
 L = logging.getLogger(__name__)
 
@@ -86,34 +83,52 @@ def _cell_composition_volume_to_df(cell_composition_volume, mtype_urls_inverse, 
             "etype",
             "path",
         ],
-    ).set_index(["mtype", "etype"])
+    )
 
 
-def _create_updated_densities(output_dir, brain_regions, all_operations, materialized_densities):
+def _create_updated_densities(
+    output_dir, brain_regions, all_operations, materialized_densities, region_selection=None
+):
     """Apply the operations to the NRRD files"""
     p = joblib.Parallel(
         n_jobs=-2,
         backend="multiprocessing",
     )
-
     worker_function = joblib.delayed(_create_updated_density)
 
-    materialized_densities = materialized_densities.set_index(["mtype", "etype"])
+    if region_selection is None:
+        to_zero_mask = None
+    else:
+        to_zero_mask = ~np.isin(brain_regions.raw, region_selection)
+        all_operations = all_operations[all_operations["region_id"].isin(region_selection)]
+
+    grouped_operations = all_operations.groupby(["mtype", "etype"])
 
     work = []
-    updated = {}
-    for (mtype, etype), operations in all_operations.groupby(
-        [
-            "mtype",
-            "etype",
-        ]
-    ):
-        row = materialized_densities.loc[(mtype, etype)]
+    processed = {}
 
-        path = str(row.path)
+    for row_dict in materialized_densities.to_dict(orient="records"):
+        path = row_dict["path"]
+        mtype = row_dict["mtype"]
+        etype = row_dict["etype"]
+
+        row_dict["remove"] = False
+        row_dict["updated"] = True
+
+        # get the group of mtype/etype operations
+        if (mtype, etype) in grouped_operations.groups:
+            operations = grouped_operations.get_group((mtype, etype))
+        else:
+            if to_zero_mask is None:
+                # nothing will be changed, do not update and keep old path
+                row_dict["updated"] = False
+                processed[path] = row_dict
+                continue
+            operations = pd.DataFrame()
+
         new_path = os.path.join(output_dir, os.path.basename(path))
-
-        updated[path] = mtype, etype, new_path, row.mtype_url, row.etype_url
+        row_dict["path"] = new_path
+        processed[path] = row_dict
 
         work.append(
             worker_function(
@@ -121,35 +136,53 @@ def _create_updated_densities(output_dir, brain_regions, all_operations, materia
                 output_nrrd_path=new_path,
                 operations=operations,
                 brain_regions=brain_regions,
+                to_zero_mask=to_zero_mask,
             )
         )
 
-    L.debug("Densities to be updated: %d", len(updated))
+    L.debug("Densities to be processed: %d", len(processed))
 
-    for path in p(work):
-        mtype, etype, *_ = updated[path]
-        L.info("Completed: %s, %s: [%s]", mtype, etype, path)
+    for path, is_empty in p(work):
+        info = processed[path]
+        info["remove"] = is_empty
+        L.info("Processed: %s, %s: [%s]", info["mtype"], info["etype"], info["path"])
 
-    updated_densities = pd.DataFrame(
-        list(updated.values()), columns=["mtype", "etype", "path", "mtype_url", "etype_url"]
-    )
+    res = pd.DataFrame.from_records(data=list(processed.values()))
+    res = res[~res["remove"]].drop(columns="remove").reset_index(drop=True)
 
-    return updated_densities
+    L.debug("Densities after processing: %d", res.shape[0])
+
+    return res
 
 
-def _create_updated_density(input_nrrd_path, output_nrrd_path, operations, brain_regions):
+def _create_updated_density(
+    input_nrrd_path, output_nrrd_path, operations, brain_regions, to_zero_mask
+):
     nrrd = voxcell.VoxelData.load_nrrd(input_nrrd_path)
+
     for row in operations.itertuples():
         idx = np.nonzero(brain_regions.raw == row.region_id)
-
         if row.operation == "density":
             nrrd.raw[idx] = row.value
         elif row.operation == "density_ratio":
             nrrd.raw[idx] *= row.value
 
+    if to_zero_mask is not None:
+        nrrd.raw[to_zero_mask] = 0.0
+
+    if np.isclose(nrrd.raw, 0.0).all():
+        return (input_nrrd_path, True)
+
     nrrd.save_nrrd(output_nrrd_path)
 
-    return input_nrrd_path
+    return (input_nrrd_path, False)
+
+
+def _copy_level_info(dataset, with_children=None):
+    data = {k: v for k, v in dataset.items() if k != "hasPart"}
+    if with_children:
+        data["hasPart"] = with_children
+    return data
 
 
 def _update_density_release(original_density_release, updated_densities):
@@ -157,25 +190,50 @@ def _update_density_release(original_density_release, updated_densities):
 
     * add `path` attribute, so it can be consumed by push_cellcomposition
     """
-    density_release = copy.deepcopy(original_density_release)
 
     def find_node(dataset, id_):
         for haystack in dataset["hasPart"]:
             if haystack["@id"] == id_:
                 return haystack
-        return None
+        raise KeyError(f"ID {id_} was not found in dataset.")
 
-    for mtype_id, mtype_df in updated_densities.groupby("mtype_url"):
-        mtype_node = find_node(density_release, mtype_id)
-        assert mtype_node
-        for etype_id, etype_df in mtype_df.groupby("etype_url"):
+    mtypes = []
+    for mtype_url, mtype_df in updated_densities.groupby("mtype_url"):
+        mtype_node = find_node(original_density_release, mtype_url)
+
+        etypes = []
+        for etype_url, etype_df in mtype_df.groupby("etype_url"):
             assert etype_df.shape[0] == 1
-            node = find_node(mtype_node, etype_id)
-            assert len(node["hasPart"]) == 1
-            node["hasPart"][0]["path"] = etype_df.iloc[0].path
-            del node["hasPart"][0]["@id"]
-            del node["hasPart"][0]["_rev"]
 
+            nrrd_info = etype_df.iloc[0]
+
+            etype_node = find_node(mtype_node, etype_url)
+            assert len(etype_node["hasPart"]) == 1
+
+            if nrrd_info.updated:
+                nrrd_entry = {"path": nrrd_info.path}
+
+                # ignore id related entries if a local path is added
+                for k, v in _copy_level_info(etype_node["hasPart"][0]).items():
+                    if k not in {"@id", "_rev", "path"}:
+                        nrrd_entry[k] = v
+
+                new_etype_node = _copy_level_info(
+                    dataset=etype_node,
+                    with_children=[nrrd_entry],
+                )
+
+            # if no changes, use the resource from the initial release
+            else:
+                new_etype_node = copy.deepcopy(etype_node)
+
+            etypes.append(new_etype_node)
+
+        if etypes:
+            new_mtype_node = _copy_level_info(dataset=mtype_node, with_children=etypes)
+            mtypes.append(new_mtype_node)
+
+    density_release = _copy_level_info(original_density_release, with_children=mtypes)
     return density_release
 
 
@@ -185,6 +243,7 @@ def density_manipulation(
     manipulation_recipe,
     materialized_densities,
     original_density_release,
+    region_selection=None,
 ):
     """Manipulate the densities in a CellCompositionVolume
 
@@ -200,74 +259,14 @@ def density_manipulation(
         etype_urls(dict): mapping for etype labels to etype urls
     """
     updated_densities = _create_updated_densities(
-        output_dir, brain_regions, manipulation_recipe, materialized_densities
+        output_dir,
+        brain_regions,
+        manipulation_recipe,
+        materialized_densities,
+        region_selection,
     )
     updated_density_release = _update_density_release(
         original_density_release,
         updated_densities,
     )
     return updated_densities, updated_density_release
-
-
-def _update_density_summary_statistics(
-    original_cell_composition_summary,
-    brain_regions,
-    region_map,
-    updated_densities,
-):
-    """Ibid"""
-    p = joblib.Parallel(
-        n_jobs=-2,
-        backend="multiprocessing",
-    )
-
-    worker_function = joblib.delayed(statistics.get_statistics_from_nrrd_volume)
-
-    work = []
-
-    for row in updated_densities.itertuples():
-        work.append(
-            worker_function(
-                region_map,
-                brain_regions,
-                row.mtype,
-                row.etype,
-                row.path,
-            )
-        )
-
-    res = pd.DataFrame.from_records(list(itertools.chain.from_iterable(p(work))))
-    res = (
-        res.set_index(["region", "mtype", "etype"])
-        .combine_first(original_cell_composition_summary.set_index(["region", "mtype", "etype"]))
-        .sort_index()
-    )
-    return res
-
-
-def update_composition_summary_statistics(
-    brain_regions,
-    region_map,
-    original_cell_composition_summary,
-    updated_densities,
-):
-    """Update the summary statistics, after manipulations
-
-    Args:
-        region_map: voxcell.region map to use
-        brain_regions: annotation atlas
-        original_cell_composition_summary(dict): original composition statistics
-        updated_densities(DataFrame): which metypes and paths that were changed
-        mtype_urls(dict): mapping for mtype labels to mtype urls
-        etype_urls(dict): mapping for etype labels to etype urls
-    """
-    updated_summary = _update_density_summary_statistics(
-        original_cell_composition_summary,
-        brain_regions,
-        region_map,
-        updated_densities,
-    )
-
-    cell_composition_summary = statistics.density_summary_stats_region(updated_summary)
-
-    return cell_composition_summary

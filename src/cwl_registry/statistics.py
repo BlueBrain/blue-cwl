@@ -1,5 +1,6 @@
 """Composition summary statistics."""
 import logging
+import multiprocessing
 from functools import partial
 
 import numpy as np
@@ -205,13 +206,32 @@ def atlas_densities_composition_summary(
     density_distribution, region_map, brain_regions, map_function=map
 ):
     """Calculate the composition summary statistics of a density distribution."""
-    L.info("Extracting statistics from density distribution.")
-    nrrd_stats = _get_nrrd_statistics(
-        region_map=region_map,
-        brain_regions=brain_regions,
-        densities=density_distribution,
-        map_function=map_function,
-    )
+    if map_function == "auto":
+        n_procs = multiprocessing.cpu_count() - 1
+        n_items = len(density_distribution)
+        chunksize = n_items // n_procs
+
+        L.info(
+            "map_function is automatically configured as a multiprocessing.Pool.imap "
+            "with processes=%d and chunksize=%d for n_items=%d",
+            n_procs,
+            chunksize,
+            n_items,
+        )
+        with multiprocessing.Pool(processes=n_procs) as pool:
+            nrrd_stats = _get_nrrd_statistics(
+                region_map=region_map,
+                brain_regions=brain_regions,
+                densities=density_distribution,
+                map_function=partial(pool.imap, chunksize=chunksize),
+            )
+    else:
+        nrrd_stats = _get_nrrd_statistics(
+            region_map=region_map,
+            brain_regions=brain_regions,
+            densities=density_distribution,
+            map_function=map_function,
+        )
 
     # expand dataframe with additional information needed to construct the summary
     mtype_urls, etype_urls = mtype_etype_url_mapping(density_distribution)

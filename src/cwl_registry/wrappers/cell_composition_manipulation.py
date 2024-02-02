@@ -10,10 +10,10 @@ import voxcell
 from bba_data_push.bba_dataset_push import push_cellcomposition
 from bba_data_push.push_cellComposition import register_densities
 from entity_management.atlas import CellComposition
-from entity_management.config import CellCompositionConfig
+from entity_management.config import BrainRegionSelectorConfig, CellCompositionConfig
 from entity_management.nexus import load_by_id
 
-from cwl_registry import density_manipulation, staging, utils
+from cwl_registry import density_manipulation, staging, statistics, utils
 from cwl_registry.density_manipulation import read_density_manipulation_recipe
 from cwl_registry.exceptions import CWLRegistryError, CWLWorkflowError, SchemaValidationError
 from cwl_registry.nexus import get_distribution_as_dict, get_entity, get_forge, get_resource
@@ -25,12 +25,14 @@ L = logging.getLogger(__name__)
 
 @click.command()
 @click.option("--region", required=True)
+@click.option("--brain-region-selector-config", required=False)
 @click.option("--base-cell-composition", required=True)
 @click.option("--configuration", help="Recipe for manipulations")
 @click.option("--variant-config", required=True)
 @click.option("--output-dir", required=True)
 def app(  # pylint: disable=too-many-arguments
     region,  # pylint: disable=unused-argument
+    brain_region_selector_config,
     base_cell_composition,
     configuration,
     variant_config,
@@ -44,11 +46,6 @@ def app(  # pylint: disable=too-many-arguments
 
     cell_composition = get_entity(base_cell_composition, cls=CellComposition)
     _validate_cell_composition_schemas(cell_composition)
-
-    original_cell_composition_summary = staging.materialize_cell_composition_summary(
-        cell_composition.cellCompositionSummary,
-        output_file=staging_dir / "original_cell_composition_summary.parquet",
-    )
 
     # the materialized version that has gpfs paths instead of ids
     original_densities = staging.materialize_cell_composition_volume(
@@ -80,6 +77,23 @@ def app(  # pylint: disable=too-many-arguments
     brain_regions = voxcell.VoxelData.load_nrrd(atlas_info.annotation_path)
 
     L.info("Updating density distribution...")
+    if brain_region_selector_config:
+        distribution_payload = BrainRegionSelectorConfig.from_id(
+            brain_region_selector_config, cross_bucket=True
+        ).distribution.as_dict()
+
+        validate_schema(
+            distribution_payload, schema_name="brain_region_selector_config_distribution.yml"
+        )
+
+        region_selection = [
+            int(e["@id"].removeprefix("http://api.brain-map.org/api/v2/data/Structure/"))
+            for e in distribution_payload["selection"]
+        ]
+    else:
+        region_selection = None
+
+    L.info("Manipulation densities...")
     updated_densities_dir = utils.create_dir(build_dir / "updated_densities_dir")
     updated_densities, updated_density_release = density_manipulation.density_manipulation(
         updated_densities_dir,
@@ -87,6 +101,7 @@ def app(  # pylint: disable=too-many-arguments
         manipulation_recipe,
         original_densities,
         original_density_release,
+        region_selection,
     )
     updated_density_release_path = build_dir / "updated_density_release.json"
     utils.write_json(
@@ -95,12 +110,19 @@ def app(  # pylint: disable=too-many-arguments
     )
     L.info("Updated CellCompositionVolume release written at %s", updated_density_release_path)
 
+    updated_density_release_path = output_dir / "updated_density_release.json"
+    utils.write_json(
+        data=updated_density_release,
+        filepath=updated_density_release_path,
+    )
+
     L.info("Updating cell composition summary statistics...")
-    cell_composition_summary = density_manipulation.update_composition_summary_statistics(
-        brain_regions,
-        region_map,
-        original_cell_composition_summary,
-        updated_densities,
+
+    cell_composition_summary = statistics.atlas_densities_composition_summary(
+        density_distribution=updated_densities,
+        region_map=region_map,
+        brain_regions=brain_regions,
+        map_function="auto",
     )
 
     updated_cell_composition_summary_path = build_dir / "updated_cell_composition_summary.json"

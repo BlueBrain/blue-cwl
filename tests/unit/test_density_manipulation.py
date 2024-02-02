@@ -11,6 +11,7 @@ from voxcell.nexus.voxelbrain import Atlas
 from cwl_registry import density_manipulation as test_module
 from cwl_registry import statistics, utils
 from cwl_registry.staging import materialize_cell_composition_summary
+from cwl_registry.statistics import _get_nrrd_statistics
 import pandas as pd
 import pandas.testing as pdt
 
@@ -103,6 +104,11 @@ def manipulation_recipe():
     return test_module.read_density_manipulation_recipe(DENSITY_MANIPULATION_RECIPE)
 
 
+@pytest.fixture
+def empty_manipulation_recipe():
+    return pd.DataFrame([], columns=["region_id", "mtype", "etype", "operation", "value"])
+
+
 def test__read_density_manipulation_recipe(manipulation_recipe):
     expected = pd.DataFrame(
         [
@@ -140,10 +146,12 @@ def test__read_density_manipulation_recipe(manipulation_recipe):
 def materialized_cell_composition_volume(tmpdir, brain_regions):
     ones = brain_regions.with_data(np.ones_like(brain_regions.raw, dtype=float))
 
+    def _write_nrrd(path):
+        ones.save_nrrd(path)
+        return str(path)
+
     # make "Nucleus raphe obscurus" have no density
     ones.raw[brain_regions.raw == 222] = 0
-    for i in range(3):
-        ones.save_nrrd(tmpdir / f"{i}.nrrd")
 
     df_rows = [
         (
@@ -151,21 +159,21 @@ def materialized_cell_composition_volume(tmpdir, brain_regions):
             "http://uri.interlex.org/base/ilx_0383202",
             "bAC",
             "http://uri.interlex.org/base/ilx_0738199",
-            str(tmpdir / "0.nrrd"),
+            str(_write_nrrd(tmpdir / "L23_LBC__bAC.nrrd")),
         ),
         (
             "GEN_mtype",
             "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronMType",
             "GEN_etype",
             "https://bbp.epfl.ch/ontologies/core/bmo/GenericExcitatoryNeuronEType",
-            str(tmpdir / "1.nrrd"),
+            str(_write_nrrd(tmpdir / "GEN_mtype__GEN_etype.nrrd")),
         ),
         (
             "GIN_mtype",
             "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronMType",
             "GIN_etype",
             "https://bbp.epfl.ch/ontologies/core/bmo/GenericInhibitoryNeuronEType",
-            str(tmpdir / "2.nrrd"),
+            str(_write_nrrd(tmpdir / "GIN_mtype__GIN_etype.nrrd")),
         ),
     ]
     return pd.DataFrame(df_rows, columns=["mtype", "mtype_url", "etype", "etype_url", "path"])
@@ -178,24 +186,133 @@ def test__create_updated_densities(
         tmpdir, brain_regions, manipulation_recipe, materialized_cell_composition_volume
     )
 
+    p0 = "L23_LBC__bAC"
+    p1 = "GEN_mtype__GEN_etype"
+    p2 = "GIN_mtype__GIN_etype"
+
     nrrd_files = set(Path(tmpdir).glob("*"))
-    assert nrrd_files == {Path(tmpdir) / f"{i}.nrrd" for i in range(3)}
+    assert nrrd_files == {Path(tmpdir) / f"{i}.nrrd" for i in [p0, p1, p2]}
 
     # updated L23_LBC in ACAd1 / "Anterior cingulate area, dorsal part, layer 1"
-    data = voxcell.VoxelData.load_nrrd(tmpdir / "0.nrrd")
+    data = voxcell.VoxelData.load_nrrd(tmpdir / f"{p0}.nrrd")
     assert ((data.raw == 30) == (brain_regions.raw == 935)).all()
 
     # updated GEN_mtype in  AAA / "Anterior amygdalar area"
-    data = voxcell.VoxelData.load_nrrd(tmpdir / "1.nrrd")
+    data = voxcell.VoxelData.load_nrrd(tmpdir / f"{p1}.nrrd")
     assert ((data.raw == 10) == (brain_regions.raw == 23)).all()
 
     # updated GIN_mtype in  AAA / "Anterior amygdalar area"
-    data = voxcell.VoxelData.load_nrrd(tmpdir / "2.nrrd")
+    data = voxcell.VoxelData.load_nrrd(tmpdir / f"{p2}.nrrd")
     assert ((data.raw == 20) == (brain_regions.raw == 23)).all()
 
     # updated GIN_mtype RO / "Nucleus raphe obscurus"
-    data = voxcell.VoxelData.load_nrrd(tmpdir / "2.nrrd")
+    data = voxcell.VoxelData.load_nrrd(tmpdir / f"{p2}.nrrd")
     assert ((data.raw == 0) == (brain_regions.raw == 222)).all()
+
+
+def test__create_updated_densities__empty_manipulations(
+    tmpdir,
+    brain_regions,
+    manipulation_recipe,
+    materialized_cell_composition_volume,
+    empty_manipulation_recipe,
+):
+    updated_densities = test_module._create_updated_densities(
+        tmpdir, brain_regions, empty_manipulation_recipe, materialized_cell_composition_volume
+    )
+
+    pd.testing.assert_frame_equal(
+        left=materialized_cell_composition_volume[["mtype", "etype", "path"]],
+        right=updated_densities[["mtype", "etype", "path"]],
+    )
+
+    # check that no density was flagged as updated
+    assert all(updated_densities.updated == False)
+
+
+@pytest.fixture
+def region_selection(region_map):
+    return sorted([region_map.find(r, attr="acronym").pop() for r in ["VISp2", "VISp3", "ACAd1"]])
+
+
+def _non_zero_density_ids(density, brain_regions):
+    return sorted(pd.unique(brain_regions.raw[density.raw != 0.0]))
+
+
+def test__create_updated_densities__selection(
+    tmpdir,
+    brain_regions,
+    manipulation_recipe,
+    materialized_cell_composition_volume,
+    region_selection,
+):
+    updated_densities = test_module._create_updated_densities(
+        output_dir=tmpdir,
+        brain_regions=brain_regions,
+        all_operations=manipulation_recipe,
+        materialized_densities=materialized_cell_composition_volume,
+        region_selection=region_selection,
+    )
+
+    p0 = "L23_LBC__bAC"
+    p1 = "GEN_mtype__GEN_etype"
+    p2 = "GIN_mtype__GIN_etype"
+
+    nrrd_files = set(Path(tmpdir).glob("*"))
+    assert nrrd_files == {Path(tmpdir) / f"{i}.nrrd" for i in [p0, p1, p2]}
+
+    # L23_LBC
+
+    # assert nrrd_files == {Path(tmpdir) / f"{i}.nrrd" for i in range(3)}
+    # updated L23_LBC in ACAd1 / "Anterior cingulate area, dorsal part, layer 1"
+    v0 = voxcell.VoxelData.load_nrrd(tmpdir / "L23_LBC__bAC.nrrd")
+    assert _non_zero_density_ids(v0, brain_regions) == region_selection
+
+    # the ACAd1 is manipulated to a density_ratio 30. x 1. = 30.
+    assert ((v0.raw == 30) == (brain_regions.raw == 935)).all()
+
+    # we expect that apart from the manipulation the rest of the regions in the selection
+    # that are not manipulated will have density 1.
+    assert pd.unique(brain_regions.raw[v0.raw == 1.0]).tolist() == [614454330, 614454331]
+
+    # GEN_mtype
+    v1 = voxcell.VoxelData.load_nrrd(tmpdir / "GEN_mtype__GEN_etype.nrrd")
+    assert _non_zero_density_ids(v1, brain_regions) == region_selection
+
+    # no manipulations in the region selection -> default density 1.
+    assert np.all(v1.raw[v1.raw != 0.0] == 1.0)
+
+    # GIN_mtype
+    v2 = voxcell.VoxelData.load_nrrd(tmpdir / "GIN_mtype__GIN_etype.nrrd")
+    assert _non_zero_density_ids(v2, brain_regions) == region_selection
+
+    # no manipulation in the region selection
+    assert np.all(v2.raw[v1.raw != 0.0] == 1.0)
+
+
+def test__create_updated_densities__selection__empty_overrides(
+    tmpdir,
+    region_map,
+    brain_regions,
+    materialized_cell_composition_volume,
+    empty_manipulation_recipe,
+    region_selection,
+):
+    updated_densities = test_module._create_updated_densities(
+        tmpdir,
+        brain_regions,
+        empty_manipulation_recipe,
+        materialized_cell_composition_volume,
+        region_selection,
+    )
+
+    pd.testing.assert_frame_equal(
+        left=materialized_cell_composition_volume[["mtype", "etype", "path"]],
+        right=updated_densities[["mtype", "etype", "path"]],
+    )
+
+    # check that no density was flagged as updated
+    assert all(updated_densities.updated == True)
 
 
 @pytest.fixture
@@ -228,16 +345,12 @@ def test__update_density_summary_statistics(
 ):
     original_density_release = None
 
-    res = test_module._update_density_summary_statistics(
-        original_cell_composition_summary=materialized_cell_composition_summary,
+    res = _get_nrrd_statistics(
         brain_regions=brain_regions,
         region_map=region_map,
-        updated_densities=updated_densities,
+        densities=updated_densities,
+        map_function=map,
     )
 
-    npt.assert_allclose(
-        res.loc[("RSPagl2", "L23_LBC", "bAC")][["count", "density"]].values.tolist(), (0.0, 0.1)
-    )
-    npt.assert_allclose(
-        res.loc[("RSPagl3", "L23_LBC", "bAC")][["count", "density"]].values.tolist(), (0.0, 0.1)
-    )
+    assert np.allclose(res.loc[("RSPagl2", "L23_LBC", "bAC")][["count", "density"]], (0.0, 0.1))
+    assert np.allclose(res.loc[("RSPagl3", "L23_LBC", "bAC")][["count", "density"]], (0.0, 0.1))
