@@ -46,7 +46,7 @@ def test_register_partial_circuit(monkeypatch):
                 "brainTemplateDataLayer": {"@id": "template-id", "@type": "braintemplatedatalayer"},
                 "parcellationOntology": {"@id": "ontology-id", "@type": "parcellationontology"},
                 "parcellationVolume": {"@id": "volume-id", "@type": "parcellationvolume"},
-                "subject": {"@id": "subject-id", "@type": "subject"},
+                "subject": {"@type": "subject"},
                 "spatialReferenceSystem": {"@id": "ref-id", "@type": "spatialreferencesystem"},
             }
         raise
@@ -95,7 +95,7 @@ def test_register_cell_composition_summary():
                 "brainTemplateDataLayer": {"@id": "template-id", "@type": "braintemplatedatalayer"},
                 "parcellationOntology": {"@id": "ontology-id", "@type": "parcellationontology"},
                 "parcellationVolume": {"@id": "volume-id", "@type": "parcellationvolume"},
-                "subject": {"@id": "subject-id", "@type": "subject"},
+                "subject": {"@type": "Subject"},
                 "spatialReferenceSystem": {"@id": "ref-id", "@type": "spatialreferencesystem"},
             }
 

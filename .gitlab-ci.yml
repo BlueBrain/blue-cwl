@@ -1,4 +1,3 @@
 include:
   - project: nse/ci
-    ref: zisis-main-patch-25268
     file: /ci/pipelines/nse.cwl-registry.yml

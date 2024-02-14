@@ -17,7 +17,7 @@ def _subject(species_id: str | None):
         label = "Mus musculus"
     else:
         label = load_by_id(species_id, cross_bucket=True)["label"]
-    return Subject(species=OntologyTerm(url=species_id, label=label)).publish()
+    return Subject(species=OntologyTerm(url=species_id, label=label))
 
 
 def _brain_location(brain_region_id):
