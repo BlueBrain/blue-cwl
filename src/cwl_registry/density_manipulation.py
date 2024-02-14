@@ -86,6 +86,30 @@ def _cell_composition_volume_to_df(cell_composition_volume, mtype_urls_inverse, 
     )
 
 
+class _FlatGroupsMapper:
+    """Class for efficient access to indices of unique values of the values array."""
+
+    def __init__(self, values):
+        ids = np.argsort(values, kind="stable")
+
+        uniques, counts = np.unique(values, return_counts=True)
+
+        offsets = np.empty(len(counts) + 1, dtype=np.int64)
+        offsets[0] = 0
+        offsets[1:] = np.cumsum(counts)
+
+        mapping = {v: i for i, v in enumerate(uniques)}
+
+        self._ids = ids
+        self._offsets = offsets
+        self._mapping = mapping
+
+    def get_group_indices_by_value(self, value):
+        """Return the values array indices corresponding to the 'value'."""
+        group_index = self._mapping[value]
+        return self._ids[self._offsets[group_index] : self._offsets[group_index + 1]]
+
+
 def _create_updated_densities(
     output_dir, brain_regions, all_operations, materialized_densities, region_selection=None
 ):
@@ -101,6 +125,9 @@ def _create_updated_densities(
     else:
         to_zero_mask = ~np.isin(brain_regions.raw, region_selection)
         all_operations = all_operations[all_operations["region_id"].isin(region_selection)]
+
+    # allow to efficiently access all the voxel indices corresponding to a region id
+    region_groups = _FlatGroupsMapper(brain_regions.raw.ravel())
 
     grouped_operations = all_operations.groupby(["mtype", "etype"])
 
@@ -135,7 +162,7 @@ def _create_updated_densities(
                 input_nrrd_path=path,
                 output_nrrd_path=new_path,
                 operations=operations,
-                brain_regions=brain_regions,
+                region_groups=region_groups,
                 to_zero_mask=to_zero_mask,
             )
         )
@@ -156,26 +183,43 @@ def _create_updated_densities(
 
 
 def _create_updated_density(
-    input_nrrd_path, output_nrrd_path, operations, brain_regions, to_zero_mask
+    input_nrrd_path, output_nrrd_path, operations, region_groups, to_zero_mask
 ):
     nrrd = voxcell.VoxelData.load_nrrd(input_nrrd_path)
 
-    for row in operations.itertuples():
-        idx = np.nonzero(brain_regions.raw == row.region_id)
-        if row.operation == "density":
-            nrrd.raw[idx] = row.value
-        elif row.operation == "density_ratio":
-            nrrd.raw[idx] *= row.value
+    densities = nrrd.raw.ravel()
+
+    if not operations.empty:
+        _apply_operations_on_densities(operations, densities, region_groups)
 
     if to_zero_mask is not None:
-        nrrd.raw[to_zero_mask] = 0.0
+        densities[to_zero_mask.ravel()] = 0.0
 
-    if np.isclose(nrrd.raw, 0.0).all():
+    if np.allclose(nrrd.raw, 0.0):
         return (input_nrrd_path, True)
+
+    # nrrd.raw arrays are usually not c-contiguous, therefore a copy has been made when ravelled
+    nrrd.raw = densities.reshape(nrrd.raw.shape)
 
     nrrd.save_nrrd(output_nrrd_path)
 
     return (input_nrrd_path, False)
+
+
+def _apply_operations_on_densities(operations, densities, region_groups):
+    operations = operations.drop_duplicates(keep="last", subset=["region_id"])
+
+    for operation, df in operations.groupby("operation"):
+        if operation == "density":
+            for row in df.itertuples():
+                voxel_ids = region_groups.get_group_indices_by_value(row.region_id)
+                densities[voxel_ids] = row.value
+        elif operation == "density_ratio":
+            for row in df.itertuples():
+                voxel_ids = region_groups.get_group_indices_by_value(row.region_id)
+                densities[voxel_ids] *= row.value
+        else:
+            raise ValueError(f"Unsuppored operation {operation}")
 
 
 def _copy_level_info(dataset, with_children=None):

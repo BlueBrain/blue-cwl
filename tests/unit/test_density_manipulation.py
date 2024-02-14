@@ -179,11 +179,29 @@ def materialized_cell_composition_volume(tmpdir, brain_regions):
     return pd.DataFrame(df_rows, columns=["mtype", "mtype_url", "etype", "etype_url", "path"])
 
 
+def test_flat_groups_mapper():
+    values = np.array([10, 20, 10, 30, 30, 30, 20, 20, 10])
+
+    g = test_module._FlatGroupsMapper(values)
+
+    ids = g.get_group_indices_by_value(10)
+    npt.assert_array_equal(ids, [0, 2, 8])
+
+    ids = g.get_group_indices_by_value(20)
+    npt.assert_array_equal(ids, [1, 6, 7])
+
+    ids = g.get_group_indices_by_value(30)
+    npt.assert_array_equal(ids, [3, 4, 5])
+
+
 def test__create_updated_densities(
     tmpdir, brain_regions, manipulation_recipe, materialized_cell_composition_volume
 ):
     updated_densities = test_module._create_updated_densities(
-        tmpdir, brain_regions, manipulation_recipe, materialized_cell_composition_volume
+        output_dir=tmpdir,
+        brain_regions=brain_regions,
+        all_operations=manipulation_recipe,
+        materialized_densities=materialized_cell_composition_volume,
     )
 
     p0 = "L23_LBC__bAC"
