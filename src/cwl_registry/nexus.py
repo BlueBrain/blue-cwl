@@ -10,7 +10,6 @@ import requests
 from entity_management import state
 from entity_management.core import AttrOf, DataDownload, Entity, attributes
 from entity_management.nexus import _print_nexus_error, load_by_id
-from kgforge.core import KnowledgeGraphForge
 
 from cwl_registry.exceptions import CWLRegistryError
 
@@ -98,6 +97,8 @@ def get_forge(
     Returns:
         KnowledgeGraphForge instance
     """
+    from kgforge.core import KnowledgeGraphForge  # pylint: disable=import-error
+
     nexus_base = nexus_base or os.getenv("NEXUS_BASE")
     nexus_org = nexus_org or state.get_org()
     nexus_project = nexus_project or state.get_proj()
@@ -140,7 +141,7 @@ def forge_to_config(forge) -> tuple[str, str, str, str]:
     )
 
 
-def get_resource(forge: KnowledgeGraphForge, resource_id: str):
+def get_resource(forge, resource_id: str):
     """Get resource from knowledge graph.
 
     Args:

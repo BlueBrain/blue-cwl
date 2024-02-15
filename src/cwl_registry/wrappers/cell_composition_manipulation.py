@@ -1,14 +1,15 @@
 """Composition manipulation."""
 import logging
+import os
+import subprocess
 from pathlib import Path
 
 import click
 import pandas as pd
 import voxcell
+from entity_management import state
 
 # pylint: disable=no-name-in-module
-from bba_data_push.bba_dataset_push import push_cellcomposition
-from bba_data_push.push_cellComposition import register_densities
 from entity_management.atlas import CellComposition
 from entity_management.config import BrainRegionSelectorConfig, CellCompositionConfig
 from entity_management.nexus import load_by_id
@@ -16,7 +17,7 @@ from entity_management.nexus import load_by_id
 from cwl_registry import density_manipulation, staging, statistics, utils
 from cwl_registry.density_manipulation import read_density_manipulation_recipe
 from cwl_registry.exceptions import CWLRegistryError, CWLWorkflowError, SchemaValidationError
-from cwl_registry.nexus import get_distribution_as_dict, get_entity, get_forge, get_resource
+from cwl_registry.nexus import get_distribution_as_dict, get_entity
 from cwl_registry.validation import validate_schema
 from cwl_registry.variant import Variant
 
@@ -136,6 +137,7 @@ def app(  # pylint: disable=too-many-arguments
         summary_path=updated_cell_composition_summary_path,
         base_cell_composition=cell_composition,
         hierarchy_path=atlas_info.ontology_path,
+        output_dir=build_dir,
     )
 
     cell_composition = get_entity(cell_composition_id, cls=CellComposition)
@@ -148,71 +150,102 @@ def app(  # pylint: disable=too-many-arguments
     )
 
 
-def _register_cell_composition(volume_path, summary_path, hierarchy_path, base_cell_composition):
-    L.info("Registering nrrd densities...")
+def _register_cell_composition(
+    volume_path, summary_path, hierarchy_path, base_cell_composition, output_dir
+):
+    atlas_release = base_cell_composition.atlasRelease
 
-    forge = get_forge(force_refresh=True)
+    atlas_release_id = atlas_release.get_id()
+    atlas_release_rev = atlas_release.get_rev()
+    reference_system_id = atlas_release.spatialReferenceSystem.get_id()
 
-    atlas_release_id = base_cell_composition.atlasRelease.get_id()
-    atlas_release_rev = base_cell_composition.atlasRelease.get_rev()
-    atlas_release = get_resource(
-        forge=forge,
-        resource_id=utils.url_with_revision(
-            url=atlas_release_id,
-            rev=atlas_release_rev,
-        ),
+    species_id = atlas_release.subject.species.url.replace(
+        "NCBITaxon:", "http://purl.obolibrary.org/obo/NCBITaxon_"
+    )
+    brain_region_id = base_cell_composition.brainLocation.brainRegion.url.replace(
+        "mba:", "http://api.brain-map.org/api/v2/data/Structure/"
     )
 
-    # convert the entity to forge resource to pass into the push module
-    base_cell_composition = get_resource(
-        forge=forge,
-        resource_id=utils.url_with_revision(
-            url=base_cell_composition.get_id(),
-            rev=base_cell_composition.get_rev(),
-        ),
-    )
+    output_volume_path = output_dir / "density_release.json"
 
-    L.debug("Atlas release id in CellComposition: %s", atlas_release.id)
+    arglist = [
+        "bba-data-push",
+        "--nexus-env",
+        state.get_base(),
+        "--nexus-org",
+        state.get_org(),
+        "--nexus-proj",
+        state.get_proj(),
+        "register-cell-composition-volume-distribution",
+        "--input-distribution-file",
+        str(volume_path),
+        "--output-distribution-file",
+        str(output_volume_path),
+        "--atlas-release-id",
+        atlas_release_id,
+        "--atlas-release-rev",
+        str(atlas_release_rev),
+        "--hierarchy-path",
+        str(hierarchy_path),
+        "--species",
+        species_id,
+        "--brain-region",
+        brain_region_id,
+        "--reference-system-id",
+        reference_system_id,
+    ]
+    env = os.environ | {"NEXUS_TOKEN": state.refresh_token()}
 
-    output_volume_path = Path(str(volume_path).replace(".json", "_id_only.json"))
+    L.info("Tool full command: %s", " ".join(arglist))
 
-    L.info("Registering nrrd densities...")
-    register_densities(
-        volume_path=volume_path,
-        atlas_release_prop=atlas_release,
-        forge=forge,
-        subject=atlas_release.subject,
-        brain_location_prop=atlas_release.brainLocation,
-        reference_system_prop=None,
-        contribution=None,
-        derivation=None,
-        resource_tag=None,
-        force_registration=True,
-        dryrun=False,
-        output_volume_path=output_volume_path,
-    )
+    subprocess.run(arglist, env=env, check=True)
 
-    L.info("Registering CellComposition...")
-    cell_composition_resource = push_cellcomposition(
-        forge=get_forge(force_refresh=True),
-        atlas_release_id=atlas_release_id,
-        atlas_release_rev=atlas_release_rev,
-        cell_composition_id=None,
-        brain_region=atlas_release.brainLocation.brainRegion.id,
-        hierarchy_path=hierarchy_path,
-        reference_system_id=base_cell_composition.atlasSpatialReferenceSystem.id,
-        volume_path=output_volume_path,
-        species=base_cell_composition.subject.species.id,
-        summary_path=summary_path,
-        name=("CellComposition", "CellCompositionSummary", "CellCompositionVolume"),
-        description="Cell Composition",
-        resource_tag=None,
-        logger=L,
-        force_registration=True,
-        dryrun=False,
-    )
+    output_cell_composition_file = output_dir / "cell_composition.json"
 
-    return cell_composition_resource.id
+    arglist = [
+        "bba-data-push",
+        "--nexus-env",
+        state.get_base(),
+        "--nexus-org",
+        state.get_org(),
+        "--nexus-proj",
+        state.get_proj(),
+        "push-cellcomposition",
+        "--atlas-release-id",
+        atlas_release_id,
+        "--atlas-release-rev",
+        str(atlas_release_rev),
+        "--hierarchy-path",
+        str(hierarchy_path),
+        "--species",
+        species_id,
+        "--brain-region",
+        brain_region_id,
+        "--reference-system-id",
+        reference_system_id,
+        "--volume-path",
+        str(output_volume_path),
+        "--summary-path",
+        str(summary_path),
+        "--name",
+        "CellComposition",
+        "CellCompositionSummary",
+        "CellCompositionVolume",
+        "--description",
+        "Cell Composition",
+        "--log-dir",
+        str(output_dir),
+        "--force-registration",
+        "--output-resource-file",
+        str(output_cell_composition_file),
+    ]
+    env = os.environ | {"NEXUS_TOKEN": state.refresh_token()}
+
+    L.info("Tool full command: %s", " ".join(arglist))
+
+    subprocess.run(arglist, env=env, check=True)
+
+    return utils.load_json(output_cell_composition_file)["@id"]
 
 
 def _get_summary_id(entry):
