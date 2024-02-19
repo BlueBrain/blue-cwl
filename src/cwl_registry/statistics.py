@@ -207,9 +207,12 @@ def atlas_densities_composition_summary(
 ):
     """Calculate the composition summary statistics of a density distribution."""
     if map_function == "auto":
-        n_procs = multiprocessing.cpu_count() - 1
         n_items = len(density_distribution)
-        chunksize = n_items // n_procs
+        n_procs = min(multiprocessing.cpu_count() - 1, n_items)
+
+        chunksize, extra = divmod(n_items, n_procs)
+        if extra:
+            chunksize += 1
 
         L.info(
             "map_function is automatically configured as a multiprocessing.Pool.imap "
