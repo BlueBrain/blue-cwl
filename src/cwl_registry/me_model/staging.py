@@ -189,7 +189,9 @@ def _materialize_emodel_configuration(entity_id, output_dir):
     dataset = get_distribution_as_dict(entity)
 
     # materialize morphology path
-    dataset["morphology"]["path"] = get_distribution_location_path(dataset["morphology"]["id"])
+    dataset["morphology"]["path"] = get_distribution_location_path(
+        dataset["morphology"]["id"], encoding_format="application/swc"
+    )
     del dataset["morphology"]["id"]
 
     # materialize the mod files
