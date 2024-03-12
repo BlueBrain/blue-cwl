@@ -9,17 +9,9 @@ import numpy as np
 import voxcell
 from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
+from entity_management.util import get_entity
 
-from cwl_registry import (
-    brain_regions,
-    connectome,
-    nexus,
-    recipes,
-    registering,
-    staging,
-    utils,
-    validation,
-)
+from cwl_registry import brain_regions, connectome, recipes, registering, staging, utils, validation
 from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.variant import Variant
 
@@ -62,7 +54,7 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
     staging_dir = utils.create_dir(output_dir / "stage")
     build_dir = utils.create_dir(output_dir / "build", clean_if_exists=True)
 
-    input_circuit_entity = nexus.get_entity(
+    input_circuit_entity = get_entity(
         resource_id=partial_circuit,
         cls=DetailedCircuit,
     )
@@ -76,7 +68,7 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
         node_population_name, input_nodes_file, INPUT_NODE_POPULATION_COLUMNS
     )
 
-    variant = nexus.get_entity(variant_config, cls=Variant)
+    variant = get_entity(resource_id=variant_config, cls=Variant)
 
     recipe_file = _create_recipe(
         macro_config_id=macro_connectome_config,
@@ -105,7 +97,7 @@ def _app(configuration, partial_circuit, macro_connectome_config, variant_config
         output_file=sonata_config_file,
     )
 
-    partial_circuit = nexus.get_entity(partial_circuit, cls=DetailedCircuit)
+    partial_circuit = get_entity(resource_id=partial_circuit, cls=DetailedCircuit)
 
     # output circuit
     L.info("Registering partial circuit...")
@@ -140,8 +132,8 @@ def _create_recipe(
     L.debug("Assembling macro matrix...")
     macro_matrix = connectome.assemble_macro_matrix(macro_config)
 
-    config_path = nexus.get_entity(
-        circuit_id, cls=DetailedCircuit
+    config_path = get_entity(
+        resource_id=circuit_id, cls=DetailedCircuit
     ).circuitConfigPath.get_url_as_path()
 
     nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(

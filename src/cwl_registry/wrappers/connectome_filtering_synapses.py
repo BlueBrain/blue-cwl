@@ -9,8 +9,9 @@ import click
 import voxcell
 from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
+from entity_management.util import get_entity
 
-from cwl_registry import Variant, nexus, recipes, registering, staging, utils, validation
+from cwl_registry import Variant, recipes, registering, staging, utils, validation
 from cwl_registry.exceptions import CWLWorkflowError
 
 L = logging.getLogger(__name__)
@@ -56,9 +57,9 @@ def connectome_filtering_synapses(
     staging_dir = utils.create_dir(output_dir / "stage")
     build_dir = utils.create_dir(output_dir / "build")
 
-    variant = nexus.get_entity(variant_config, cls=Variant)
+    variant = get_entity(resource_id=variant_config, cls=Variant)
 
-    partial_circuit = nexus.get_entity(partial_circuit, cls=DetailedCircuit)
+    partial_circuit = get_entity(resource_id=partial_circuit, cls=DetailedCircuit)
     config = utils.load_json(partial_circuit.circuitConfigPath.get_url_as_path())
 
     nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(config)

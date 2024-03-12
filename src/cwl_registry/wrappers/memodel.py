@@ -8,13 +8,13 @@ from pathlib import Path
 import click
 from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
-from entity_management.util import unquote_uri_path
+from entity_management.util import get_entity, unquote_uri_path
 
 from cwl_registry import registering, utils, validation
 from cwl_registry.me_model.entity import MEModelConfig
 from cwl_registry.me_model.recipe import build_me_model_recipe
 from cwl_registry.me_model.staging import stage_me_model_config
-from cwl_registry.nexus import get_distribution_as_dict, get_entity
+from cwl_registry.nexus import get_distribution_as_dict
 from cwl_registry.staging import stage_file
 from cwl_registry.utils import get_partial_circuit_region_id
 from cwl_registry.variant import Variant
@@ -62,7 +62,7 @@ def mono_execution(configuration, partial_circuit, variant_config, output_dir):
 def _mono_execution(configuration, partial_circuit, variant_config, output_dir):
     output_dir = utils.create_dir(output_dir)
 
-    variant = get_entity(variant_config, cls=Variant)
+    variant = get_entity(resource_id=variant_config, cls=Variant)
     staging_dir = utils.create_dir(output_dir / "stage")
     build_dir = utils.create_dir(output_dir / "build")
 
@@ -141,7 +141,7 @@ def _rmdir_if_exists(path: Path) -> Path:
 
 
 def _stage_circuit(partial_circuit, output_file):
-    entity = get_entity(partial_circuit, cls=DetailedCircuit)
+    entity = get_entity(resource_id=partial_circuit, cls=DetailedCircuit)
     stage_file(
         source=unquote_uri_path(entity.circuitConfigPath.url), target=output_file, symbolic=True
     )
@@ -375,7 +375,7 @@ def _register(
 
 
 def _register_circuit(partial_circuit, output_circuit_config_file):
-    partial_circuit = get_entity(partial_circuit, cls=DetailedCircuit)
+    partial_circuit = get_entity(resource_id=partial_circuit, cls=DetailedCircuit)
 
     circuit = registering.register_partial_circuit(
         name="Partial circuit with biohysical emodel properties",

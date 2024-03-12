@@ -11,6 +11,7 @@ import pandas as pd
 import voxcell
 from entity_management.atlas import CellComposition
 from entity_management.nexus import load_by_id
+from entity_management.util import get_entity
 from voxcell.nexus.voxelbrain import Atlas
 
 from cwl_registry import Variant, nexus, recipes, registering, staging, utils, validation
@@ -78,11 +79,11 @@ def _extract(
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     me_type_densities_file = staging_dir / "mtype-densities.parquet"
 
-    variant = nexus.get_entity(variant_config_id, cls=Variant)
+    variant = get_entity(resource_id=variant_config_id, cls=Variant)
 
     region = nexus.get_region_acronym(brain_region_id)
 
-    cell_composition = nexus.get_entity(cell_composition_id, cls=CellComposition)
+    cell_composition = get_entity(resource_id=cell_composition_id, cls=CellComposition)
 
     staging.stage_atlas(
         cell_composition.atlasRelease,

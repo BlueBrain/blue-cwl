@@ -14,7 +14,7 @@ from entity_management.atlas import AtlasRelease, CellCompositionSummary, CellCo
 from entity_management.config import MacroConnectomeConfig, MicroConnectomeConfig, SynapseConfig
 from entity_management.core import Entity
 from entity_management.nexus import load_by_id
-from entity_management.util import unquote_uri_path
+from entity_management.util import get_entity, unquote_uri_path
 
 from cwl_registry import utils
 from cwl_registry.nexus import (
@@ -22,7 +22,6 @@ from cwl_registry.nexus import (
     get_distribution,
     get_distribution_as_dict,
     get_distribution_location_path,
-    get_entity,
 )
 from cwl_registry.validation import validate_schema
 
@@ -430,7 +429,7 @@ def stage_atlas(
     """
     if isinstance(id_or_entity, str):
         atlas = get_entity(
-            id_or_entity, cls=AtlasRelease, base=base, org=org, proj=proj, token=token
+            resource_id=id_or_entity, cls=AtlasRelease, base=base, org=org, proj=proj, token=token
         )
     elif isinstance(id_or_entity, AtlasRelease):
         atlas = id_or_entity
@@ -589,7 +588,7 @@ def get_obj(
 ):
     """Return object."""
     if isinstance(obj, str):
-        return get_entity(obj, cls=cls, base=base, org=org, proj=proj, token=token)
+        return get_entity(resource_id=obj, cls=cls, base=base, org=org, proj=proj, token=token)
     return obj
 
 

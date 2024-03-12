@@ -9,6 +9,7 @@ import requests
 from entity_management import state
 from entity_management.core import DataDownload, Entity
 from entity_management.nexus import _print_nexus_error, load_by_id
+from entity_management.util import get_entity
 
 from cwl_registry.exceptions import CWLRegistryError
 
@@ -155,50 +156,6 @@ def get_resource(forge, resource_id: str):
     return resource
 
 
-def get_entity(
-    resource_id: str,
-    *,
-    cls: TEntity = Entity,
-    base: str | None = None,
-    org: str | None = None,
-    proj: str | None = None,
-    token: str | None = None,
-) -> TEntity:
-    """Instantiate an entity from a resource id.
-
-    Args:
-        resource_id: The string id of the KG resource.
-        cls: entity-management class to instantiate. Default is Entity.
-
-    Returns:
-        Instantiated entity from given id.
-
-    Raises:
-        CWLRegistryError if entity is not found.
-    """
-    try:
-        entity = cls.from_id(
-            resource_id,
-            cross_bucket=True,
-            base=base,
-            org=org,
-            proj=proj,
-            use_auth=token,
-        )
-    except Exception as e:
-        raise CWLRegistryError(
-            f"Entity {cls} failed to be instantiated from id {resource_id}."
-        ) from e
-
-    if entity is None:
-        raise CWLRegistryError(
-            f"Resource id {resource_id} could not be retrieved.\n"
-            f"endpoint: {base}\n"
-            f"bucket  : {org}/{proj}"
-        )
-    return entity
-
-
 def get_distribution(
     id_or_entity: str | Entity,
     *,
@@ -225,7 +182,9 @@ def get_distribution(
             * If multiple distributions and no matching encoding format.
     """
     if isinstance(id_or_entity, str):
-        entity = get_entity(id_or_entity, cls=cls, base=base, org=org, proj=proj, token=token)
+        entity = get_entity(
+            resource_id=id_or_entity, cls=cls, base=base, org=org, proj=proj, token=token
+        )
     else:
         entity = id_or_entity
 

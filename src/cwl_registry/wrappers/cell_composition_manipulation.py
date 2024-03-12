@@ -13,11 +13,12 @@ from entity_management import state
 from entity_management.atlas import CellComposition
 from entity_management.config import BrainRegionSelectorConfig, CellCompositionConfig
 from entity_management.nexus import load_by_id
+from entity_management.util import get_entity
 
 from cwl_registry import density_manipulation, staging, statistics, utils
 from cwl_registry.density_manipulation import read_density_manipulation_recipe
 from cwl_registry.exceptions import CWLRegistryError, CWLWorkflowError, SchemaValidationError
-from cwl_registry.nexus import get_distribution_as_dict, get_entity
+from cwl_registry.nexus import get_distribution_as_dict
 from cwl_registry.validation import validate_schema
 from cwl_registry.variant import Variant
 

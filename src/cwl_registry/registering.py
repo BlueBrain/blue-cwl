@@ -7,8 +7,7 @@ from entity_management.atlas import AtlasRelease, CellCompositionSummary
 from entity_management.base import BrainLocation, Derivation, Identifiable, OntologyTerm
 from entity_management.core import DataDownload, Subject
 from entity_management.simulation import DetailedCircuit
-
-from cwl_registry.nexus import get_entity
+from entity_management.util import get_entity
 
 
 def _subject(species_id: str | None):
@@ -39,7 +38,7 @@ def register_partial_circuit(
     species_id=None,
 ):
     """Register a partial circuit."""
-    atlas_release = get_entity(atlas_release_id, cls=AtlasRelease)
+    atlas_release = get_entity(resource_id=atlas_release_id, cls=AtlasRelease)
 
     circuit_config_path = DataDownload(url=f"file://{Path(sonata_config_path).resolve()}")
 
@@ -65,7 +64,7 @@ def register_cell_composition_summary(
     token=None,
 ):
     """Create and register a cell composition summary."""
-    atlas_release = get_entity(atlas_release_id, cls=AtlasRelease)
+    atlas_release = get_entity(resource_id=atlas_release_id, cls=AtlasRelease)
 
     distribution = DataDownload.from_file(
         file_like=str(summary_file),
@@ -77,7 +76,12 @@ def register_cell_composition_summary(
     )
     derivation = Derivation(
         entity=get_entity(
-            derivation_entity_id, cls=Identifiable, base=base, org=org, proj=proj, token=token
+            resource_id=derivation_entity_id,
+            cls=Identifiable,
+            base=base,
+            org=org,
+            proj=proj,
+            token=token,
         ),
     )
     summary = CellCompositionSummary(

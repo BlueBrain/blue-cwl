@@ -10,9 +10,10 @@ import pandas as pd
 import voxcell
 from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
+from entity_management.util import get_entity
 from morph_tool.converter import convert
 
-from cwl_registry import nexus, registering, staging, utils, validation
+from cwl_registry import registering, staging, utils, validation
 from cwl_registry.constants import MorphologyProducer
 from cwl_registry.mmodel import recipe
 from cwl_registry.mmodel.entity import MorphologyAssignmentConfig
@@ -74,14 +75,14 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     morphologies_dir = utils.create_dir(build_dir / "morphologies", clean_if_exists=True)
 
-    partial_circuit = nexus.get_entity(partial_circuit, cls=DetailedCircuit)
+    partial_circuit = get_entity(resource_id=partial_circuit, cls=DetailedCircuit)
 
     atlas_info = staging.stage_atlas(
         partial_circuit.atlasRelease,
         output_dir=atlas_dir,
         cell_orientation_field_basename="raw_orientation.nrrd",
     )
-    raw_config = nexus.get_entity(configuration, cls=MorphologyAssignmentConfig).to_model()
+    raw_config = get_entity(resource_id=configuration, cls=MorphologyAssignmentConfig).to_model()
     placeholders, canonicals = raw_config.expand().split()
 
     L.info("Materializing canonical morphology configuration...")
@@ -102,7 +103,7 @@ def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
     )
     validation.check_properties_in_population(population_name, nodes_file, INPUT_POPULATION_COLUMNS)
 
-    variant = nexus.get_entity(variant_config, cls=Variant)
+    variant = get_entity(resource_id=variant_config, cls=Variant)
 
     output_nodes_file = build_dir / "nodes.h5"
     _assign_morphologies(
