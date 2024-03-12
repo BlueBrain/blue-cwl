@@ -3,12 +3,11 @@ import logging
 import os
 from datetime import datetime
 from functools import wraps
-from typing import List, TypeVar
 
 import jwt
 import requests
 from entity_management import state
-from entity_management.core import AttrOf, DataDownload, Entity, attributes
+from entity_management.core import DataDownload, Entity
 from entity_management.nexus import _print_nexus_error, load_by_id
 
 from cwl_registry.exceptions import CWLRegistryError
@@ -19,17 +18,7 @@ L = logging.getLogger(__name__)
 SECONDS_TO_EXPIRATION = 5 * 60
 
 
-TEntity = TypeVar("TEntity")
-
-
-@attributes(
-    {
-        "name": AttrOf(str, default=None),
-        "distribution": AttrOf(List[DataDownload]),
-    }
-)
-class _MultiDistributionEntity(Entity):
-    pass
+TEntity = type[Entity]
 
 
 def _decode(token):
@@ -213,7 +202,7 @@ def get_entity(
 def get_distribution(
     id_or_entity: str | Entity,
     *,
-    cls: TEntity = _MultiDistributionEntity,
+    cls: TEntity = Entity,
     encoding_format: str | None = None,
     base: str | None = None,
     org: str | None = None,
@@ -266,7 +255,7 @@ def get_distribution(
 def get_distribution_location_path(
     id_or_entity: str | TEntity,
     *,
-    cls: TEntity = _MultiDistributionEntity,
+    cls: TEntity = Entity,
     encoding_format: str | None = None,
     base: str | None = None,
     org: str | None = None,
@@ -302,7 +291,7 @@ def download_distribution(
     *,
     output_dir: os.PathLike,
     filename: str = None,
-    cls: TEntity = _MultiDistributionEntity,
+    cls: TEntity = Entity,
     encoding_format: str | None = None,
     base: str | None = None,
     org: str | None = None,
@@ -344,7 +333,7 @@ def download_distribution(
 def get_distribution_as_dict(
     id_or_entity: str | TEntity,
     *,
-    cls: TEntity = _MultiDistributionEntity,
+    cls: TEntity = Entity,
     base: str | None = None,
     org: str | None = None,
     proj: str | None = None,

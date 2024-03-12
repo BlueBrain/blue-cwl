@@ -36,7 +36,7 @@ setup(
         "voxcell",
         "joblib",
         "cwl-luigi>=0.3.1,<1",
-        "entity_management>=1.2.41",
+        "entity_management>=1.2.44",
         "pyarrow>=3.0.0",
         "lxml",
         "fz_td_recipe",
