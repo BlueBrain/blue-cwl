@@ -22,6 +22,8 @@ import pyarrow
 import pyarrow.fs
 import voxcell
 import yaml
+from entity_management.core import Entity
+from entity_management.util import get_entity
 from pyarrow.pandas_compat import get_logical_type, get_logical_type_map
 
 from cwl_registry.constants import DEFAULT_CIRCUIT_BUILD_PARAMETERS
@@ -574,3 +576,18 @@ def get_partial_circuit_region_id(partial_circuit):
     """Return brain region id."""
     url = partial_circuit.brainLocation.brainRegion.url
     return url.replace("mba:", "http://api.brain-map.org/api/v2/data/Structure/")
+
+
+def get_obj(
+    obj: str | Entity,
+    *,
+    cls=Entity,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+):
+    """Helper to retrieve entity if an id is passed or return input object."""
+    if isinstance(obj, str):
+        return get_entity(resource_id=obj, cls=cls, base=base, org=org, proj=proj, token=token)
+    return obj

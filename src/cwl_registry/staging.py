@@ -14,7 +14,7 @@ from entity_management.atlas import AtlasRelease, CellCompositionSummary, CellCo
 from entity_management.config import MacroConnectomeConfig, MicroConnectomeConfig, SynapseConfig
 from entity_management.core import Entity
 from entity_management.nexus import load_by_id
-from entity_management.util import get_entity, unquote_uri_path
+from entity_management.util import unquote_uri_path
 
 from cwl_registry import utils
 from cwl_registry.nexus import (
@@ -23,6 +23,7 @@ from cwl_registry.nexus import (
     get_distribution_as_dict,
     get_distribution_location_path,
 )
+from cwl_registry.utils import get_obj
 from cwl_registry.validation import validate_schema
 
 L = logging.getLogger(__name__)
@@ -427,14 +428,7 @@ def stage_atlas(
     Return:
         An AtlasInfo instance with the staged file paths.
     """
-    if isinstance(id_or_entity, str):
-        atlas = get_entity(
-            resource_id=id_or_entity, cls=AtlasRelease, base=base, org=org, proj=proj, token=token
-        )
-    elif isinstance(id_or_entity, AtlasRelease):
-        atlas = id_or_entity
-    else:
-        raise TypeError("Incorrect argument id_or_entity={id_or_entity}")
+    atlas = get_obj(id_or_entity, cls=AtlasRelease, base=base, org=org, proj=proj, token=token)
 
     resource_id = atlas.get_id()
 
@@ -575,21 +569,6 @@ def _config_to_path(
         proj=proj,
         token=token,
     )
-
-
-def get_obj(
-    obj: str | Entity,
-    *,
-    cls=Entity,
-    base: str | None = None,
-    org: str | None = None,
-    proj: str | None = None,
-    token: str | None = None,
-):
-    """Return object."""
-    if isinstance(obj, str):
-        return get_entity(resource_id=obj, cls=cls, base=base, org=org, proj=proj, token=token)
-    return obj
 
 
 def _get_data(

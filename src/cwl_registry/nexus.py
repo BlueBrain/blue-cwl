@@ -9,9 +9,9 @@ import requests
 from entity_management import state
 from entity_management.core import DataDownload, Entity
 from entity_management.nexus import _print_nexus_error, load_by_id
-from entity_management.util import get_entity
 
 from cwl_registry.exceptions import CWLRegistryError
+from cwl_registry.utils import get_obj
 
 L = logging.getLogger(__name__)
 
@@ -20,140 +20,6 @@ SECONDS_TO_EXPIRATION = 5 * 60
 
 
 TEntity = type[Entity]
-
-
-def _decode(token):
-    """Decode the token, and return its contents."""
-    return jwt.decode(token, options={"verify_signature": False})
-
-
-def _has_expired(token):
-    """Check if the token has expired or is going to expire in 'SECONDS_TO_EXPIRATION'."""
-    expiration_time = _decode(token)["exp"]
-    return datetime.timestamp(datetime.now()) + SECONDS_TO_EXPIRATION > expiration_time
-
-
-def _refresh_token_on_failure(func):
-    """Refresh access token on failure and try again."""
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        """Decorator function"""
-        try:
-            return func(*args, **kwargs)
-        except requests.exceptions.HTTPError as e1:
-            if e1.response.status_code == 401 and state.has_offline_token():
-                kwargs["token"] = state.refresh_token()
-                try:
-                    return func(*args, **kwargs)
-                except requests.exceptions.HTTPError as e2:
-                    _print_nexus_error(e2)
-                    raise
-            _print_nexus_error(e1)
-            raise
-
-    return wrapper
-
-
-def _get_valid_token(token: str | None = None, force_refresh: bool = False) -> str:
-    """Return a valid token if possible."""
-    if token is None:
-        token = state.get_token()
-    else:
-        state.set_token(token)
-
-    # the access token can only be refreshed if an offline/refresh token is available
-    if (force_refresh or _has_expired(token)) and state.has_offline_token():
-        return state.refresh_token()
-
-    return token
-
-
-def get_forge(
-    nexus_base: str = None,
-    nexus_org: str = None,
-    nexus_project: str = None,
-    nexus_token: str = None,
-    force_refresh: bool = False,
-):  # pragma: no cover
-    """Create a KnowledgeGraphForge instance.
-
-    Args:
-        nexus_base: The nexus instance endpoint.
-        nexus_org: The nexus organization.
-        nexus_project: The nexus project.
-        force_refresh: Whether to attempt renew the token (Requires offline token).
-
-    Returns:
-        KnowledgeGraphForge instance
-    """
-    from kgforge.core import KnowledgeGraphForge  # pylint: disable=import-error
-
-    nexus_base = nexus_base or os.getenv("NEXUS_BASE")
-    nexus_org = nexus_org or state.get_org()
-    nexus_project = nexus_project or state.get_proj()
-    nexus_token = _get_valid_token(nexus_token, force_refresh)
-
-    return _refresh_token_on_failure(KnowledgeGraphForge)(
-        configuration="https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml",
-        bucket=f"{nexus_org}/{nexus_project}",
-        endpoint=nexus_base,
-        searchendpoints={
-            "sparql": {
-                "endpoint": "https://bbp.epfl.ch/neurosciencegraph/data/views/aggreg-sp/dataset"
-            },
-            "elastic": {
-                "endpoint": "https://bbp.epfl.ch/neurosciencegraph/data/views/aggreg-es/dataset",
-                "mapping": "https://bbp.epfl.ch/neurosciencegraph/data/views/es/dataset",
-                "default_str_keyword_field": "keyword",
-            },
-        },
-        token=nexus_token,
-    )
-
-
-def forge_to_config(forge) -> tuple[str, str, str, str]:
-    """Get nexus configuration from forge instance.
-
-    Args:
-        forge: The KnowledgeGraphForge instance.
-
-    Returns:
-        (base, org, proj, token) tuple
-    """
-    store = forge._store  # pylint: disable=protected-access
-    org, proj = store.bucket.split("/")
-    return (
-        store.endpoint,
-        org,
-        proj,
-        store.token,
-    )
-
-
-def get_resource(forge, resource_id: str):
-    """Get resource from knowledge graph.
-
-    Args:
-        forge: The KnowledgeGraphForge instance.
-        resource_id: The string id of the resource to retrieve.
-
-    Returns:
-        kgforge resource.
-
-    Raises:
-        CWLRegistryError if resource is not found.
-    """
-    resource = forge.retrieve(resource_id, cross_bucket=True)
-
-    if resource is None:
-        # pylint: disable=protected-access
-        raise CWLRegistryError(
-            f"Resource id {resource_id} could not be retrieved.\n"
-            f"endpoint: {forge._store.endpoint}\n"
-            f"bucket  : {forge._store.bucket}"
-        )
-    return resource
 
 
 def get_distribution(
@@ -181,13 +47,7 @@ def get_distribution(
             * If entity is not found.
             * If multiple distributions and no matching encoding format.
     """
-    if isinstance(id_or_entity, str):
-        entity = get_entity(
-            resource_id=id_or_entity, cls=cls, base=base, org=org, proj=proj, token=token
-        )
-    else:
-        entity = id_or_entity
-
+    entity = get_obj(id_or_entity, cls=cls, base=base, org=org, proj=proj, token=token)
     distribution = entity.distribution
 
     if isinstance(distribution, list):
@@ -337,3 +197,137 @@ def get_region_acronym(
         proj="datamodels",
         token=token,
     )["notation"]
+
+
+def _decode(token):
+    """Decode the token, and return its contents."""
+    return jwt.decode(token, options={"verify_signature": False})
+
+
+def _has_expired(token):
+    """Check if the token has expired or is going to expire in 'SECONDS_TO_EXPIRATION'."""
+    expiration_time = _decode(token)["exp"]
+    return datetime.timestamp(datetime.now()) + SECONDS_TO_EXPIRATION > expiration_time
+
+
+def _refresh_token_on_failure(func):
+    """Refresh access token on failure and try again."""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        """Decorator function"""
+        try:
+            return func(*args, **kwargs)
+        except requests.exceptions.HTTPError as e1:
+            if e1.response.status_code == 401 and state.has_offline_token():
+                kwargs["token"] = state.refresh_token()
+                try:
+                    return func(*args, **kwargs)
+                except requests.exceptions.HTTPError as e2:
+                    _print_nexus_error(e2)
+                    raise
+            _print_nexus_error(e1)
+            raise
+
+    return wrapper
+
+
+def _get_valid_token(token: str | None = None, force_refresh: bool = False) -> str:
+    """Return a valid token if possible."""
+    if token is None:
+        token = state.get_token()
+    else:
+        state.set_token(token)
+
+    # the access token can only be refreshed if an offline/refresh token is available
+    if (force_refresh or _has_expired(token)) and state.has_offline_token():
+        return state.refresh_token()
+
+    return token
+
+
+def get_forge(
+    nexus_base: str = None,
+    nexus_org: str = None,
+    nexus_project: str = None,
+    nexus_token: str = None,
+    force_refresh: bool = False,
+):  # pragma: no cover
+    """Create a KnowledgeGraphForge instance.
+
+    Args:
+        nexus_base: The nexus instance endpoint.
+        nexus_org: The nexus organization.
+        nexus_project: The nexus project.
+        force_refresh: Whether to attempt renew the token (Requires offline token).
+
+    Returns:
+        KnowledgeGraphForge instance
+    """
+    from kgforge.core import KnowledgeGraphForge  # pylint: disable=import-error
+
+    nexus_base = nexus_base or os.getenv("NEXUS_BASE")
+    nexus_org = nexus_org or state.get_org()
+    nexus_project = nexus_project or state.get_proj()
+    nexus_token = _get_valid_token(nexus_token, force_refresh)
+
+    return _refresh_token_on_failure(KnowledgeGraphForge)(
+        configuration="https://raw.githubusercontent.com/BlueBrain/nexus-forge/master/examples/notebooks/use-cases/prod-forge-nexus.yml",
+        bucket=f"{nexus_org}/{nexus_project}",
+        endpoint=nexus_base,
+        searchendpoints={
+            "sparql": {
+                "endpoint": "https://bbp.epfl.ch/neurosciencegraph/data/views/aggreg-sp/dataset"
+            },
+            "elastic": {
+                "endpoint": "https://bbp.epfl.ch/neurosciencegraph/data/views/aggreg-es/dataset",
+                "mapping": "https://bbp.epfl.ch/neurosciencegraph/data/views/es/dataset",
+                "default_str_keyword_field": "keyword",
+            },
+        },
+        token=nexus_token,
+    )
+
+
+def forge_to_config(forge) -> tuple[str, str, str, str]:
+    """Get nexus configuration from forge instance.
+
+    Args:
+        forge: The KnowledgeGraphForge instance.
+
+    Returns:
+        (base, org, proj, token) tuple
+    """
+    store = forge._store  # pylint: disable=protected-access
+    org, proj = store.bucket.split("/")
+    return (
+        store.endpoint,
+        org,
+        proj,
+        store.token,
+    )
+
+
+def get_resource(forge, resource_id: str):
+    """Get resource from knowledge graph.
+
+    Args:
+        forge: The KnowledgeGraphForge instance.
+        resource_id: The string id of the resource to retrieve.
+
+    Returns:
+        kgforge resource.
+
+    Raises:
+        CWLRegistryError if resource is not found.
+    """
+    resource = forge.retrieve(resource_id, cross_bucket=True)
+
+    if resource is None:
+        # pylint: disable=protected-access
+        raise CWLRegistryError(
+            f"Resource id {resource_id} could not be retrieved.\n"
+            f"endpoint: {forge._store.endpoint}\n"
+            f"bucket  : {forge._store.bucket}"
+        )
+    return resource

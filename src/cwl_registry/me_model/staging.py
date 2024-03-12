@@ -8,8 +8,8 @@ from entity_management.emodel import EModel
 
 from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.nexus import download_distribution, get_distribution, get_distribution_as_dict
-from cwl_registry.staging import get_entry_id, get_obj, transform_cached, transform_nested_dataset
-from cwl_registry.utils import create_dir, load_json, url_without_revision, write_json
+from cwl_registry.staging import get_entry_id, transform_cached, transform_nested_dataset
+from cwl_registry.utils import create_dir, get_obj, load_json, url_without_revision, write_json
 
 OPTIONAL_WORKFLOW_DATASETS = {
     "ExtractionTargetsConfiguration": {
