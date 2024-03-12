@@ -2,10 +2,10 @@
 import os
 from pathlib import Path
 
-from entity_management.atlas import AtlasBrainRegion, AtlasRelease, CellCompositionSummary
+from entity_management import nexus
+from entity_management.atlas import AtlasRelease, CellCompositionSummary
 from entity_management.base import BrainLocation, Derivation, Identifiable, OntologyTerm
 from entity_management.core import DataDownload, Subject
-from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
 
 from cwl_registry.nexus import get_entity
@@ -16,16 +16,16 @@ def _subject(species_id: str | None):
         species_id = "http://purl.obolibrary.org/obo/NCBITaxon_10090"
         label = "Mus musculus"
     else:
-        label = load_by_id(species_id, cross_bucket=True)["label"]
+        label = nexus.load_by_id(species_id, cross_bucket=True)["label"]
     return Subject(species=OntologyTerm(url=species_id, label=label))
 
 
 def _brain_location(brain_region_id):
-    region = get_entity(brain_region_id, cls=AtlasBrainRegion)
+    label = nexus.load_by_id(brain_region_id, cross_bucket=True)["label"]
     return BrainLocation(
         brainRegion=OntologyTerm(
-            url=region.get_id(),
-            label=region.label,
+            url=brain_region_id,
+            label=label,
         )
     )
 

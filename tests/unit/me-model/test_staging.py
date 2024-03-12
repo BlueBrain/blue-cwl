@@ -5,26 +5,39 @@ import pytest
 from cwl_registry.me_model import staging as test_module
 from cwl_registry.utils import load_json
 
+
 DATA_DIR = Path(__file__).parent / "data"
 
 
 PREFIX = "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model"
 
 
-# def test_materialize_emodel(emodel_metadata):
-#    with patch("entity_management.nexus.load_by_id", return_value=emodel_metadata):
-#        test_module._materialize_emodel(None, None, None, None)
+def test_stage_emodel(tmp_path, emodel):
+    staging_dir = tmp_path / "emodel_staging_dir"
+    staging_dir.mkdir()
+
+    res = test_module.stage_emodel(emodel, staging_dir=staging_dir)
+
+    assert res == {
+        "morphology": str(DATA_DIR / "neuron_morphology_distribution.swc"),
+        "params": {
+            "values": str(DATA_DIR / "emodel_distribution.json"),
+            "bounds": str(staging_dir / "EModelConfiguration.json"),
+        },
+        "features": str(DATA_DIR / "fitness_calculator_configuration_distribution.json"),
+        "pipeline_settings": str(DATA_DIR / "emodel_pipeline_settings_distribution.json"),
+    }
 
 
-def test_materialize_placeholder_emodel_config(
+def test_stage_placeholder_emodel_config(
     tmp_path, emodel_config, materialized_emodel_config, mock_get_emodel
 ):
     output_dir = tmp_path / "out"
     output_dir.mkdir()
     output_file = tmp_path / "output_file.json"
 
-    with patch("cwl_registry.me_model.staging._materialize_emodel", side_effect=mock_get_emodel):
-        res1 = test_module.materialize_placeholder_emodel_config(
+    with patch("cwl_registry.me_model.staging._stage_emodel_entry", side_effect=mock_get_emodel):
+        res1 = test_module.stage_placeholder_emodel_config(
             emodel_config,
             staging_dir=output_dir,
             output_file=output_file,
@@ -35,33 +48,7 @@ def test_materialize_placeholder_emodel_config(
     assert res1 == materialized_emodel_config
 
 
-def test_materialize_placeholder_emodel_config__labels_only(
-    tmp_path, emodel_config, mock_get_emodel
-):
-    output_dir = tmp_path / "out"
-    output_dir.mkdir()
-    output_file = tmp_path / "output_file.json"
-
-    with patch("cwl_registry.me_model.staging._materialize_emodel", side_effect=mock_get_emodel):
-        res1 = test_module.materialize_placeholder_emodel_config(
-            emodel_config,
-            staging_dir=output_dir,
-            labels_only=True,
-            output_file=output_file,
-        )
-    res2 = load_json(output_file)
-
-    assert res1 == res2
-    assert res1 == {
-        "AAA": {
-            "GEN_mtype": {"GEN_etype": "AAA__GEN_mtype__GEN_etype__emodel"},
-            "GIN_mtype": {"GIN_etype": "AAA__GIN_mtype__GIN_etype__emodel"},
-        },
-        "ACAd1": {"L1_DAC": {"bNAC": "ACAd1__L1_DAC__bNAC__emodel", "cNAC": "ACAd1__L1_DAC__cNAC"}},
-    }
-
-
-def test_materialize_me_model_config(
+def test_stage_me_model_config(
     tmp_path, me_model_config, emodel_config, materialized_me_model_config, mock_get_emodel
 ):
     staging_dir = tmp_path / "out"
@@ -74,9 +61,9 @@ def test_materialize_me_model_config(
             "cwl_registry.me_model.staging.get_distribution_as_dict",
             return_value=emodel_config,
         ),
-        patch("cwl_registry.me_model.staging._materialize_emodel", side_effect=mock_get_emodel),
+        patch("cwl_registry.me_model.staging._stage_emodel_entry", side_effect=mock_get_emodel),
     ):
-        res1 = test_module.materialize_me_model_config(
+        res1 = test_module.stage_me_model_config(
             me_model_config,
             staging_dir=staging_dir,
             output_file=output_file,
@@ -88,7 +75,7 @@ def test_materialize_me_model_config(
     assert res1 == materialized_me_model_config
 
 
-def test_materialize_me_model_config__empty_overrides(
+def test_stage_me_model_config__empty_overrides(
     tmp_path, emodel_config, materialized_me_model_config, mock_get_emodel
 ):
     staging_dir = tmp_path / "out"
@@ -114,9 +101,9 @@ def test_materialize_me_model_config__empty_overrides(
             "cwl_registry.me_model.staging.get_distribution_as_dict",
             return_value=emodel_config,
         ),
-        patch("cwl_registry.me_model.staging._materialize_emodel", side_effect=mock_get_emodel),
+        patch("cwl_registry.me_model.staging._stage_emodel_entry", side_effect=mock_get_emodel),
     ):
-        res1 = test_module.materialize_me_model_config(
+        res1 = test_module.stage_me_model_config(
             me_model_config,
             staging_dir=staging_dir,
             output_file=output_file,

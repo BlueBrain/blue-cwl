@@ -13,7 +13,7 @@ from entity_management.util import unquote_uri_path
 from cwl_registry import registering, utils, validation
 from cwl_registry.me_model.entity import MEModelConfig
 from cwl_registry.me_model.recipe import build_me_model_recipe
-from cwl_registry.me_model.staging import materialize_me_model_config
+from cwl_registry.me_model.staging import stage_me_model_config
 from cwl_registry.nexus import get_distribution_as_dict, get_entity
 from cwl_registry.staging import stage_file
 from cwl_registry.utils import get_partial_circuit_region_id
@@ -68,9 +68,9 @@ def _mono_execution(configuration, partial_circuit, variant_config, output_dir):
 
     configuration_file = staging_dir / "materialized_me_model_config.json"
 
-    materialize_me_model_config(
+    stage_me_model_config(
         dataset=get_distribution_as_dict(configuration, cls=MEModelConfig),
-        staging_dir=staging_dir,
+        staging_dir=staging_dir / "me-model-config",
         output_file=configuration_file,
     )
 
@@ -171,8 +171,10 @@ def _run_emodel_prepare(recipe_file, mechanisms_dir, variant, work_dir):
     cmd = " ".join(arglist)
     cmd = utils.build_variant_allocation_command(cmd, variant, sub_task_index=0)
 
+    env = os.environ | {"NEURON_MODULE_OPTIONS": "-nogui"}
+
     L.info("Tool command :%s", cmd)
-    subprocess.run(cmd, check=True, shell=True)
+    subprocess.run(cmd, check=True, shell=True, env=env)
 
 
 def _run_emodel_assign(circuit_config_file, recipe_file, output_nodes_file, work_dir, variant):
@@ -200,8 +202,10 @@ def _run_emodel_assign(circuit_config_file, recipe_file, output_nodes_file, work
     cmd = " ".join(arglist)
     cmd = utils.build_variant_allocation_command(cmd, variant, sub_task_index=0)
 
+    env = os.environ | {"NEURON_MODULE_OPTIONS": "-nogui"}
+
     L.info("Tool command :%s", cmd)
-    subprocess.run(cmd, check=True, shell=True)
+    subprocess.run(cmd, check=True, shell=True, env=env)
 
     L.info("Validating generated nodes file...")
     validation.check_properties_in_population(

@@ -297,6 +297,50 @@ def get_distribution_location_path(
     return distribution.get_location_path(use_auth=token)
 
 
+def download_distribution(
+    id_or_entity: str | TEntity,
+    *,
+    output_dir: os.PathLike,
+    filename: str = None,
+    cls: TEntity = _MultiDistributionEntity,
+    encoding_format: str | None = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> str:
+    """Download an entity's distribution.
+
+    Args:
+        id_or_entity: Either the id to retrieve the entity or the entity.
+        cls: entity-management class to instantiate. Default is Entity.
+        output_dir: Output directory to download the distribution to.
+        filename: Filename to use. Resource's file name is used by default.
+        encoding_format: The format to choose if many.
+
+    Returns:
+        Instantiated entity from given id.
+
+    Raises:
+        CWLRegistryError if entity is not found.
+    """
+    distribution = get_distribution(
+        id_or_entity,
+        cls=cls,
+        encoding_format=encoding_format,
+        base=base,
+        org=org,
+        proj=proj,
+        token=token,
+    )
+    path = distribution.download(
+        path=str(output_dir),
+        file_name=filename,
+        use_auth=token,
+    )
+    return str(path)
+
+
 def get_distribution_as_dict(
     id_or_entity: str | TEntity,
     *,

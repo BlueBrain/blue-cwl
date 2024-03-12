@@ -77,6 +77,7 @@ def test_build_recipe(tmp_path, materialized_me_model_config_file):
     }
 
 
+@patchenv(foo="bar")
 def test_run_emodel_prepare():
     with (
         patch("subprocess.run") as patched_subprocess,
@@ -101,9 +102,14 @@ def test_run_emodel_prepare():
             expected_command,
             check=True,
             shell=True,
+            env={
+                "foo": "bar",
+                "NEURON_MODULE_OPTIONS": "-nogui",
+            },
         )
 
 
+@patchenv(foo="bar")
 def test_run_emodel_assign(circuit_config_file):
     with (
         patch("subprocess.run") as patched_subprocess,
@@ -132,6 +138,10 @@ def test_run_emodel_assign(circuit_config_file):
             expected_command,
             check=True,
             shell=True,
+            env={
+                "foo": "bar",
+                "NEURON_MODULE_OPTIONS": "-nogui",
+            },
         )
 
 

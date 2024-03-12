@@ -37,7 +37,7 @@ setup(
         "joblib",
         "cwl-luigi>=0.3.1,<1",
         "entity_management>=1.2.41",
-        "pyarrow",
+        "pyarrow>=3.0.0",
         "lxml",
         "fz_td_recipe",
         "pydantic",

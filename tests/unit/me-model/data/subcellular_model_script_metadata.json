@@ -1,0 +1,123 @@
+{
+  "@context": [
+    "https://bluebrain.github.io/nexus/contexts/metadata.json",
+    "https://bbp.neuroshapes.org"
+  ],
+  "@id": "https://bbp.epfl.ch/neurosciencegraph/data/5db8b922-e0a1-4ab8-9674-4998a5bebb3b",
+  "@type": [
+    "Entity",
+    "Dataset",
+    "SubCellularModelScript",
+    "HodgkinHuxleyIonCurrentModel",
+    "DistributedMechanism"
+  ],
+  "atlasRelease": {
+    "@id": "https://bbp.epfl.ch/neurosciencegraph/data/4906ab85-694f-469d-962f-c0174e901885",
+    "@type": [
+      "BrainAtlasRelease",
+      "AtlasRelease"
+    ],
+    "_rev": 9
+  },
+  "brainLocation": {
+    "@type": "BrainLocation",
+    "brainRegion": {
+      "@id": "mba:8",
+      "label": "Basic cell groups and regions"
+    }
+  },
+  "description": "Ih channel. Kole,Hallermann,and Stuart, J. Neurosci. 2006.LJP: OK, Somatic whole- cell voltage was corrected for the  14 mV difference.",
+  "distribution": {
+    "@type": "DataDownload",
+    "atLocation": {
+      "@type": "Location",
+      "location": "file:///gpfs/bbp.cscs.ch/data/project/proj134/nexus/bbp/mmb-point-neuron-framework-model/f/d/f/d/3/c/3/0/Ih.mod",
+      "store": {
+        "@id": "https://bbp.epfl.ch/neurosciencegraph/data/10419671-da26-48d3-abf9-51eb54759ca4",
+        "@type": "RemoteDiskStorage",
+        "_rev": 1
+      }
+    },
+    "contentSize": {
+      "unitCode": "bytes",
+      "value": 866
+    },
+    "contentUrl": "https://bbp.epfl.ch/nexus/v1/files/bbp/mmb-point-neuron-framework-model/https%3A%2F%2Fbbp.epfl.ch%2Fnexus%2Fv1%2Fresources%2Fbbp%2Fmmb-point-neuron-framework-model%2F_%2F9b9873ab-49d0-4c0d-8be3-5ac95c1ebc8c",
+    "digest": {
+      "algorithm": "SHA-256",
+      "value": "f5b3cc2b5157dfdae4490bfac4ad14d2d8144f41f1f944e0cd43815e85a6227a"
+    },
+    "encodingFormat": "application/mod",
+    "name": "Ih.mod"
+  },
+  "exposesParameters": [
+    {
+      "@type": "NmodlSuffix",
+      "name": "Ih",
+      "represents": "IonChannelMechanism"
+    },
+    {
+      "@type": "NmodlRangeVariable",
+      "lowerLimit": 0,
+      "name": "gIhbar",
+      "represents": "ConductanceDensity",
+      "unit": "S/cm2"
+    },
+    {
+      "@type": "NonSpecificCurrent",
+      "name": "ihcn",
+      "readOnly": false,
+      "unitCode": "mA/cm2"
+    }
+  ],
+  "identifier": "CTX_Ih",
+  "isLjpCorrected": true,
+  "isTemperatureDependent": false,
+  "ljp_corrected": true,
+  "mod": {
+    "gbar": "gIhbar",
+    "suffix": "Ih"
+  },
+  "modelId": "CTX_Ih",
+  "model_class": "HodgkinHuxley",
+  "modelid": "ncx04",
+  "name": "Ih",
+  "nmodlParameter": {
+    "range": [
+      "gIhbar",
+      "gIh",
+      "ihcn"
+    ],
+    "suffix": "Ih",
+    "write": "ihcn"
+  },
+  "objectOfStudy": {
+    "@id": "http://bbp.epfl.ch/neurosciencegraph/taxonomies/objectsofstudy/ionchannels",
+    "label": "Ion Channel"
+  },
+  "origin": "neocortex",
+  "subject": {
+    "@type": "Subject",
+    "species": {
+      "@id": "NCBITaxon:10090",
+      "label": "Mus musculus"
+    }
+  },
+  "suffix": "Ih",
+  "temperature": {
+    "unitCode": "C",
+    "value": 34
+  },
+  "_constrainedBy": "https://bluebrain.github.io/nexus/schemas/unconstrained.json",
+  "_createdAt": "2022-10-20T13:05:36.018Z",
+  "_createdBy": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/damart",
+  "_deprecated": false,
+  "_incoming": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fneurosciencegraph%2Fdata%2F5db8b922-e0a1-4ab8-9674-4998a5bebb3b/incoming",
+  "_outgoing": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fneurosciencegraph%2Fdata%2F5db8b922-e0a1-4ab8-9674-4998a5bebb3b/outgoing",
+  "_project": "https://bbp.epfl.ch/nexus/v1/projects/bbp/mmb-point-neuron-framework-model",
+  "_rev": 4,
+  "_schemaProject": "https://bbp.epfl.ch/nexus/v1/projects/bbp/mmb-point-neuron-framework-model",
+  "_self": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fneurosciencegraph%2Fdata%2F5db8b922-e0a1-4ab8-9674-4998a5bebb3b",
+  "_updatedAt": "2024-03-04T10:11:07.674085Z",
+  "_updatedBy": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/ajaquier"
+}

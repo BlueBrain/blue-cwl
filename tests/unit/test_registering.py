@@ -19,14 +19,24 @@ def test_brain_location(monkeypatch):
 
     monkeypatch.setattr(AtlasBrainRegion, "from_id", lambda *args, **kwargs: mock_region)
 
-    res = test_module._brain_location(None)
+    payload = {
+        "@id": "foo",
+        "@type": "Class",
+        "label": "bar",
+        "notation": "myr",
+        "identifier": 420,
+        "prefLabel": "my-region",
+    }
+
+    with patch("entity_management.nexus.load_by_id", return_value=payload):
+        res = test_module._brain_location("foo")
 
     assert isinstance(res, BrainLocation)
     assert res.brainRegion.url == "foo"
     assert res.brainRegion.label == "bar"
 
 
-def test_register_partial_circuit(monkeypatch):
+def test_register_partial_circuit():
     def load_by_url(url, *args, **kwargs):
         if "brain-region-id" in url:
             return {
@@ -54,16 +64,17 @@ def test_register_partial_circuit(monkeypatch):
     def create(base_url, payload, *args, **kwargs):
         return payload
 
-    monkeypatch.setattr(nexus, "load_by_url", load_by_url)
-    monkeypatch.setattr(nexus, "create", create)
-
-    res = test_module.register_partial_circuit(
-        name="my-circuit",
-        brain_region_id="brain-region-id",
-        atlas_release_id="atlas-release-id",
-        sonata_config_path="my-sonata-path",
-        description="my-description",
-    )
+    with (
+        patch("entity_management.nexus.load_by_url", side_effect=load_by_url),
+        patch("entity_management.nexus.create", side_effect=create),
+    ):
+        res = test_module.register_partial_circuit(
+            name="my-circuit",
+            brain_region_id="brain-region-id",
+            atlas_release_id="atlas-release-id",
+            sonata_config_path="my-sonata-path",
+            description="my-description",
+        )
 
     assert isinstance(res.brainLocation, BrainLocation)
     assert res.brainLocation.brainRegion.url == "brain-region-id"

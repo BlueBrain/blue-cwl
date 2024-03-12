@@ -306,12 +306,12 @@ def transform_nested_dataset(
         target_level = target[branch_token] = {}
 
         for child_id, child_data, child_children in _iter_dataset_children(source, branch_token):
-            target_data = transform_func(child_id, child_data)
+            tar_get_data = transform_func(child_id, child_data)
 
-            target_level[utils.url_without_revision(child_id)] = target_data
+            target_level[utils.url_without_revision(child_id)] = tar_get_data
 
             if child_children:
-                q.append((child_children, target_data, level + 1))
+                q.append((child_children, tar_get_data, level + 1))
 
     return result
 
@@ -576,6 +576,21 @@ def _config_to_path(
         proj=proj,
         token=token,
     )
+
+
+def get_obj(
+    obj: str | Entity,
+    *,
+    cls=Entity,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+):
+    """Return object."""
+    if isinstance(obj, str):
+        return get_entity(obj, cls=cls, base=base, org=org, proj=proj, token=token)
+    return obj
 
 
 def _get_data(

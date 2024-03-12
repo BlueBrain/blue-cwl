@@ -1,0 +1,137 @@
+{
+  "@context": [
+    "https://bluebrain.github.io/nexus/contexts/metadata.json",
+    "https://bbp.neuroshapes.org"
+  ],
+  "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/b173b1b2-3303-4e0d-93e7-fae3d2c0c2ac",
+  "@type": [
+    "Entity",
+    "Dataset",
+    "NeuronMorphology",
+    "PlaceholderNeuronMorphology"
+  ],
+  "atlasRelease": {
+    "@id": "https://bbp.epfl.ch/neurosciencegraph/data/4906ab85-694f-469d-962f-c0174e901885",
+    "@type": [
+      "BrainAtlasRelease",
+      "AtlasRelease"
+    ],
+    "_rev": 9
+  },
+  "brainLocation": {
+    "@type": "BrainLocation",
+    "brainRegion": {
+      "@id": "mba:8",
+      "label": "Basic cell groups and regions"
+    }
+  },
+  "contribution": {
+    "@type": "Contribution",
+    "agent": {
+      "@id": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/ajaquier",
+      "@type": [
+        "Person",
+        "Agent"
+      ],
+      "email": "aurelien.jaquier@epfl.ch",
+      "name": "Aurélien Tristan Jaquier",
+      "preferred_username": "ajaquier",
+      "sub": "f:0fdadef7-b2b9-492b-af46-c65492d459c2:ajaquier"
+    }
+  },
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "atLocation": {
+        "@type": "Location",
+        "location": "file:///gpfs/bbp.cscs.ch/data/project/proj134/nexus/bbp/mmb-point-neuron-framework-model/b/e/d/d/8/5/0/9/cylindrical_morphology_19.1399.swc",
+        "store": {
+          "@id": "https://bbp.epfl.ch/neurosciencegraph/data/10419671-da26-48d3-abf9-51eb54759ca4",
+          "@type": "RemoteDiskStorage",
+          "_rev": 1
+        }
+      },
+      "contentSize": {
+        "unitCode": "bytes",
+        "value": 257
+      },
+      "contentUrl": "https://bbp.epfl.ch/nexus/v1/files/bbp/mmb-point-neuron-framework-model/https%3A%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2F625980da-a0be-4fff-8779-afe8eec0e84b",
+      "digest": {
+        "algorithm": "SHA-256",
+        "value": "f13d8527634ac27c32fd00ade9d2c8e2b4f78c03c37189dc90caaf6dec760c95"
+      },
+      "encodingFormat": "application/swc",
+      "name": "cylindrical_morphology_19.1399.swc"
+    },
+    {
+      "@type": "DataDownload",
+      "atLocation": {
+        "@type": "Location",
+        "location": "file:///gpfs/bbp.cscs.ch/data/project/proj134/nexus/bbp/mmb-point-neuron-framework-model/d/b/2/d/d/4/6/0/cylindrical_morphology_19.1399.asc",
+        "store": {
+          "@id": "https://bbp.epfl.ch/neurosciencegraph/data/10419671-da26-48d3-abf9-51eb54759ca4",
+          "@type": "RemoteDiskStorage",
+          "_rev": 1
+        }
+      },
+      "contentSize": {
+        "unitCode": "bytes",
+        "value": 532
+      },
+      "contentUrl": "https://bbp.epfl.ch/nexus/v1/files/bbp/mmb-point-neuron-framework-model/https%3A%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2Fe55c325f-fbfa-442f-b980-5460808ef443",
+      "digest": {
+        "algorithm": "SHA-256",
+        "value": "0b069a2e9a8197cd15ad92cd6f337916c734333dfd77db5fb7fd9180d7cf9898"
+      },
+      "encodingFormat": "application/asc",
+      "name": "cylindrical_morphology_19.1399.asc"
+    },
+    {
+      "@type": "DataDownload",
+      "atLocation": {
+        "@type": "Location",
+        "location": "file:///gpfs/bbp.cscs.ch/data/project/proj134/nexus/bbp/mmb-point-neuron-framework-model/f/3/d/8/e/d/4/8/cylindrical_morphology_19.1399.h5",
+        "store": {
+          "@id": "https://bbp.epfl.ch/neurosciencegraph/data/10419671-da26-48d3-abf9-51eb54759ca4",
+          "@type": "RemoteDiskStorage",
+          "_rev": 1
+        }
+      },
+      "contentSize": {
+        "unitCode": "bytes",
+        "value": 10240
+      },
+      "contentUrl": "https://bbp.epfl.ch/nexus/v1/files/bbp/mmb-point-neuron-framework-model/https%3A%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2F55d56590-3d45-4b84-a7c4-b7256de183ee",
+      "digest": {
+        "algorithm": "SHA-256",
+        "value": "31e702d59a734e635a2e0a2c2a1847a1de439e00c38ed0cca71dde9420cfa2f8"
+      },
+      "encodingFormat": "application/h5",
+      "name": "cylindrical_morphology_19.1399.h5"
+    }
+  ],
+  "name": "cylindrical_morphology_19.1399",
+  "objectOfStudy": {
+    "@id": "http://bbp.epfl.ch/neurosciencegraph/taxonomies/objectsofstudy/singlecells",
+    "label": "Single Cell"
+  },
+  "subject": {
+    "@type": "Subject",
+    "species": {
+      "@id": "NCBITaxon:10090",
+      "label": "Mus musculus"
+    }
+  },
+  "_constrainedBy": "https://bluebrain.github.io/nexus/schemas/unconstrained.json",
+  "_createdAt": "2023-10-30T13:43:31.277Z",
+  "_createdBy": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/ajaquier",
+  "_deprecated": false,
+  "_incoming": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2Fb173b1b2-3303-4e0d-93e7-fae3d2c0c2ac/incoming",
+  "_outgoing": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2Fb173b1b2-3303-4e0d-93e7-fae3d2c0c2ac/outgoing",
+  "_project": "https://bbp.epfl.ch/nexus/v1/projects/bbp/mmb-point-neuron-framework-model",
+  "_rev": 6,
+  "_schemaProject": "https://bbp.epfl.ch/nexus/v1/projects/bbp/mmb-point-neuron-framework-model",
+  "_self": "https://bbp.epfl.ch/nexus/v1/resources/bbp/mmb-point-neuron-framework-model/_/https:%2F%2Fbbp.epfl.ch%2Fdata%2Fbbp%2Fmmb-point-neuron-framework-model%2Fb173b1b2-3303-4e0d-93e7-fae3d2c0c2ac",
+  "_updatedAt": "2024-02-15T10:04:06.317550Z",
+  "_updatedBy": "https://bbp.epfl.ch/nexus/v1/realms/bbp/users/ajaquier"
+}

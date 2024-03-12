@@ -1,0 +1,13 @@
+{
+  "targets_configuration_id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/08776acd-ea8c-4301-bc25-1d3e2dd46287",
+  "pipeline_settings_id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/20c9b89b-9fcf-4f65-8023-12f2f6cf61c4",
+  "emodel_configuration_id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/7c555f0e-9ff9-475f-b023-19827aa1af90",
+  "fitness_configuration_id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/dedff50b-a008-4df9-b761-71c8d481a117",
+  "emodels": [
+    "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/59247e15-8204-4bc9-b2a3-49d1d16015c1"
+  ],
+  "emodel_scripts_id": [
+    "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/c644ac45-a3d1-4af5-93b2-243df7ba6925"
+  ],
+  "state": "done"
+}
