@@ -56,6 +56,7 @@ Each variant parameters matrix is assembled and conformed to the subset of the p
 built with the respective variant. Pathways in variant matrix that are not in the micro variant one
 are added with default values, whereas pathways not in it are removed.
 """
+
 import logging
 from collections.abc import Callable
 from functools import partial

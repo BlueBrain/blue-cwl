@@ -1,4 +1,5 @@
 """Density calculation app."""
+
 import multiprocessing
 
 import click

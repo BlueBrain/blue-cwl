@@ -1,4 +1,5 @@
 """MEModel recipe generation."""
+
 import hashlib
 import json
 from copy import deepcopy

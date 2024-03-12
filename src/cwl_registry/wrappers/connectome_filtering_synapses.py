@@ -1,4 +1,5 @@
 """Synapse filtering module."""
+
 import copy
 import logging
 import os

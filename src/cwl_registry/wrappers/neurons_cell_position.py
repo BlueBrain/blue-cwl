@@ -1,4 +1,5 @@
 """Morphoelectrical type generator function module."""
+
 import logging
 import subprocess
 from copy import deepcopy

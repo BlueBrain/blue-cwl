@@ -1,4 +1,5 @@
 """Functions applied on libsonata populations."""
+
 import libsonata
 import pandas as pd
 

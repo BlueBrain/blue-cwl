@@ -1,4 +1,5 @@
 """Construction of recipes for circuit building."""
+
 import importlib.resources
 import itertools
 import re

@@ -1,4 +1,5 @@
 """Variant entry."""
+
 import importlib.resources
 import io
 import logging

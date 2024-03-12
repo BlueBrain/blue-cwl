@@ -1,4 +1,5 @@
 """Nexus stuff."""
+
 import logging
 import os
 from datetime import datetime
@@ -199,12 +200,12 @@ def get_region_acronym(
     )["notation"]
 
 
-def _decode(token):
+def _decode(token: str) -> dict:
     """Decode the token, and return its contents."""
     return jwt.decode(token, options={"verify_signature": False})
 
 
-def _has_expired(token):
+def _has_expired(token: str) -> bool:
     """Check if the token has expired or is going to expire in 'SECONDS_TO_EXPIRATION'."""
     expiration_time = _decode(token)["exp"]
     return datetime.timestamp(datetime.now()) + SECONDS_TO_EXPIRATION > expiration_time

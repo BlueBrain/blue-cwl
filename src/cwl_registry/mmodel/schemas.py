@@ -1,4 +1,5 @@
 """Schemas."""
+
 import hashlib
 import json
 from enum import Enum

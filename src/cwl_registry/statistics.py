@@ -1,4 +1,5 @@
 """Composition summary statistics."""
+
 import logging
 import multiprocessing
 from functools import partial

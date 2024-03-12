@@ -1,4 +1,5 @@
 """Cell composition summary app."""
+
 import logging
 from pathlib import Path
 

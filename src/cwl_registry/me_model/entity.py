@@ -1,4 +1,5 @@
 """Entities."""
+
 from entity_management.config import MEModelConfig as _MEModelConfig
 
 from cwl_registry.validation import validate_schema

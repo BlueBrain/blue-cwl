@@ -1,4 +1,5 @@
 """Entities."""
+
 from entity_management.core import Entity
 
 from cwl_registry.mmodel import schemas

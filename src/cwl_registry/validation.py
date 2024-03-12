@@ -1,4 +1,5 @@
 """Validation functions."""
+
 from importlib import resources
 from typing import Any
 

@@ -1,4 +1,5 @@
 """Utils for building mmodel tool inputs."""
+
 from pathlib import Path
 
 import numpy as np

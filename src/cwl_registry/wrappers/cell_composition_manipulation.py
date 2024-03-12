@@ -1,4 +1,5 @@
 """Composition manipulation."""
+
 import logging
 import os
 import subprocess

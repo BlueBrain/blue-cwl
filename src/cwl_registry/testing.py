@@ -1,4 +1,5 @@
 """Testing resources."""
+
 import os
 from contextlib import contextmanager
 from unittest.mock import patch

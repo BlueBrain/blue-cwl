@@ -1,4 +1,5 @@
 """Density Manipulation of nrrd files"""
+
 import copy
 import logging
 import os

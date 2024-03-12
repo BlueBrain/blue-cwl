@@ -1,4 +1,5 @@
 """Custom Base Model for pydantic classes."""
+
 import pydantic
 
 _PYDANTIC_MAJOR = int(pydantic.__version__.split(".", maxsplit=1)[0])

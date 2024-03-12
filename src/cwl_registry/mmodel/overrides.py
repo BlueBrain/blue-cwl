@@ -1,4 +1,5 @@
 """Topological synthesis inputs overrides."""
+
 from copy import deepcopy
 
 import numpy as np

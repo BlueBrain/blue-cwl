@@ -1,4 +1,5 @@
 """Config splitting function."""
+
 from copy import deepcopy
 
 from cwl_registry.exceptions import CWLWorkflowError

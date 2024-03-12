@@ -1,4 +1,5 @@
 """Hashing."""
+
 from hashlib import sha256
 
 
