@@ -58,7 +58,7 @@ are added with default values, whereas pathways not in it are removed.
 """
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from functools import partial
 from itertools import product
 from typing import Optional
@@ -526,8 +526,8 @@ def _conform_types(df: pd.DataFrame):
 
 def _load_connectome_matrix(
     path: str,
-    validators: list[Callable[[pd.DataFrame], None]] | None = None,
-    sanitizers: list[Callable[[pd.DataFrame], None]] | None = None,
+    validators: Sequence[Callable[[pd.DataFrame], None]] | None = None,
+    sanitizers: Sequence[Callable[[pd.DataFrame], None]] | None = None,
 ) -> pd.DataFrame:
     frame = utils.load_arrow(path)
 
@@ -544,7 +544,7 @@ def _load_connectome_matrix(
     return frame
 
 
-def _validate_frame_columns(df, columns):
+def _validate_frame_columns(df: pd.DataFrame, columns: list[str]) -> None:
     columns = sorted(df.columns)
     expected_columns = sorted(columns)
 
@@ -552,7 +552,7 @@ def _validate_frame_columns(df, columns):
         raise CWLWorkflowError(f"Found columns {columns} but expected {expected_columns}")
 
 
-def _validate_no_multi_index(df):
+def _validate_no_multi_index(df: pd.DataFrame) -> None:
     if isinstance(df, pd.MultiIndex):
         raise CWLWorkflowError(
             f"A MultiIndex is not expected for a connectome frame. Found: {df.index}"
@@ -865,7 +865,7 @@ def _split_side_into_hemispheres(df):
 @utils.log
 def _pre_post_cell_counts(
     micro_matrix: pd.DataFrame, hrm_cell_counts: pd.DataFrame
-) -> tuple[np.array, np.array]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Calculate the number presynaptic and postsynaptic cells in the micro pathways."""
     presynaptic_counts = hrm_cell_counts.get(
         _columns_as_index(micro_matrix, Constants.SOURCE_MICRO_LEVELS),

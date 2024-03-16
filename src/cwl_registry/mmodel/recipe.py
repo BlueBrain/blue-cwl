@@ -43,7 +43,7 @@ def build_synthesis_inputs(
 
 def build_region_structure(ph_catalog: dict) -> dict:
     """Build region structure."""
-    region_structure = {}
+    region_structure: dict = {}
     visited = set()
 
     # hardcoded isocortex thicknesses for all layers

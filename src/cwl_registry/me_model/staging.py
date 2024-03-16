@@ -1,15 +1,16 @@
 """Staging module."""
 
-import os
 from copy import deepcopy
 from functools import partial
 from pathlib import Path
+from typing import Any
 
 from entity_management.emodel import EModel
 
 from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.nexus import download_distribution, get_distribution, get_distribution_as_dict
 from cwl_registry.staging import get_entry_id, transform_cached, transform_nested_dataset
+from cwl_registry.typing import StrOrPath
 from cwl_registry.utils import create_dir, get_obj, load_json, url_without_revision, write_json
 
 OPTIONAL_WORKFLOW_DATASETS = {
@@ -192,8 +193,8 @@ def _stage_emodel_entry(entry_id, _, staging_dir, base, org, proj, token):
 def stage_emodel(
     obj,
     *,
-    staging_dir: os.PathLike,
-    output_file: os.PathLike | None = None,
+    staging_dir: StrOrPath,
+    output_file: StrOrPath | None = None,
     base: str | None = None,
     org: str | None = None,
     proj: str | None = None,
@@ -250,7 +251,7 @@ def stage_emodel(
 def stage_emodel_workflow(
     obj,
     *,
-    staging_dir: os.PathLike,
+    staging_dir: StrOrPath,
     output_file: str | None = None,
     base: str | None = None,
     org: str | None = None,
@@ -314,7 +315,7 @@ def _stage_optional_datasets(dataset: dict, staging_dir, base, org, proj, token)
 
 
 def _stage_mandatory_datasets(dataset: dict, staging_dir, base, org, proj, token):
-    result = {}
+    result: dict[str, Any] = {}
 
     # stage mandatory hoc file
     emodel_script_ids = dataset["emodel_scripts_id"]
@@ -355,8 +356,8 @@ def _stage_mandatory_datasets(dataset: dict, staging_dir, base, org, proj, token
 def stage_emodel_configuration(
     entity_id,
     *,
-    staging_dir: os.PathLike,
-    output_file: os.PathLike | None = None,
+    staging_dir: StrOrPath,
+    output_file: StrOrPath | None = None,
     base: str | None = None,
     org: str | None = None,
     proj: str | None = None,

@@ -17,6 +17,7 @@ from voxcell.nexus.voxelbrain import Atlas
 
 from cwl_registry import Variant, nexus, recipes, registering, staging, utils, validation
 from cwl_registry.statistics import mtype_etype_url_mapping, node_population_composition_summary
+from cwl_registry.typing import StrOrPath
 
 SEED = 42
 STAGE_DIR_NAME = "stage"
@@ -271,7 +272,10 @@ def _generate_node_sets(nodes_file: Path, population_name: str, atlas_dir: Path,
 
 
 def _generate_circuit_config(
-    node_sets_file: Path, node_population_name: str, nodes_file: str, output_file: Path
+    node_sets_file: StrOrPath,
+    node_population_name: str,
+    nodes_file: StrOrPath,
+    output_file: StrOrPath,
 ):
     config = {
         "version": 2,

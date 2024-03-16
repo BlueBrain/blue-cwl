@@ -233,7 +233,7 @@ def _run_topological_synthesis(
         output_dir=output_dir,
     )
     region_structure_file = _generate_region_structure(
-        ph_catalog_file=atlas_info.ph_catalog,
+        ph_catalog=atlas_info.ph_catalog,
         output_file=output_dir / "region_structure.yaml",
     )
     _execute_synthesis_command(
@@ -310,14 +310,14 @@ def _generate_synthesis_inputs(
     return tmd_parameters_file, tmd_distributions_file
 
 
-def _generate_region_structure(ph_catalog_file: Path | None, output_file: Path) -> Path:
+def _generate_region_structure(ph_catalog: dict | None, output_file: Path) -> Path:
     """Generate input region structure for region grower."""
-    if ph_catalog_file is not None:
-        region_structure = recipe.build_region_structure(ph_catalog_file)
+    if ph_catalog is not None:
+        region_structure: dict = recipe.build_region_structure(ph_catalog)
         L.debug(
             "Generated synthesis region structure at %s from placement hints at %s",
             output_file,
-            ph_catalog_file,
+            ph_catalog,
         )
     else:
         region_structure = {}

@@ -5,6 +5,7 @@ import itertools
 import re
 import shutil
 from pathlib import Path
+from typing import Any
 
 import lxml.etree as ET
 import numpy as np
@@ -13,26 +14,30 @@ import voxcell
 
 from cwl_registry import utils
 from cwl_registry.exceptions import CWLWorkflowError
+from cwl_registry.typing import StrOrPath
 
 
-def build_cell_composition_from_me_densities(region: str, me_type_densities: pd.DataFrame):
+def build_cell_composition_from_me_densities(
+    region: str, me_type_densities: pd.DataFrame
+) -> dict[str, Any]:
     """Create cell composition file from KG me densities."""
-    composition = {"version": "v2"}
-    composition["neurons"] = [
-        {
-            "density": row.path,
-            "region": region,
-            "traits": {
-                "mtype": row.mtype,
-                "etype": row.etype,
-            },
-        }
-        for row in me_type_densities.itertuples(index=False)
-    ]
-    return composition
+    return {
+        "version": "v2",
+        "neurons": [
+            {
+                "density": row.path,
+                "region": region,
+                "traits": {
+                    "mtype": row.mtype,
+                    "etype": row.etype,
+                },
+            }
+            for row in me_type_densities.itertuples(index=False)
+        ],
+    }
 
 
-def build_mtype_taxonomy(mtypes: list[str]):
+def build_mtype_taxonomy(mtypes: list[str]) -> pd.DataFrame:
     """A temporary solution in creating a taxonomy for circuit-build."""
     tokens = {
         "DAC": ("INT", "INH"),
@@ -91,7 +96,9 @@ def build_mtype_taxonomy(mtypes: list[str]):
 
 
 def build_connectome_manipulator_recipe(
-    circuit_config_path: str, micro_matrices, output_dir: Path
+    circuit_config_path: str,
+    micro_matrices: dict[str, pd.DataFrame],
+    output_dir: StrOrPath,
 ) -> dict:
     """Build connectome manipulator recipe."""
     key_mapping = {
@@ -142,7 +149,7 @@ def build_connectome_manipulator_recipe(
         ["src_hemisphere", "dst_hemisphere", "src_region", "dst_region"]
     )
     merged_frame = merged_frame.sort_index()
-    output_file = output_dir / "pathways.parquet"
+    output_file = Path(output_dir, "pathways.parquet")
 
     utils.write_parquet(filepath=output_file, dataframe=merged_frame, index=True, compression=None)
 
@@ -240,9 +247,9 @@ def write_functionalizer_xml_recipe(
     synapse_config: dict,
     region_map: voxcell.RegionMap,
     annotation: voxcell.VoxelData,
-    output_file: Path,
+    output_file: StrOrPath,
     populations: tuple[voxcell.CellCollection, voxcell.CellCollection] | None = None,
-):
+) -> Path:
     """Build functionalizer xml recipe.
 
     Args:
@@ -261,6 +268,8 @@ def write_functionalizer_xml_recipe(
             - source_synaptic_class
             - target_synaptic_class
     """
+    output_file = Path(output_file)
+
     synapse_properties_generator = _generate_tailored_properties(
         synapse_properties=synapse_config["synapse_properties"],
         region_map=region_map,
@@ -275,19 +284,23 @@ def write_functionalizer_xml_recipe(
     return output_file
 
 
-def _write_xml_tree(synapse_properties, synapse_classification, output_file):
+def _write_xml_tree(
+    synapse_properties: dict, synapse_classification: dict, output_file: StrOrPath
+) -> None:
     tree = _build_xml_tree(synapse_properties, synapse_classification)
     with open(output_file, "wb") as fp:
         tree.write(fp, pretty_print=True, xml_declaration=True, encoding="utf-8")
 
 
-def write_default_functionalizer_xml_recipe(output_file):
+def write_default_functionalizer_xml_recipe(output_file: StrOrPath) -> Path:
     """Copy an existing xml recipe."""
-    path = importlib.resources.files("cwl_registry") / "data" / "builderRecipeAllPathways.xml"
+    path = Path(
+        str(importlib.resources.files("cwl_registry")), "data", "builderRecipeAllPathways.xml"
+    )
 
     shutil.copyfile(path, output_file)
 
-    return output_file
+    return Path(output_file)
 
 
 def _generate_tailored_properties(
@@ -313,7 +326,7 @@ def _generate_tailored_properties(
 
     annotation_ids = set(pd.unique(annotation.raw.flatten()))
 
-    cache = {}
+    cache: dict[str, set[int]] = {}
     for prop in synapse_properties:
         yield from _expand_properties(
             prop,
@@ -327,14 +340,14 @@ def _generate_tailored_properties(
 
 
 def _expand_properties(
-    prop,
-    region_map,
+    prop: dict,
+    region_map: voxcell.RegionMap,
     annotation_ids: set[int],
     include_null=True,
-    cache=None,
-    allowed_from_region_leaves: set = None,
-    allowed_to_region_leaves: set = None,
-):
+    cache: dict[str, set[int]] | None = None,
+    allowed_from_region_leaves: set | None = None,
+    allowed_to_region_leaves: set | None = None,
+) -> list:
     """Return a list of properties matching the leaf regions.
 
     Args:
@@ -350,23 +363,19 @@ def _expand_properties(
     source_region = prop.get("fromRegion", None)
     target_region = prop.get("toRegion", None)
 
+    from_leaf_regions: set[int] | set[None] = {None}
     if source_region:
         from_leaf_regions = _get_leaf_regions(source_region, region_map, annotation_ids, cache)
 
         if allowed_from_region_leaves:
             from_leaf_regions &= allowed_from_region_leaves
 
-    else:
-        from_leaf_regions = {None}
-
+    to_leaf_regions: set[int] | set[None] = {None}
     if target_region:
         to_leaf_regions = _get_leaf_regions(target_region, region_map, annotation_ids, cache)
 
         if allowed_to_region_leaves:
             to_leaf_regions &= allowed_to_region_leaves
-
-    else:
-        to_leaf_regions = {None}
 
     for from_reg, to_reg in itertools.product(from_leaf_regions, to_leaf_regions):
         # Construct the individual dicts for each leaf region pairs
@@ -412,7 +421,7 @@ def _get_leaf_regions(
     return result
 
 
-def _build_xml_tree(synapse_properties, synapses_classification):
+def _build_xml_tree(synapse_properties: dict, synapses_classification: dict) -> ET.ElementTree:
     """Concatenate the recipes and return the resulting xml tree.
 
     Args:

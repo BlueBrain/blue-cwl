@@ -8,7 +8,7 @@ from cwl_registry.mmodel.schemas import SynthesisOverrides
 
 
 def apply_overrides(
-    parameters: dict, distributions: dict, overrides: SynthesisOverrides
+    parameters: dict, distributions: dict, overrides: dict[str, SynthesisOverrides]
 ) -> tuple[dict, dict]:
     """Apply synthesis inputs overrides."""
     parameters = deepcopy(parameters)

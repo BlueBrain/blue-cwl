@@ -14,6 +14,7 @@ from entity_management.util import get_entity
 
 from cwl_registry import Variant, recipes, registering, staging, utils, validation
 from cwl_registry.exceptions import CWLWorkflowError
+from cwl_registry.typing import StrOrPath
 
 L = logging.getLogger(__name__)
 
@@ -51,16 +52,16 @@ def app(configuration, variant_config, partial_circuit, output_dir):
 
 
 def connectome_filtering_synapses(
-    configuration: str, variant_config: str, partial_circuit: str, output_dir: os.PathLike
+    configuration_id: str, variant_config_id: str, partial_circuit_id: str, output_dir: StrOrPath
 ):
     """Synapse filtering."""
     output_dir = utils.create_dir(Path(output_dir).resolve())
     staging_dir = utils.create_dir(output_dir / "stage")
     build_dir = utils.create_dir(output_dir / "build")
 
-    variant = get_entity(resource_id=variant_config, cls=Variant)
+    variant = get_entity(resource_id=variant_config_id, cls=Variant)
 
-    partial_circuit = get_entity(resource_id=partial_circuit, cls=DetailedCircuit)
+    partial_circuit = get_entity(resource_id=partial_circuit_id, cls=DetailedCircuit)
     config = utils.load_json(partial_circuit.circuitConfigPath.get_url_as_path())
 
     nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(config)
@@ -87,12 +88,12 @@ def connectome_filtering_synapses(
 
     L.info("Staging configuration...")
     staging.stage_distribution_file(
-        configuration,
+        configuration_id,
         output_dir=staging_dir,
         filename="synapse_config.json",
     )
     configuration = staging.materialize_synapse_config(
-        configuration, staging_dir, output_file=staging_dir / "materialized_synapse_config.json"
+        configuration_id, staging_dir, output_file=staging_dir / "materialized_synapse_config.json"
     )["configuration"]
 
     if configuration:

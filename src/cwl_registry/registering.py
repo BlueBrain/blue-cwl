@@ -1,6 +1,5 @@
 """Registering utilities."""
 
-import os
 from pathlib import Path
 
 from entity_management import nexus
@@ -10,8 +9,10 @@ from entity_management.core import DataDownload, Subject
 from entity_management.simulation import DetailedCircuit
 from entity_management.util import get_entity
 
+from cwl_registry.typing import StrOrPath
 
-def _subject(species_id: str | None):
+
+def _subject(species_id: str | None) -> Subject:
     if not species_id:
         species_id = "http://purl.obolibrary.org/obo/NCBITaxon_10090"
         label = "Mus musculus"
@@ -20,24 +21,19 @@ def _subject(species_id: str | None):
     return Subject(species=OntologyTerm(url=species_id, label=label))
 
 
-def _brain_location(brain_region_id):
+def _brain_location(brain_region_id: str) -> BrainLocation:
     label = nexus.load_by_id(brain_region_id, cross_bucket=True)["label"]
-    return BrainLocation(
-        brainRegion=OntologyTerm(
-            url=brain_region_id,
-            label=label,
-        )
-    )
+    return BrainLocation(brainRegion=OntologyTerm(url=brain_region_id, label=label))
 
 
 def register_partial_circuit(
-    name,
-    brain_region_id,
-    atlas_release_id,
-    sonata_config_path,
-    description="",
-    species_id=None,
-):
+    name: str,
+    brain_region_id: str,
+    atlas_release_id: str,
+    sonata_config_path: StrOrPath,
+    description: str = "",
+    species_id: str | None = None,
+) -> DetailedCircuit:
     """Register a partial circuit."""
     atlas_release = get_entity(resource_id=atlas_release_id, cls=AtlasRelease)
 
@@ -55,7 +51,7 @@ def register_partial_circuit(
 
 def register_cell_composition_summary(
     name: str,
-    summary_file: os.PathLike,
+    summary_file: StrOrPath,
     atlas_release_id: str,
     derivation_entity_id: str,
     *,
@@ -63,7 +59,7 @@ def register_cell_composition_summary(
     org=None,
     proj=None,
     token=None,
-):
+) -> CellCompositionSummary:
     """Create and register a cell composition summary."""
     atlas_release = get_entity(resource_id=atlas_release_id, cls=AtlasRelease)
 

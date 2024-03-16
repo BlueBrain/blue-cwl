@@ -51,8 +51,8 @@ def _check_consistency(
             if rght:
                 final.append(f"\n\tplaceholders - canonicals: {rght}")
 
-            final = "".join(final)
-            mismatches.append(f"\nRegion: {region_id}{final}")
+            joined_final = "".join(final)
+            mismatches.append(f"\nRegion: {region_id}{joined_final}")
 
     if mismatches:
         str_errors = "".join(sorted(mismatches))

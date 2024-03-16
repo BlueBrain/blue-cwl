@@ -6,18 +6,18 @@ import pandas as pd
 HRM = ["hemisphere", "region", "mtype"]
 
 
-def _make_categorical(population, name):
+def _make_categorical(population: libsonata.NodePopulation, name: str) -> pd.Categorical:
     codes = population.get_enumeration(name, population.select_all())
     categories = population.enumeration_values(name)
     return pd.Categorical.from_codes(codes=codes, categories=categories)
 
 
-def _get_HRM_multi_index(population):
+def _get_HRM_multi_index(population: libsonata.NodePopulation) -> pd.MultiIndex:
     df = pd.DataFrame({name: _make_categorical(population, name) for name in HRM})
     return df.set_index(HRM).index
 
 
-def get_HRM_counts(population) -> pd.Series:
+def get_HRM_counts(population: libsonata.NodePopulation) -> pd.Series:
     """Return the number of cells for each (hemisphere, region, mtype) in the population."""
     df = pd.DataFrame({name: _make_categorical(population, name) for name in HRM})
 
@@ -29,7 +29,11 @@ def get_HRM_counts(population) -> pd.Series:
     return counts
 
 
-def _get_HRM_properties(population, properties: list[str], selection=None) -> pd.DataFrame:
+def _get_HRM_properties(
+    population: libsonata.NodePopulation,
+    properties: list[str],
+    selection: libsonata.Selection | None = None,
+) -> pd.DataFrame:
     categoricals = population.enumeration_names
     selection = selection or population.select_all()
 
@@ -43,7 +47,7 @@ def _get_HRM_properties(population, properties: list[str], selection=None) -> pd
     )
 
 
-def get_HRM_positions(population):
+def get_HRM_positions(population: libsonata.NodePopulation) -> pd.DataFrame:
     """Return positions in population indexed by hemisphere, region, and mtype."""
     return _get_HRM_properties(population, ["x", "y", "z"])
 

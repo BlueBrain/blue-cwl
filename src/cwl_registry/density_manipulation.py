@@ -1,18 +1,21 @@
-"""Density Manipulation of nrrd files"""
+"""DensityManipulation of nrrd files"""
 
 import copy
 import logging
 import os
+from typing import Any
 
 import joblib
 import numpy as np
 import pandas as pd
 import voxcell
 
+from cwl_registry.typing import StrOrPath
+
 L = logging.getLogger(__name__)
 
 
-def read_density_manipulation_recipe(recipe):
+def read_density_manipulation_recipe(recipe: dict) -> pd.DataFrame:
     """Read the density recipe dictionary, and transform it into a DataFrame"""
     assert recipe["version"] == 1
 
@@ -67,7 +70,9 @@ def read_density_manipulation_recipe(recipe):
     return df
 
 
-def _cell_composition_volume_to_df(cell_composition_volume, mtype_urls_inverse, etype_urls_inverse):
+def _cell_composition_volume_to_df(
+    cell_composition_volume: dict, mtype_urls_inverse: dict, etype_urls_inverse: dict
+) -> pd.DataFrame:
     """Read a CellCompositionVolume to Dataframe"""
     df = []
     for mtype_id, etypes in cell_composition_volume["mtypes"].items():
@@ -90,7 +95,7 @@ def _cell_composition_volume_to_df(cell_composition_volume, mtype_urls_inverse, 
 class _FlatGroupsMapper:
     """Class for efficient access to indices of unique values of the values array."""
 
-    def __init__(self, values):
+    def __init__(self, values: np.ndarray):
         ids = np.argsort(values, kind="stable")
 
         uniques, counts = np.unique(values, return_counts=True)
@@ -105,15 +110,19 @@ class _FlatGroupsMapper:
         self._offsets = offsets
         self._mapping = mapping
 
-    def get_group_indices_by_value(self, value):
+    def get_group_indices_by_value(self, value: Any) -> np.ndarray:
         """Return the values array indices corresponding to the 'value'."""
         group_index = self._mapping[value]
         return self._ids[self._offsets[group_index] : self._offsets[group_index + 1]]
 
 
 def _create_updated_densities(
-    output_dir, brain_regions, all_operations, materialized_densities, region_selection=None
-):
+    output_dir: str,
+    brain_regions: voxcell.VoxelData,
+    all_operations: pd.DataFrame,
+    materialized_densities: pd.DataFrame,
+    region_selection: list[int] | None = None,
+) -> pd.DataFrame:
     """Apply the operations to the NRRD files"""
     p = joblib.Parallel(
         n_jobs=-2,
@@ -184,8 +193,12 @@ def _create_updated_densities(
 
 
 def _create_updated_density(
-    input_nrrd_path, output_nrrd_path, operations, region_groups, to_zero_mask
-):
+    input_nrrd_path: str,
+    output_nrrd_path: str,
+    operations: pd.DataFrame,
+    region_groups: _FlatGroupsMapper,
+    to_zero_mask: np.ndarray | None,
+) -> tuple[str, bool]:
     nrrd = voxcell.VoxelData.load_nrrd(input_nrrd_path)
 
     densities = nrrd.raw.ravel()
@@ -207,7 +220,11 @@ def _create_updated_density(
     return (input_nrrd_path, False)
 
 
-def _apply_operations_on_densities(operations, densities, region_groups):
+def _apply_operations_on_densities(
+    operations: pd.DataFrame,
+    densities: np.ndarray,
+    region_groups: _FlatGroupsMapper,
+) -> None:
     operations = operations.drop_duplicates(keep="last", subset=["region_id"])
 
     for operation, df in operations.groupby("operation"):
@@ -223,14 +240,16 @@ def _apply_operations_on_densities(operations, densities, region_groups):
             raise ValueError(f"Unsuppored operation {operation}")
 
 
-def _copy_level_info(dataset, with_children=None):
+def _copy_level_info(dataset: dict, with_children: Any | None = None) -> dict:
     data = {k: v for k, v in dataset.items() if k != "hasPart"}
     if with_children:
         data["hasPart"] = with_children
     return data
 
 
-def _update_density_release(original_density_release, updated_densities):
+def _update_density_release(
+    original_density_release: dict, updated_densities: pd.DataFrame
+) -> dict:
     """For the updated densities, update the `original_density_release`
 
     * add `path` attribute, so it can be consumed by push_cellcomposition
@@ -283,11 +302,11 @@ def _update_density_release(original_density_release, updated_densities):
 
 
 def density_manipulation(
-    output_dir,
-    brain_regions,
-    manipulation_recipe,
-    materialized_densities,
-    original_density_release,
+    output_dir: StrOrPath,
+    brain_regions: voxcell.VoxelData,
+    manipulation_recipe: pd.DataFrame,
+    materialized_densities: pd.DataFrame,
+    original_density_release: dict,
     region_selection=None,
 ):
     """Manipulate the densities in a CellCompositionVolume
@@ -304,7 +323,7 @@ def density_manipulation(
         etype_urls(dict): mapping for etype labels to etype urls
     """
     updated_densities = _create_updated_densities(
-        output_dir,
+        str(output_dir),
         brain_regions,
         manipulation_recipe,
         materialized_densities,

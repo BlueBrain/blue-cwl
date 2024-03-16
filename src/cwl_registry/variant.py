@@ -6,6 +6,7 @@ import logging
 import tempfile
 from copy import deepcopy
 from pathlib import Path
+from typing import cast
 
 from cwl_luigi import cwl
 from entity_management.base import attributes
@@ -14,6 +15,7 @@ from entity_management.nexus import sparql_query
 from entity_management.util import AttrOf, unquote_uri_path
 
 from cwl_registry.exceptions import CWLRegistryError
+from cwl_registry.typing import StrOrPath
 from cwl_registry.utils import dump_yaml, load_yaml, write_yaml
 
 L = logging.getLogger(__name__)
@@ -51,7 +53,7 @@ class Variant(Entity):
         return f"Variant({self.generator_name}, {self.variant_name}, {self.version})"
 
     @property
-    def overview(self):
+    def overview(self) -> str:
         """Return detailed representation."""
         return (
             f"generator_name: {self.generator_name}\n"
@@ -113,7 +115,9 @@ class Variant(Entity):
             token=token,
             raise_if_not_found=True,
         )
-        return cls.from_id(resource_id=resource_id, base=base, org=org, proj=proj, use_auth=token)
+        return cls.from_id(
+            resource_id=cast(str, resource_id), base=base, org=org, proj=proj, use_auth=token
+        )
 
     @classmethod
     def from_file(
@@ -139,7 +143,7 @@ class Variant(Entity):
         )
 
     @property
-    def tool_definition(self):
+    def tool_definition(self) -> cwl.CommandLineTool:
         """Return the cwl definition for this variant."""
         content = deepcopy(self.get_content())
 
@@ -233,7 +237,7 @@ class Variant(Entity):
         )
 
 
-def _create_local_variant_distribution(path):
+def _create_local_variant_distribution(path: StrOrPath) -> DataDownload:
     path = Path(path).resolve()
     assert path.exists() and path.suffix == ".cwl"
     return DataDownload(
@@ -244,10 +248,10 @@ def _create_local_variant_distribution(path):
 
 
 def _load_variant_distribution(
-    variant,
+    variant: Variant,
     *,
     token: str | None = None,
-):
+) -> dict:
     distribution = variant.distribution
 
     # backwards compatibility to old format
@@ -285,10 +289,10 @@ def search_variant_in_nexus(
     variant_name: str,
     version: str,
     *,
-    base: str = None,
-    org: str = None,
-    proj: str = None,
-    token: str = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
     raise_if_not_found: bool = False,
 ) -> str | None:
     """Search for a variant with the given generator_name, variant_name, and version in nexus.
@@ -352,16 +356,13 @@ def search_variant_in_nexus(
     return result
 
 
-def _get_variant_directory(generator_name: str, variant_name: str, version: str):
+def _get_variant_directory(generator_name: str, variant_name: str, version: str) -> Path:
     package_path = importlib.resources.files("cwl_registry")
     L.debug("Package path: %s", package_path)
-
-    variant_dir = _get_variant_dir(package_path, generator_name, variant_name, version)
-
-    return variant_dir
+    return _get_variant_dir(package_path, generator_name, variant_name, version)
 
 
-def _get_variant_file(generator_name: str, variant_name: str, version: str):
+def _get_variant_file(generator_name: str, variant_name: str, version: str) -> Path:
     variant_dir = _get_variant_directory(generator_name, variant_name, version)
 
     files = list(variant_dir.glob("*.cwl"))
@@ -378,7 +379,7 @@ def _check_directory_exists(directory: Path) -> Path:
     return directory
 
 
-def _get_variant_dir(package_path, generator_name: str, variant_name: str, version: str) -> str:
+def _get_variant_dir(package_path, generator_name: str, variant_name: str, version: str) -> Path:
     root_dir = _check_directory_exists(package_path / "generators")
     generator_dir = _check_directory_names(root_dir / generator_name)
     variant_dir = _check_directory_names(generator_dir / variant_name)
@@ -388,7 +389,7 @@ def _get_variant_dir(package_path, generator_name: str, variant_name: str, versi
     return version_dir
 
 
-def _check_directory_names(directory: Path):
+def _check_directory_names(directory: Path) -> Path:
     if not directory.is_dir():
         names = sorted(x.name for x in directory.parent.iterdir() if x.is_dir())
         raise CWLRegistryError(

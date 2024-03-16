@@ -8,10 +8,11 @@ import libsonata
 import yaml
 
 from cwl_registry.exceptions import CWLRegistryError, CWLWorkflowError, SchemaValidationError
+from cwl_registry.typing import StrOrPath
 from cwl_registry.utils import load_json
 
 
-def check_population_name_consistent_with_region(population_name, region_acronym):
+def check_population_name_consistent_with_region(population_name: str, region_acronym: str) -> None:
     """Raise if the region name is not part of the population name."""
     if not population_name.startswith(region_acronym):
         raise CWLRegistryError(
@@ -19,7 +20,7 @@ def check_population_name_consistent_with_region(population_name, region_acronym
         )
 
 
-def check_population_name_in_config(population_name, config_file):
+def check_population_name_in_config(population_name: str, config_file: StrOrPath) -> None:
     """Raise if the population name is not present in the sonata config file."""
     config = load_json(config_file)
 
@@ -39,7 +40,7 @@ def check_population_name_in_config(population_name, config_file):
         )
 
 
-def check_population_name_in_nodes(population_name, nodes_file):
+def check_population_name_in_nodes(population_name: str, nodes_file: StrOrPath) -> None:
     """Raise if population name not in nodes file."""
     nodes = libsonata.NodeStorage(nodes_file)
 
@@ -51,7 +52,9 @@ def check_population_name_in_nodes(population_name, nodes_file):
         )
 
 
-def check_properties_in_population(population_name, nodes_file, property_names):
+def check_properties_in_population(
+    population_name: str, nodes_file: StrOrPath, property_names: list[str]
+) -> None:
     """Raise if properties not in population."""
     pop = libsonata.NodeStorage(nodes_file).open_population(population_name)
 

@@ -54,13 +54,13 @@ class CanonicalMorphologyModel(CustomBaseModel):
         filehash.update(Path(self.distributions).read_bytes())
 
         if self.overrides:
-            overrides = {}
+            overrides: dict = {}
             for neurite_type, neurite_overrides in self.overrides.items():
-                neurite_overrides = {
+                existing_overrides = {
                     k: v for k, v in neurite_overrides.to_dict().items() if v is not None
                 }
-                if neurite_overrides:
-                    overrides[neurite_type] = neurite_overrides
+                if existing_overrides:
+                    overrides[neurite_type] = existing_overrides
             if overrides:
                 filehash.update(json.dumps(overrides, sort_keys=True).encode())
 

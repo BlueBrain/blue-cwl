@@ -3,16 +3,25 @@
 import logging
 import multiprocessing
 from functools import partial
+from pathlib import Path
+from typing import Any
 
+import libsonata
 import numpy as np
 import pandas as pd
 import voxcell
 from entity_management.nexus import sparql_query
+from voxcell.nexus.voxelbrain import Atlas
+
+from cwl_registry.typing import StrOrPath
 
 L = logging.getLogger(__name__)
 
 
-def mtype_etype_url_mapping_from_nexus(base: str = None, token: str = None) -> tuple[dict, dict]:
+def mtype_etype_url_mapping_from_nexus(
+    base: str | None = None,
+    token: str | None = None,
+) -> tuple[dict, dict]:
     """Get mtype and etype labels mapped to their uris, from nexus"""
 
     def get_type_ids(type_):
@@ -60,7 +69,12 @@ def mtype_etype_url_mapping(density_distribution: pd.DataFrame) -> tuple[dict, d
     return mtype_urls, etype_urls
 
 
-def node_population_composition_summary(population, atlas, mtype_urls, etype_urls):
+def node_population_composition_summary(
+    population: libsonata.NodePopulation,
+    atlas: Atlas,
+    mtype_urls: dict,
+    etype_urls: dict,
+) -> dict:
     """Calculate the composition summary statistics of a node population."""
     node_counts = _get_node_counts(population)
 
@@ -78,7 +92,12 @@ def node_population_composition_summary(population, atlas, mtype_urls, etype_url
     return density_summary_stats_region(cell_counts)
 
 
-def _expand_me_dataframe(df, region_map, mtype_urls, etype_urls):
+def _expand_me_dataframe(
+    df: pd.DataFrame,
+    region_map: voxcell.RegionMap,
+    mtype_urls: dict,
+    etype_urls: dict,
+) -> pd.DataFrame:
     df = df.copy()
 
     region_ids = [
@@ -93,7 +112,7 @@ def _expand_me_dataframe(df, region_map, mtype_urls, etype_urls):
     return df
 
 
-def density_summary_stats_region(df_region_mtype_etype):
+def density_summary_stats_region(df_region_mtype_etype: pd.DataFrame) -> dict:
     """Serialize `df_region_mtype_etype` to required summary statistics format
 
     Args:
@@ -103,19 +122,17 @@ def density_summary_stats_region(df_region_mtype_etype):
         mtype_urls(dict): mapping for mtype labels to mtype urls
         etype_urls(dict): mapping for etype labels to etype urls
     """
-    ret = {
+    ret: dict = {
         "version": 1,
         "unitCode": {
             "density": "mm^-3",
         },
         "hasPart": {},
     }
-    hasPart = ret["hasPart"]
-
     groups = df_region_mtype_etype.groupby(["region", "region_url", "region_label"])
 
     for (region_notation, region_url, region_label), df_mtype_etype in groups:
-        hasPart[region_url] = {
+        ret["hasPart"][region_url] = {
             "label": region_label,
             "notation": region_notation,
             "about": "BrainRegion",
@@ -127,11 +144,11 @@ def density_summary_stats_region(df_region_mtype_etype):
     return ret
 
 
-def _region_url(region_id):
+def _region_url(region_id: str) -> str:
     return f"http://api.brain-map.org/api/v2/data/Structure/{region_id}"
 
 
-def _get_node_counts(population):
+def _get_node_counts(population: libsonata.NodePopulation) -> pd.Series:
     df = pd.DataFrame()
     for attr in (
         "region",
@@ -148,18 +165,21 @@ def _get_node_counts(population):
     return count
 
 
-def _get_atlas_region_volumes(region_map, brain_regions):
+def _get_atlas_region_volumes(
+    region_map: voxcell.RegionMap,
+    brain_regions: voxcell.VoxelData,
+) -> pd.DataFrame:
     ids, counts = np.unique(brain_regions.raw, return_counts=True)
 
-    volumes = {}
+    volumes_dict = {}
     for id_, count in zip(ids, counts):
         if not id_:
             continue
         acronym = region_map.get(id_, "acronym")
-        volumes[acronym] = count * brain_regions.voxel_volume
+        volumes_dict[acronym] = count * brain_regions.voxel_volume
 
     volumes = pd.DataFrame.from_dict(
-        volumes,
+        volumes_dict,
         orient="index",
         columns=[
             "volume",
@@ -170,7 +190,7 @@ def _get_atlas_region_volumes(region_map, brain_regions):
     return volumes
 
 
-def _density_summary_stats_mtype(df_mtype_etype):
+def _density_summary_stats_mtype(df_mtype_etype: pd.DataFrame) -> dict:
     mtype_groups = df_mtype_etype.groupby(["mtype", "mtype_url"], observed=True)
     return {
         mtype_url: {
@@ -182,7 +202,7 @@ def _density_summary_stats_mtype(df_mtype_etype):
     }
 
 
-def _density_summary_stats_etype(df_etype):
+def _density_summary_stats_etype(df_etype: pd.DataFrame) -> dict:
     ret = {}
     for (etype, etype_url), df in df_etype.groupby(["etype", "etype_url"], observed=True):
         assert len(df) == 1, df
@@ -204,8 +224,11 @@ def _density_summary_stats_etype(df_etype):
 
 
 def atlas_densities_composition_summary(
-    density_distribution, region_map, brain_regions, map_function=map
-):
+    density_distribution: pd.DataFrame,
+    region_map: voxcell.RegionMap,
+    brain_regions: voxcell.VoxelData,
+    map_function=map,
+) -> dict:
     """Calculate the composition summary statistics of a density distribution."""
     if map_function == "auto":
         n_items = len(density_distribution)
@@ -246,7 +269,12 @@ def atlas_densities_composition_summary(
     return summary_statistics
 
 
-def _get_nrrd_statistics(region_map, brain_regions, densities, map_function):
+def _get_nrrd_statistics(
+    region_map: voxcell.RegionMap,
+    brain_regions: voxcell.VoxelData,
+    densities: pd.DataFrame,
+    map_function,
+) -> pd.DataFrame:
     result = map_function(
         partial(_worker_function, region_map=region_map, brain_regions=brain_regions),
         densities.iterrows(),
@@ -269,14 +297,24 @@ def _get_nrrd_statistics(region_map, brain_regions, densities, map_function):
     return df
 
 
-def _worker_function(data, region_map, brain_regions):
+def _worker_function(
+    data: tuple[int, Any],
+    region_map: voxcell.RegionMap,
+    brain_regions: voxcell.VoxelData,
+) -> tuple[int, list[dict]]:
     index, entry = data
     return index, get_statistics_from_nrrd_volume(
         region_map, brain_regions, entry.mtype, entry.etype, entry.path
     )
 
 
-def get_statistics_from_nrrd_volume(region_map, brain_regions, mtype, etype, nrrd_path):
+def get_statistics_from_nrrd_volume(
+    region_map: voxcell.VoxelData,
+    brain_regions: voxcell.VoxelData,
+    mtype: str,
+    etype: str,
+    nrrd_path: StrOrPath,
+) -> list[dict]:
     """Get statistics about an nrrd volume
 
     Args:
@@ -287,7 +325,7 @@ def get_statistics_from_nrrd_volume(region_map, brain_regions, mtype, etype, nrr
         nrrd_path: path to nrrd file
     """
     unique_region_ids, total_densities, voxel_counts = _calculate_statistics(
-        brain_regions, nrrd_path
+        brain_regions, Path(nrrd_path)
     )
 
     cell_counts = np.round(total_densities * brain_regions.voxel_volume * 1e-9)
@@ -304,13 +342,19 @@ def get_statistics_from_nrrd_volume(region_map, brain_regions, mtype, etype, nrr
     ]
 
 
-def _extract_densities(brain_regions, nrrd_path):
+def _extract_densities(
+    brain_regions: voxcell.VoxelData,
+    nrrd_path: Path,
+) -> tuple[np.ndarray, np.ndarray]:
     v = voxcell.VoxelData.load_nrrd(nrrd_path)
     mask = brain_regions.raw != 0
     return brain_regions.raw[mask], v.raw[mask]
 
 
-def _calculate_statistics(brain_regions, nrrd_path):
+def _calculate_statistics(
+    brain_regions: voxcell.VoxelData,
+    nrrd_path: Path,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     region_ids, densities = _extract_densities(brain_regions, nrrd_path)
 
     # faster than np.unique

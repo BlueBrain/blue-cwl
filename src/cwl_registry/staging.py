@@ -4,11 +4,12 @@ import logging
 import os
 import shutil
 from collections import deque
+from collections.abc import Iterator, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 import pandas as pd
 from entity_management.atlas import AtlasRelease, CellCompositionSummary, CellCompositionVolume
@@ -24,6 +25,7 @@ from cwl_registry.nexus import (
     get_distribution_as_dict,
     get_distribution_location_path,
 )
+from cwl_registry.typing import IdOrEntity, StrOrPath
 from cwl_registry.utils import get_obj
 from cwl_registry.validation import validate_schema
 
@@ -31,8 +33,8 @@ L = logging.getLogger(__name__)
 
 
 def stage_distribution_file(
-    id_or_entity,
-    output_dir: os.PathLike,
+    id_or_entity: IdOrEntity,
+    output_dir: StrOrPath,
     *,
     encoding_format: str | None = None,
     filename: str | None = None,
@@ -86,9 +88,9 @@ def stage_distribution_file(
 
 
 def materialize_cell_composition_volume(
-    obj,
+    obj: dict | IdOrEntity,
     *,
-    output_file: os.PathLike | None = None,
+    output_file: StrOrPath | None = None,
     base: str | None = None,
     org: str | None = None,
     proj: str | None = None,
@@ -127,7 +129,7 @@ def materialize_cell_composition_volume(
         get_label,
         _materialize_me_type_density,
     )
-    result = transform_nested_dataset(dataset, levels)
+    transformed = transform_nested_dataset(dataset, levels)
 
     result = pd.DataFrame(
         [
@@ -138,7 +140,7 @@ def materialize_cell_composition_volume(
                 etype_url,
                 list(etype_data["hasPart"].values())[0],
             )
-            for mtype_url, mtype_data in result["hasPart"].items()
+            for mtype_url, mtype_data in transformed["hasPart"].items()
             for etype_url, etype_data in mtype_data["hasPart"].items()
         ],
         columns=["mtype", "etype", "mtype_url", "etype_url", "path"],
@@ -150,7 +152,7 @@ def materialize_cell_composition_volume(
     return result
 
 
-def materialize_density_distribution(forge, dataset, output_file):
+def materialize_density_distribution(forge, dataset, output_file: StrOrPath):
     """Bacwards compatible function using forge."""
     base, org, proj, token = forge_to_config(forge)
     return materialize_cell_composition_volume(
@@ -159,9 +161,9 @@ def materialize_density_distribution(forge, dataset, output_file):
 
 
 def materialize_cell_composition_summary(
-    obj,
+    obj: dict | IdOrEntity,
     *,
-    output_file: os.PathLike | None = None,
+    output_file: StrOrPath | None = None,
     base: str | None = None,
     org: str | None = None,
     proj: str | None = None,
@@ -268,17 +270,25 @@ def get_entry_id(entry: dict) -> str:
     return resource_id
 
 
-def _iter_dataset_children(dataset, branch_token):
-    if isinstance(dataset, dict):
-        dataset = ({**{"@id": key}, **values} for key, values in dataset.items())
+SplitEntryComponents = tuple[str, dict, dict | None]
 
-    for d in dataset:
-        yield _split_entry(d, branch_token)
+
+def _iter_dataset_children(
+    dataset: dict | list, branch_token: str
+) -> Iterator[SplitEntryComponents]:
+    if isinstance(dataset, dict):
+        for key, values in dataset.items():
+            yield _split_entry({"@id": key} | values, branch_token)
+    elif isinstance(dataset, list):
+        for entry in dataset:
+            yield _split_entry(entry, branch_token)
+    else:
+        raise TypeError(f"Unsupported dataset type '{type(dataset)}'.")
 
 
 def transform_nested_dataset(
     dataset: dict,
-    level_transforms: list[Callable[[dict], tuple[str, dict]]],
+    level_transforms: Sequence[Callable[[str, dict], tuple[str, dict]]],
     branch_token: str = "hasPart",
 ) -> dict:
     """Transform a nested dataset using the level transforms.
@@ -292,12 +302,12 @@ def transform_nested_dataset(
         Transformed dataset.
     """
     level = 0
-    result = {}
+    result: dict = {}
 
     if branch_token not in dataset:
         dataset = {branch_token: dataset}
 
-    q = deque([(dataset[branch_token], result, level)])
+    q: deque[tuple[dict, Any, int]] = deque([(dataset[branch_token], result, level)])
 
     while q:
         source, target, level = q.pop()
@@ -307,17 +317,17 @@ def transform_nested_dataset(
         target_level = target[branch_token] = {}
 
         for child_id, child_data, child_children in _iter_dataset_children(source, branch_token):
-            tar_get_data = transform_func(child_id, child_data)
+            target_data = transform_func(child_id, child_data)
 
-            target_level[utils.url_without_revision(child_id)] = tar_get_data
+            target_level[utils.url_without_revision(child_id)] = target_data
 
             if child_children:
-                q.append((child_children, tar_get_data, level + 1))
+                q.append((child_children, target_data, level + 1))
 
     return result
 
 
-def _split_entry(entry: dict, branch_token: str):
+def _split_entry(entry: dict, branch_token: str) -> SplitEntryComponents:
     """Split a level entry by separating the id, entry information, and its children data."""
     children = entry.get(branch_token, None)
     entry = {k: v for k, v in entry.items() if k != branch_token}
@@ -341,7 +351,7 @@ def _split_entry(entry: dict, branch_token: str):
     return resource_id, entry, children
 
 
-_TRANSFORM_CACHE = {}
+_TRANSFORM_CACHE: dict[str, Any] = {}
 
 
 def transform_cached(func):
@@ -360,8 +370,15 @@ def transform_cached(func):
 
 @transform_cached
 def get_entry_property(
-    entry_id, entry_data, *, property_name, base=None, org=None, proj=None, token=None
-) -> tuple[str, str]:
+    entry_id: str,
+    entry_data: dict,
+    *,
+    property_name: str,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> dict[str, Any]:
     """Get a level's property by key or fetch the entity and retrieve the attribute.
 
     Args:
@@ -573,7 +590,7 @@ def _config_to_path(
 
 
 def _get_data(
-    obj: str | dict | Entity,
+    obj: dict | IdOrEntity,
     cls=Entity,
     *,
     base: str | None = None,
@@ -595,8 +612,8 @@ def _get_data(
 
 
 def materialize_macro_connectome_config(
-    obj: str | dict | Entity,
-    output_file: Path | None = None,
+    obj: dict | IdOrEntity,
+    output_file: StrOrPath | None = None,
     *,
     base: str | None = None,
     org: str | None = None,
@@ -734,7 +751,7 @@ def materialize_synapse_config(
     obj,
     output_dir,
     *,
-    output_file: os.PathLike | None = None,
+    output_file: StrOrPath | None = None,
     base: str | None = None,
     org: str | None = None,
     proj: str | None = None,

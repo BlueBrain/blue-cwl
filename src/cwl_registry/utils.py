@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from contextlib import contextmanager
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
 import libsonata
@@ -30,6 +30,10 @@ from pyarrow.pandas_compat import get_logical_type, get_logical_type_map
 from cwl_registry.constants import DEFAULT_CIRCUIT_BUILD_PARAMETERS
 from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.model import CustomBaseModel
+from cwl_registry.typing import StrOrPath
+
+if TYPE_CHECKING:
+    from cwl_registry.variant import Variant
 
 ExistingFile = click.Path(
     exists=True, readable=True, dir_okay=False, resolve_path=True, path_type=str
@@ -79,7 +83,7 @@ def log(function, logger=L):
 
 
 @contextmanager
-def cwd(path):
+def cwd(path: StrOrPath):
     """Context manager to temporarily change the working directory."""
     original_cwd = os.getcwd()
     os.chdir(path)
@@ -89,7 +93,7 @@ def cwd(path):
         os.chdir(original_cwd)
 
 
-def create_dir(path: os.PathLike, clean_if_exists=False) -> Path:
+def create_dir(path: StrOrPath, clean_if_exists=False) -> Path:
     """Create directory and parents if it doesn't already exist."""
     path = Path(path)
     if path.exists() and clean_if_exists:
@@ -98,12 +102,12 @@ def create_dir(path: os.PathLike, clean_if_exists=False) -> Path:
     return path
 
 
-def load_json(filepath: os.PathLike) -> dict:
+def load_json(filepath: StrOrPath) -> dict:
     """Load from JSON file."""
     return json.loads(Path(filepath).read_bytes())
 
 
-def write_json(filepath: os.PathLike, data: dict) -> None:
+def write_json(filepath: StrOrPath, data: dict) -> None:
     """Write json file."""
 
     def serializer(obj):
@@ -118,7 +122,7 @@ def write_json(filepath: os.PathLike, data: dict) -> None:
         json.dump(data, fd, indent=2, default=serializer)
 
 
-def load_yaml(filepath: os.PathLike) -> dict:
+def load_yaml(filepath: StrOrPath) -> dict:
     """Load from YAML file."""
     return yaml.safe_load(Path(filepath).read_bytes())
 
@@ -143,12 +147,12 @@ def dump_yaml(data: dict) -> str:
     return yaml.dump(data, Dumper=Dumper, sort_keys=False, default_flow_style=False)
 
 
-def write_yaml(filepath: os.PathLike, data: dict) -> None:
+def write_yaml(filepath: StrOrPath, data: dict) -> None:
     """Writes dict data to yaml."""
     Path(filepath).write_text(dump_yaml(data), encoding="utf-8")
 
 
-def load_arrow(filepath: os.PathLike) -> pd.DataFrame:
+def load_arrow(filepath: StrOrPath) -> pd.DataFrame:
     """Load an arrow file as a pandas dataframe."""
     with pyarrow.ipc.open_file(str(filepath)) as reader:
         try:
@@ -181,7 +185,7 @@ def load_arrow(filepath: os.PathLike) -> pd.DataFrame:
             return pd.DataFrame(data_dict)
 
 
-def write_arrow(filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = False) -> None:
+def write_arrow(filepath: StrOrPath, dataframe: pd.DataFrame, index: bool = False) -> None:
     """Write dataframe as an arrow file."""
     table = pyarrow.Table.from_pandas(dataframe, preserve_index=index)
 
@@ -191,7 +195,10 @@ def write_arrow(filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = Fa
 
 
 def write_parquet(
-    filepath: os.PathLike, dataframe: pd.DataFrame, index: bool = False, compression="gzip"
+    filepath: StrOrPath,
+    dataframe: pd.DataFrame,
+    index: bool = False,
+    compression: str | None = "gzip",
 ) -> None:
     """Write pandas dataframe as an arrow file with gzip compression."""
     dataframe.to_parquet(path=filepath, index=index, engine="pyarrow", compression=compression)
@@ -265,7 +272,7 @@ def get_biophysical_partial_population_from_config(circuit_config):
     return nodes_file, population_name
 
 
-def get_first_edge_population_from_config(circuit_config):
+def get_first_edge_population_from_config(circuit_config: dict) -> tuple[str, str]:
     """Return first edges file and population name from config."""
     edges = circuit_config["networks"]["edges"]
 
@@ -282,7 +289,7 @@ def get_first_edge_population_from_config(circuit_config):
     return edges_file, edge_population_name
 
 
-def get_edge_population_name(edges_file):
+def get_edge_population_name(edges_file: StrOrPath) -> str:
     """Return population name from file."""
     storage = libsonata.EdgeStorage(edges_file)
     pop_names = storage.population_names
@@ -299,7 +306,7 @@ def update_circuit_config_population(
     config: dict[str, Any],
     population_name: str,
     population_data: dict[str, Any],
-    filepath: os.PathLike,
+    filepath: StrOrPath,
 ) -> dict[str, Any]:
     """Create a new config from an existing one with updated population data."""
     config = deepcopy(config)
@@ -331,10 +338,10 @@ def update_circuit_config_population(
 
 
 def write_node_population_with_properties(
-    nodes_file: Path,
+    nodes_file: StrOrPath,
     population_name: str,
     properties: dict[str, Any],
-    output_file: Path,
+    output_file: StrOrPath,
     orientations: np.ndarray | None = None,
 ):
     """Write a copy of nodes_file with additional properties for the given population."""
@@ -346,15 +353,16 @@ def write_node_population_with_properties(
     population.save_sonata(output_file)
 
 
-def get_directory_contents(directory_path: Path) -> dict[str, Path]:
+def get_directory_contents(directory_path: StrOrPath) -> dict[str, Path]:
     """Return the file in a dictionary if it exists, an empty dict otherwise."""
+    directory_path = Path(directory_path)
     if directory_path.is_dir():
         return {path.name: path for path in directory_path.iterdir()}
     return {}
 
 
 def write_resource_to_definition_output(
-    json_resource, variant, output_dir: os.PathLike, output_name: str = None
+    json_resource, variant, output_dir: StrOrPath, output_name: str | None = None
 ):
     """Write a resource to the filepath determined by the tool output path definition.
 
@@ -375,8 +383,8 @@ def write_resource_to_definition_output(
 
 def url_without_revision(url: str) -> str:
     """Return the url without the revision query."""
-    url = urllib.parse.urlparse(url)
-    return url._replace(query="").geturl()
+    parse_result = urllib.parse.urlparse(url)
+    return parse_result._replace(query="").geturl()
 
 
 def url_with_revision(url: str, rev: str | None) -> str:
@@ -397,7 +405,9 @@ def url_with_revision(url: str, rev: str | None) -> str:
     return f"{url}?rev={rev}"
 
 
-def _cell_collection_from_frame(df: pd.DataFrame, population_name: str, orientation_format: str):
+def _cell_collection_from_frame(
+    df: pd.DataFrame, population_name: str, orientation_format: str
+) -> voxcell.CellCollection:
     # CellCollection.from_dataframe needs the index to start at 1
     df = df.reset_index(drop=True)
     df.index += 1
@@ -412,7 +422,7 @@ def _cell_collection_from_frame(df: pd.DataFrame, population_name: str, orientat
 def bisect_cell_collection_by_properties(
     cell_collection: voxcell.CellCollection,
     properties: dict[str, list[str]],
-) -> list[voxcell.CellCollection | None]:
+) -> tuple[voxcell.CellCollection | None, voxcell.CellCollection | None]:
     """Split cell collection in two based on properties mask.
 
     The mask to split is constructed in two steps:
@@ -480,18 +490,18 @@ def merge_cell_collections(
     orientation_format: str = "quaternions",
 ) -> voxcell.CellCollection:
     """Merge cell collections using their 'split_index' column."""
-    filtered = list(filter(lambda s: s is not None, splits))
+    filtered: list[voxcell.CellCollection] = list(filter(lambda s: s is not None, splits))
 
     if len(filtered) == 1:
         return filtered[0].cells
 
-    dataframes = [split.as_dataframe().set_index("split_index") for split in splits]
+    dataframes = [split.as_dataframe().set_index("split_index") for split in filtered]
 
     result = pd.concat(dataframes, ignore_index=False, join="outer").sort_index()
     return _cell_collection_from_frame(result, population_name, orientation_format)
 
 
-def _parse_slurm_config(config):
+def _parse_slurm_config(config: dict) -> list[str]:
     """Parse slurm config."""
     parameters = []
     for key, value in config.items():
@@ -509,7 +519,7 @@ def _parse_slurm_config(config):
     return parameters
 
 
-def _get_variant_resources_config(variant, sub_task_index=None) -> dict:
+def _get_variant_resources_config(variant: "Variant", sub_task_index: int | None = None) -> dict:
     """Return variant resources config."""
     resources_dict = variant.get_content().get("resources", {})
 
@@ -528,7 +538,9 @@ def _get_variant_resources_config(variant, sub_task_index=None) -> dict:
     return resources
 
 
-def build_variant_allocation_command(cmd: str, variant, sub_task_index=None, srun="srun") -> str:
+def build_variant_allocation_command(
+    cmd: str, variant: "Variant", sub_task_index: int | None = None, srun: str = "srun"
+) -> str:
     """Construct an allocation command based on variant resource default definition."""
     slurm_config = _get_variant_resources_config(variant, sub_task_index=sub_task_index)
 
@@ -573,7 +585,7 @@ def _get_population(node_list, population_name):
     )
 
 
-def get_partial_circuit_region_id(partial_circuit):
+def get_partial_circuit_region_id(partial_circuit) -> str:
     """Return brain region id."""
     url = partial_circuit.brainLocation.brainRegion.url
     return url.replace("mba:", "http://api.brain-map.org/api/v2/data/Structure/")

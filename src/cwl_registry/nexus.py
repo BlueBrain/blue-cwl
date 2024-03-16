@@ -12,6 +12,7 @@ from entity_management.core import DataDownload, Entity
 from entity_management.nexus import _print_nexus_error, load_by_id
 
 from cwl_registry.exceptions import CWLRegistryError
+from cwl_registry.typing import StrOrPath
 from cwl_registry.utils import get_obj
 
 L = logging.getLogger(__name__)
@@ -109,8 +110,8 @@ def get_distribution_location_path(
 def download_distribution(
     id_or_entity: str | TEntity,
     *,
-    output_dir: os.PathLike,
-    filename: str = None,
+    output_dir: StrOrPath,
+    filename: str | None = None,
     cls: TEntity = Entity,
     encoding_format: str | None = None,
     base: str | None = None,
@@ -248,10 +249,10 @@ def _get_valid_token(token: str | None = None, force_refresh: bool = False) -> s
 
 
 def get_forge(
-    nexus_base: str = None,
-    nexus_org: str = None,
-    nexus_project: str = None,
-    nexus_token: str = None,
+    nexus_base: str | None = None,
+    nexus_org: str | None = None,
+    nexus_project: str | None = None,
+    nexus_token: str | None = None,
     force_refresh: bool = False,
 ):  # pragma: no cover
     """Create a KnowledgeGraphForge instance.
