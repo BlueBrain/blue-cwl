@@ -46,7 +46,7 @@ INPUT_NODE_POPULATION_COLUMNS = [
 @click.option("--variant-config", required=True)
 @click.option("--output-dir", required=True)
 def app(configuration, partial_circuit, macro_connectome_config, variant_config, output_dir):
-    """Build micro connectome"""
+    """Build micro connectome."""
     output_dir = utils.create_dir(output_dir)
     _app(configuration, partial_circuit, macro_connectome_config, variant_config, output_dir)
 

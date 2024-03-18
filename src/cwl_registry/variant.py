@@ -204,10 +204,8 @@ class Variant(Entity):
 
         if variant.get_id() and not update:
             raise CWLRegistryError(
-                (
-                    f"Variant {self} already registered with id {variant.get_id()}. "
-                    "To update the existing resource set update=True."
-                )
+                f"Variant {self} already registered with id {variant.get_id()}. "
+                "To update the existing resource set update=True."
             )
 
         # local distribution not yet registered in nexus
@@ -239,7 +237,13 @@ class Variant(Entity):
 
 def _create_local_variant_distribution(path: StrOrPath) -> DataDownload:
     path = Path(path).resolve()
-    assert path.exists() and path.suffix == ".cwl"
+
+    if not path.exists():
+        raise CWLRegistryError(f"Path {path} does not exist.")
+
+    if path.suffix != ".cwl":
+        raise CWLRegistryError(f"Path {path} does not have a cwl suffix.")
+
     return DataDownload(
         url=f"file://{path}",
         name="definition.cwl",
@@ -256,7 +260,11 @@ def _load_variant_distribution(
 
     # backwards compatibility to old format
     if distribution is None:
-        assert variant.allocation_resources and variant.definitions
+        if not variant.allocation_resources:
+            raise CWLRegistryError("No allocation resources found.")
+
+        if not variant.definitions:
+            raise CWLRegistryError("No definitions found.")
 
         payload = load_yaml(
             unquote_uri_path(
@@ -330,9 +338,7 @@ def search_variant_in_nexus(
         org=org,
         proj=proj,
         token=token,
-    )[
-        "results"
-    ]["bindings"]
+    )["results"]["bindings"]
 
     if result:
         resource_id = result[0]["id"]["value"]

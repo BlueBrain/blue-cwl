@@ -13,6 +13,7 @@ import voxcell
 from entity_management.nexus import sparql_query
 from voxcell.nexus.voxelbrain import Atlas
 
+from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.typing import StrOrPath
 
 L = logging.getLogger(__name__)
@@ -22,14 +23,15 @@ def mtype_etype_url_mapping_from_nexus(
     base: str | None = None,
     token: str | None = None,
 ) -> tuple[dict, dict]:
-    """Get mtype and etype labels mapped to their uris, from nexus"""
+    """Get mtype and etype labels mapped to their uris, from nexus."""
 
     def get_type_ids(type_):
         known_types = (
             "MType",
             "EType",
         )
-        assert type_ in known_types, f"type_ must be {known_types}"
+        if type_ not in known_types:
+            raise CWLWorkflowError(f"type {type_} must be in {known_types}")
 
         query = f"""
         PREFIX nsg: <https://neuroshapes.org/>
@@ -113,7 +115,7 @@ def _expand_me_dataframe(
 
 
 def density_summary_stats_region(df_region_mtype_etype: pd.DataFrame) -> dict:
-    """Serialize `df_region_mtype_etype` to required summary statistics format
+    """Serialize `df_region_mtype_etype` to required summary statistics format.
 
     Args:
         region_map: voxcell.region map to use
@@ -172,7 +174,7 @@ def _get_atlas_region_volumes(
     ids, counts = np.unique(brain_regions.raw, return_counts=True)
 
     volumes_dict = {}
-    for id_, count in zip(ids, counts):
+    for id_, count in zip(ids, counts, strict=True):
         if not id_:
             continue
         acronym = region_map.get(id_, "acronym")
@@ -205,7 +207,9 @@ def _density_summary_stats_mtype(df_mtype_etype: pd.DataFrame) -> dict:
 def _density_summary_stats_etype(df_etype: pd.DataFrame) -> dict:
     ret = {}
     for (etype, etype_url), df in df_etype.groupby(["etype", "etype_url"], observed=True):
-        assert len(df) == 1, df
+        if len(df) != 1:
+            raise CWLWorkflowError(f"Dataframe should have only one type: {df}")
+
         neuron = {
             "density": float(df["density"].iloc[0]),
         }
@@ -315,7 +319,7 @@ def get_statistics_from_nrrd_volume(
     etype: str,
     nrrd_path: StrOrPath,
 ) -> list[dict]:
-    """Get statistics about an nrrd volume
+    """Get statistics about an nrrd volume.
 
     Args:
         region_map: voxcell.region map to use

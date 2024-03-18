@@ -40,6 +40,10 @@ def get_distribution(
         id_or_entity: Either the id to retrieve the entity or the entity.
         cls: entity-management class to instantiate. Default is Entity.
         encoding_format: The format to match in case of multiple distributions.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         Instantiated entity from given id.
@@ -48,6 +52,10 @@ def get_distribution(
         CWLRegistryError:
             * If entity is not found.
             * If multiple distributions and no matching encoding format.
+
+    Note:
+        A resource may have many distributions with a different encoding format. If that's the case
+        the encoding format argument is mandatory to select the respective distribution.
     """
     entity = get_obj(id_or_entity, cls=cls, base=base, org=org, proj=proj, token=token)
     distribution = entity.distribution
@@ -88,12 +96,21 @@ def get_distribution_location_path(
     Args:
         id_or_entity: Either the id to retrieve the entity or the entity.
         cls: entity-management class to instantiate. Default is Entity.
+        encoding_format: The encoding format of the distribution. Example: application/json
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         Instantiated entity from given id.
 
     Raises:
         CWLRegistryError if entity is not found.
+
+    Note:
+        A resource may have many distributions with a different encoding format. If that's the case
+        the encoding format argument is mandatory to select the respective distribution.
     """
     distribution = get_distribution(
         id_or_entity,
@@ -127,6 +144,11 @@ def download_distribution(
         output_dir: Output directory to download the distribution to.
         filename: Filename to use. Resource's file name is used by default.
         encoding_format: The format to choose if many.
+        encoding_format: The format to match in case of multiple distributions.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         Instantiated entity from given id.
@@ -165,6 +187,10 @@ def get_distribution_as_dict(
     Args:
         id_or_entity: Either the id to retrieve the entity or the entity.
         cls: entity-management class to instantiate. Default is Entity.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         Instantiated entity from given id.
@@ -217,7 +243,7 @@ def _refresh_token_on_failure(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        """Decorator function"""
+        """Decorator function."""
         try:
             return func(*args, **kwargs)
         except requests.exceptions.HTTPError as e1:
@@ -261,6 +287,7 @@ def get_forge(
         nexus_base: The nexus instance endpoint.
         nexus_org: The nexus organization.
         nexus_project: The nexus project.
+        nexus_token: The OAUth token.
         force_refresh: Whether to attempt renew the token (Requires offline token).
 
     Returns:

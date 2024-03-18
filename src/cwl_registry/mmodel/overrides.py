@@ -4,6 +4,7 @@ from copy import deepcopy
 
 import numpy as np
 
+from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.mmodel.schemas import SynthesisOverrides
 
 
@@ -17,7 +18,10 @@ def apply_overrides(
     available_grow_types = parameters["grow_types"]
 
     for grow_type, neurite_overrides in overrides.items():
-        assert grow_type in available_grow_types
+        if grow_type not in available_grow_types:
+            raise CWLWorkflowError(
+                f"Grow type '{grow_type}' not in grow types: {available_grow_types}."
+            )
 
         neurite_parameters = parameters[grow_type]
         neurite_distributions = distributions[grow_type]

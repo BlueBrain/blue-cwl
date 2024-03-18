@@ -16,6 +16,7 @@ from morph_tool.converter import convert
 
 from cwl_registry import registering, staging, utils, validation
 from cwl_registry.constants import MorphologyProducer
+from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.mmodel import recipe
 from cwl_registry.mmodel.entity import MorphologyAssignmentConfig
 from cwl_registry.utils import (
@@ -460,7 +461,13 @@ def _run_placeholder_assignment(
 
     # avoid adding the path to the properties df when merging below
     df_placeholders.drop(columns="path", inplace=True)
-    assert set(df_placeholders.columns) == {"region", "mtype", SONATA_MORPHOLOGY}
+
+    if set(df_placeholders.columns) != {"region", "mtype", SONATA_MORPHOLOGY}:
+        raise CWLWorkflowError(
+            "Unexpected columns encountered:\n"
+            f"Expected   : (region, mtype, {SONATA_MORPHOLOGY})\n"
+            f"Encountered: {df_placeholders.columns}"
+        )
 
     # add morphology column via merge with the placeholder entries
     cells.properties = pd.merge(
@@ -469,7 +476,9 @@ def _run_placeholder_assignment(
         how="left",
         on=["region", "mtype"],
     )
-    assert not cells.properties[SONATA_MORPHOLOGY].isnull().any()
+
+    if cells.properties[SONATA_MORPHOLOGY].isnull().any():
+        raise CWLWorkflowError("Null entries encountered in morphology column.")
 
     cells.properties[SONATA_MORPHOLOGY_PRODUCER] = MorphologyProducer.PLACEHOLDER
 

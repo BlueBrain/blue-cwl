@@ -4,7 +4,7 @@ import logging
 import subprocess
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import click
 import libsonata
@@ -75,7 +75,7 @@ def _extract(
     variant_config_id: str,
     cell_composition_id: str,
     output_dir: Path,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Stage resources from the knowledge graph."""
     staging_dir = utils.create_dir(output_dir / STAGE_DIR_NAME)
     atlas_dir = utils.create_dir(staging_dir / "atlas")
@@ -91,9 +91,9 @@ def _extract(
         cell_composition.atlasRelease,
         output_dir=atlas_dir,
     )
-
     staging.materialize_cell_composition_volume(
-        cell_composition.cellCompositionVolume, output_file=me_type_densities_file
+        cell_composition.cellCompositionVolume,
+        output_file=me_type_densities_file,
     )
 
     return {
@@ -105,7 +105,7 @@ def _extract(
     }
 
 
-def _transform(staged_data: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
+def _transform(staged_data: dict[str, Any], output_dir: Path) -> dict[str, Any]:
     """Trasform the staged resources into the algorithm's inputs, if needed."""
     region = staged_data["region"]
 
@@ -131,7 +131,7 @@ def _transform(staged_data: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
     return transformed_data
 
 
-def _generate(transformed_data: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
+def _generate(transformed_data: dict[str, Any], output_dir: Path) -> dict[str, Any]:
     """Generation step where the algorithm is executed and outputs are created."""
     build_dir = utils.create_dir(output_dir / "build")
 

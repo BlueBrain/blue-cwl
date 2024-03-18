@@ -1,4 +1,4 @@
-"""DensityManipulation of nrrd files"""
+"""DensityManipulation of nrrd files."""
 
 import copy
 import logging
@@ -10,20 +10,23 @@ import numpy as np
 import pandas as pd
 import voxcell
 
+from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.typing import StrOrPath
 
 L = logging.getLogger(__name__)
 
 
 def read_density_manipulation_recipe(recipe: dict) -> pd.DataFrame:
-    """Read the density recipe dictionary, and transform it into a DataFrame"""
-    assert recipe["version"] == 1
+    """Read the density recipe dictionary, and transform it into a DataFrame."""
+    if (recipe_version := recipe["version"]) != 1:
+        raise CWLWorkflowError(f"Incompatible recipe version '{recipe_version}'. Expected 1.")
 
     df = []
     for region_url, mtype_etypes in recipe["overrides"].items():
-        assert (
-            "/Structure" in region_url
-        ), f"ID should match something like api/v2/data/Structure/500, is {region_url}"
+        if "/Structure" not in region_url:
+            raise CWLWorkflowError(
+                f"ID should match something like api/v2/data/Structure/500, is {region_url}"
+            )
         region_id = int(region_url.split("/")[-1])
         for mtype_url, etypes in mtype_etypes["hasPart"].items():
             mtype_label = etypes["label"]
@@ -73,7 +76,7 @@ def read_density_manipulation_recipe(recipe: dict) -> pd.DataFrame:
 def _cell_composition_volume_to_df(
     cell_composition_volume: dict, mtype_urls_inverse: dict, etype_urls_inverse: dict
 ) -> pd.DataFrame:
-    """Read a CellCompositionVolume to Dataframe"""
+    """Read a CellCompositionVolume to Dataframe."""
     df = []
     for mtype_id, etypes in cell_composition_volume["mtypes"].items():
         mtype_label = mtype_urls_inverse[mtype_id]
@@ -123,7 +126,7 @@ def _create_updated_densities(
     materialized_densities: pd.DataFrame,
     region_selection: list[int] | None = None,
 ) -> pd.DataFrame:
-    """Apply the operations to the NRRD files"""
+    """Apply the operations to the NRRD files."""
     p = joblib.Parallel(
         n_jobs=-2,
         backend="multiprocessing",
@@ -250,7 +253,7 @@ def _copy_level_info(dataset: dict, with_children: Any | None = None) -> dict:
 def _update_density_release(
     original_density_release: dict, updated_densities: pd.DataFrame
 ) -> dict:
-    """For the updated densities, update the `original_density_release`
+    """For the updated densities, update the `original_density_release`.
 
     * add `path` attribute, so it can be consumed by push_cellcomposition
     """
@@ -267,12 +270,15 @@ def _update_density_release(
 
         etypes = []
         for etype_url, etype_df in mtype_df.groupby("etype_url"):
-            assert etype_df.shape[0] == 1
+            if etype_df.shape[0] != 1:
+                raise CWLWorkflowError("There should be exactly one etype.")
 
             nrrd_info = etype_df.iloc[0]
 
             etype_node = find_node(mtype_node, etype_url)
-            assert len(etype_node["hasPart"]) == 1
+
+            if len(etype_node["hasPart"]) != 1:
+                raise CWLWorkflowError("There should be exactly one etype.")
 
             if nrrd_info.updated:
                 nrrd_entry = {"path": nrrd_info.path}
@@ -309,18 +315,15 @@ def density_manipulation(
     original_density_release: dict,
     region_selection=None,
 ):
-    """Manipulate the densities in a CellCompositionVolume
+    """Manipulate the densities in a CellCompositionVolume.
 
     Args:
         output_dir(str): where to output the updated densities
         brain_regions: annotation atlas
-        manipulation_recipe(dict): recipe containing the manipulations to perform
-        materialized_cell_composition_volume(dict): a cell composition, where
-        the ids have been materialized to concrete paths
-        original_density_release(dict): what
-        materialized_cell_composition_volume was generated from
-        mtype_urls(dict): mapping for mtype labels to mtype urls
-        etype_urls(dict): mapping for etype labels to etype urls
+        manipulation_recipe: dataframe containing the manipulations to perform
+        materialized_densities: dataframe with the densities
+        original_density_release: The original density release dictionary
+        region_selection: Optional list of region ids to subset.
     """
     updated_densities = _create_updated_densities(
         str(output_dir),

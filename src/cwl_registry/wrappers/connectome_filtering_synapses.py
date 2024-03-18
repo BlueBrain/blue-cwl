@@ -130,7 +130,9 @@ def connectome_filtering_synapses(
         variant,
     )
     parquet_dir = build_dir / "circuit.parquet"
-    assert parquet_dir.exists()
+
+    if not parquet_dir.exists():
+        raise CWLWorkflowError(f"Parquet dir at {parquet_dir} does not exist.")
 
     L.info("Parquet files generated in %s", parquet_dir)
 

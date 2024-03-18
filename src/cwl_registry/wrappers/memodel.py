@@ -47,7 +47,7 @@ CURRENTS_PROPERTIES = [
 
 @click.group(name="me-model")
 def app():
-    """me-model app"""
+    """me-model app."""
 
 
 @app.command()
@@ -144,7 +144,9 @@ def _rmdir_if_exists(path: Path) -> Path:
 def _stage_circuit(partial_circuit, output_file):
     entity = get_entity(resource_id=partial_circuit, cls=DetailedCircuit)
     stage_file(
-        source=unquote_uri_path(entity.circuitConfigPath.url), target=output_file, symbolic=True
+        source=unquote_uri_path(entity.circuitConfigPath.url),
+        target=output_file,
+        symbolic=True,
     )
 
 

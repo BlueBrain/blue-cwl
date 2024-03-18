@@ -319,7 +319,9 @@ def _stage_mandatory_datasets(dataset: dict, staging_dir, base, org, proj, token
 
     # stage mandatory hoc file
     emodel_script_ids = dataset["emodel_scripts_id"]
-    assert len(emodel_script_ids) == 1, "More than one EModelScript entities found."
+
+    if len(emodel_script_ids) != 1:
+        raise CWLWorkflowError("More than one EModelScript entities found.")
 
     emodel_script_path = staging_dir / "model.hoc"
     result["emodel_scripts_path"] = [
@@ -337,7 +339,10 @@ def _stage_mandatory_datasets(dataset: dict, staging_dir, base, org, proj, token
 
     # stage mandatory EModelConfiguration
     emodel_configuration_id = dataset["emodel_configuration_id"]
-    assert emodel_configuration_id is not None, (dataset, emodel_configuration_id)
+
+    if emodel_configuration_id is None:
+        raise CWLWorkflowError(f"No emodel_configuration_id in dataset: {dataset}")
+
     emodel_configuration_path = staging_dir / "EModelConfiguration.json"
     stage_emodel_configuration(
         emodel_configuration_id,

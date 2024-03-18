@@ -18,7 +18,7 @@ class MorphologyAssignmentConfig(Entity):
 
 
 class CanonicalMorphologyModelConfig(Entity):
-    """Canonical morphology model config"""
+    """Canonical morphology model config."""
 
     def to_model(self) -> schemas.CanonicalDistributionConfig:
         """Return the config from the json distribution."""
@@ -31,7 +31,7 @@ class CanonicalMorphologyModelConfig(Entity):
 
 
 class PlaceholderMorphologyConfig(Entity):
-    """Placeholder morphologies config"""
+    """Placeholder morphologies config."""
 
     def to_model(self) -> schemas.PlaceholderDistributionConfig:
         """Return the config from the json distribution."""

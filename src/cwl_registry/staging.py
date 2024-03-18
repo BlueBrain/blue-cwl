@@ -4,12 +4,12 @@ import logging
 import os
 import shutil
 from collections import deque
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import pandas as pd
 from entity_management.atlas import AtlasRelease, CellCompositionSummary, CellCompositionVolume
@@ -19,6 +19,7 @@ from entity_management.nexus import load_by_id
 from entity_management.util import unquote_uri_path
 
 from cwl_registry import utils
+from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.nexus import (
     forge_to_config,
     get_distribution,
@@ -52,6 +53,10 @@ def stage_distribution_file(
         encoding_format: The encoding format of the distribution. Example: application/json
         filename: Filename to use. If None the source's filename will be used.
         symbolic: Whether to make a symbolic link or copy the file.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         Path to the staged file.
@@ -83,7 +88,10 @@ def stage_distribution_file(
             use_auth=token,
         )
     target_file = Path(target_file)
-    assert target_file.exists()
+
+    if not target_file.exists():
+        raise CWLWorkflowError(f"File failed to be staged at {target_file}")
+
     return target_file
 
 
@@ -104,6 +112,10 @@ def materialize_cell_composition_volume(
             - Dictiorary of the data
             - Entity to get distribution from
         output_file: Optional output file to write the dataframe.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         DataFrame with the following columns:
@@ -177,6 +189,10 @@ def materialize_cell_composition_summary(
             - Dictiorary of the data
             - Entity to get distribution from
         output_file: Optional output file to write the dataframe.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         DataFrame with the following columns:
@@ -264,7 +280,8 @@ def get_entry_id(entry: dict) -> str:
         rev = None
 
     if rev:
-        assert "?rev=" not in resource_id
+        if "?rev=" in resource_id:
+            raise CWLWorkflowError(f"ID {resource_id} has already a revision.")
         resource_id = f"{resource_id}?rev={rev}"
 
     return resource_id
@@ -295,7 +312,7 @@ def transform_nested_dataset(
 
     Args:
         dataset: The nested dataset.
-        level_trasnform: A list of callables that transform each nested level.
+        level_transforms: A list of callables that transform each nested level.
         branch_token: Token to access the children of each level. Default is 'hasPart'.
 
     Returns:
@@ -345,7 +362,8 @@ def _split_entry(entry: dict, branch_token: str) -> SplitEntryComponents:
         rev = None
 
     if rev is not None:
-        assert "?rev=" not in resource_id
+        if "?rev=" in resource_id:
+            raise CWLWorkflowError(f"ID {resource_id} has already a revision.")
         resource_id = f"{resource_id}?rev={rev}"
 
     return resource_id, entry, children
@@ -385,6 +403,10 @@ def get_entry_property(
         entry_id: The level's id key.
         entry_data: The level's data dictionary.
         property_name: The property to get from 'entry_data' if exists or retrieve using 'entry_id'.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         A dictionary with the property name as a key. Example: {"label": "my-label"}
@@ -440,8 +462,13 @@ def stage_atlas(
         parcellation_ontology_basename: The filename of the retrieved hierarchy.
         parcellation_volume_basename: The filename of the retrieved brain annotations
         parcellation_hemisphere_basename: The filename of the retrieved hemisphere volume.
+        cell_orientation_field_basename: The filename of the cell orientation field file.
         symbolic: If True symbolic links will be attempted if the datasets exist on gpfs
             otherwise the files will be downloaded.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Return:
         An AtlasInfo instance with the staged file paths.
@@ -555,7 +582,8 @@ def stage_file(source: Path, target: Path, symbolic: bool = True) -> None:
     source = Path(source)
     target = Path(target)
 
-    assert source.exists(), f"Path {source} does not exist."
+    if not source.exists():
+        raise CWLWorkflowError(f"Path {source} does not exist.")
 
     if not target.parent.exists():
         target.parent.mkdir(parents=True)
@@ -628,6 +656,10 @@ def materialize_macro_connectome_config(
             - Dictiorary of the data
             - Entity to get distribution from
         output_file: Optional path to write the result to a file. Default is None.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         The materialized dictionary of the macro connectome configuration. Example:
@@ -688,6 +720,10 @@ def materialize_micro_connectome_config(
             - Dictiorary of the data
             - Entity to get distribution from
         output_file: Optional filepath to write dictionary as json.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         Materialized dictionary of the micro connectome configuration. Example:
@@ -765,6 +801,11 @@ def materialize_synapse_config(
             - Dictiorary of the data
             - Entity to get distribution from
         output_dir: Output directory to stage data.
+        output_file: Optional output file to write the json config to.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         Materialized dataset dictionary.
@@ -803,10 +844,7 @@ def materialize_ph_catalog(
     obj,
     *,
     output_dir=None,
-    output_filenames={
-        "placement_hints": ["[PH]1", "[PH]2", "[PH]3", "[PH]4", "[PH]5", "[PH]6"],
-        "voxel_distance_to_region_bottom": "[PH]y",
-    },
+    output_filenames: dict | None = None,
     symbolic=True,
     base: str | None = None,
     org: str | None = None,
@@ -823,10 +861,19 @@ def materialize_ph_catalog(
         output_dir: Output directory to stage the files.
         output_filenames: Filenames to use for the output datasets.
         symbolic: Make symlinks where possible.
+        base: The nexus base endpoint. If None entity-management's runtime base is used.
+        org: The nexus organization. If None entity-management's runtime org is used.
+        proj: The nexus project. If None entity-management's runtime proj is used.
+        token: Optional OAuth token. If None entity-management's runtime token is used.
 
     Returns:
         Materialized dataset dictionary.
     """
+    if output_filenames is None:
+        output_filenames = {
+            "placement_hints": ["[PH]1", "[PH]2", "[PH]3", "[PH]4", "[PH]5", "[PH]6"],
+            "voxel_distance_to_region_bottom": "[PH]y",
+        }
 
     def get_file_path(entry):
         return unquote_uri_path(entry["distribution"]["atLocation"]["location"])

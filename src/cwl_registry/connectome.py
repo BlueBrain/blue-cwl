@@ -61,7 +61,6 @@ import logging
 from collections.abc import Callable, Sequence
 from functools import partial
 from itertools import product
-from typing import Optional
 
 import libsonata
 import numpy as np
@@ -81,7 +80,9 @@ class Constants:
     SOURCE_MACRO_LEVELS = ["source_hemisphere", "source_region"]
     TARGET_MACRO_LEVELS = ["target_hemisphere", "target_region"]
 
-    MACRO_LEVELS = [x for pair in zip(SOURCE_MACRO_LEVELS, TARGET_MACRO_LEVELS) for x in pair]
+    MACRO_LEVELS = [
+        x for pair in zip(SOURCE_MACRO_LEVELS, TARGET_MACRO_LEVELS, strict=True) for x in pair
+    ]
     COMPACT_MACRO_LEVELS = ["side"] + MACRO_LEVELS[2:]
     MACRO_VALUES = ["value"]
     MACRO_ALL = MACRO_LEVELS + MACRO_VALUES
@@ -90,7 +91,9 @@ class Constants:
     SOURCE_MICRO_LEVELS = SOURCE_MACRO_LEVELS + [MICRO_MACRO_DIFF[0]]
     TARGET_MICRO_LEVELS = TARGET_MACRO_LEVELS + [MICRO_MACRO_DIFF[1]]
 
-    MICRO_LEVELS = [x for pair in zip(SOURCE_MICRO_LEVELS, TARGET_MICRO_LEVELS) for x in pair]
+    MICRO_LEVELS = [
+        x for pair in zip(SOURCE_MICRO_LEVELS, TARGET_MICRO_LEVELS, strict=True) for x in pair
+    ]
     COMPACT_MICRO_LEVELS = ["side"] + MICRO_LEVELS[2:]
 
     MICRO_VARIANT_VALUES = ["variant"]
@@ -169,7 +172,8 @@ def assemble_macro_matrix(macro_config: dict) -> pd.DataFrame:
     mask = df["value"] == 0.0
     if mask.any():
         L.warning(
-            "Zero connection strengths found in macro matrix and will be removed: %s", df[mask]
+            "Zero connection strengths found in macro matrix and will be removed: %s",
+            df[mask],
         )
 
     # zero connection strength means that the pathway will not be built
@@ -263,7 +267,9 @@ def resolve_micro_matrices(
 
     variants_matrix = assemble_micro_matrix(micro_config, "variants")
     variants_matrix = _conform_variants(
-        variants_matrix, macro_matrix, cell_counts.index.to_frame(index=False)
+        variants_matrix,
+        macro_matrix,
+        cell_counts.index.to_frame(index=False),
     )
 
     return {
@@ -451,8 +457,9 @@ def _scale_distance_dependent(
     dist_bins = np.linspace(0.0, max_dist, n_bins + 1)
 
     hists = np.empty((len(micro), n_bins), dtype=float)
-    for (i, pre_pos), (j, post_pos) in zip(source_groups, target_groups):
-        assert i == j
+    for (i, pre_pos), (j, post_pos) in zip(source_groups, target_groups, strict=True):
+        if i != j:
+            raise CWLWorkflowError("i != j")
         distances = cdist(pre_pos, post_pos).flatten()
         hists[i] = np.histogram(distances[distances > 0.0], bins=dist_bins)[0]
 
@@ -568,7 +575,7 @@ def _assemble(
     initial_path: str,
     index_columns: list[str],
     value_columns: list[str],
-    overrides_path: Optional[str] = None,
+    overrides_path: str | None = None,
 ):
     """Assemble a dataframe from a dataframe for initial values and optional overrides.
 
@@ -580,6 +587,8 @@ def _assemble(
     Args:
         initial_path: Path to initial dataframe stored in arrow format.
         index_columns: List of column names to use as an index to compare the dataframes.
+        value_columns: List of column names to use as values.
+        overrides_path: Optional path to connectome overrides.
 
     Returns:
         Assembled dataframe.
@@ -653,7 +662,7 @@ def _create_combos(pathways, source, target):
 
     values = []
 
-    for (_, pre_mtypes), (_, post_mtypes) in zip(source_groups, target_groups):
+    for (_, pre_mtypes), (_, post_mtypes) in zip(source_groups, target_groups, strict=True):
         source_hemisphere, source_region = pre_mtypes.index[0]
         target_hemisphere, target_region = post_mtypes.index[0]
 
@@ -726,7 +735,13 @@ def _probability_of_connection(
     macro = _align(macro, micro, Constants.MACRO_LEVELS).set_index(Constants.MACRO_LEVELS)
 
     scale = _synapse_scaling_factor(macro, micro, cell_counts, region_volumes)
-    assert all(scale.index == macro.index)
+
+    if not all(scale.index == macro.index):
+        raise CWLWorkflowError(
+            "Scale and macro indices are not consistent:\n"
+            f"scale index: {scale.index}\n"
+            f"macro index: {macro.index}"
+        )
 
     micro_scales = scale.get(_columns_as_index(micro, Constants.MACRO_LEVELS), 0.0).values
 

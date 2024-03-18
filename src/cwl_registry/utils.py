@@ -62,7 +62,7 @@ def log(function, logger=L):
         ]
 
         # create argument pairs
-        arg_pairs = [(name, v) for (name, _), v in zip(params[: len(args)], args)]
+        arg_pairs = [(name, v) for (name, _), v in zip(params[: len(args)], args, strict=True)]
 
         # use kwargs or defaults for the rest of the parameters
         arg_pairs.extend(
@@ -165,7 +165,7 @@ def load_arrow(filepath: StrOrPath) -> pd.DataFrame:
             types = get_logical_type_map().values()
 
             data_dict = {}
-            for name, arrow_dtype in zip(schema.names, schema.types):
+            for name, arrow_dtype in zip(schema.names, schema.types, strict=True):
                 dtype = get_logical_type(arrow_dtype)
 
                 if dtype in types:
@@ -260,7 +260,8 @@ def get_biophysical_partial_population_from_config(circuit_config):
     nodes_file = population_name = None
     for node_dict in circuit_config["networks"]["nodes"]:
         populations = node_dict["populations"]
-        assert len(populations) == 1
+        if len(populations) != 1:
+            raise CWLWorkflowError(f"Multiple populations encountered in node dict: {node_dict}")
         population_name = next(iter(populations))
         if populations[population_name]["type"] == "biophysical":
             nodes_file = node_dict["nodes_file"]
@@ -276,13 +277,14 @@ def get_first_edge_population_from_config(circuit_config: dict) -> tuple[str, st
     """Return first edges file and population name from config."""
     edges = circuit_config["networks"]["edges"]
 
-    assert len(edges) == 1, f"Expected a single edges file. Got {len(edges)}"
+    if len(edges) != 1:
+        raise CWLWorkflowError(f"Expected a single edges file. Got {len(edges)}")
 
     edges_file = edges[0]["edges_file"]
-
     populations = edges[0]["populations"]
 
-    assert len(populations) == 1, f"Expected a signle edge population. Got {len(populations)}"
+    if len(populations) != 1:
+        raise CWLWorkflowError(f"Expected a single edge population. Got {len(populations)}")
 
     edge_population_name = next(iter(populations))
 
@@ -326,8 +328,8 @@ def update_circuit_config_population(
             if "partial" in population_data and "partial" in existing_data:
                 partial = population_data.pop("partial")
                 for e in partial:
-                    assert e not in existing_data["partial"], f"{e} partial entry already exists."
-
+                    if e in existing_data["partial"]:
+                        raise CWLWorkflowError(f"{e} partial entry already exists.")
                 existing_data["partial"].extend(partial)
 
             existing_data.update(population_data)
@@ -371,7 +373,8 @@ def write_resource_to_definition_output(
     outputs = variant.tool_definition.outputs
 
     if not output_name:
-        assert len(outputs) == 1
+        if len(outputs) != 1:
+            raise CWLWorkflowError("More than 1 workflow outputs found.")
         output_name = list(outputs)[0]
 
     out_filename = outputs[output_name].outputBinding["glob"]
@@ -400,7 +403,8 @@ def url_with_revision(url: str, rev: str | None) -> str:
     if rev is None:
         return url
 
-    assert "?rev=" not in url
+    if "?rev=" in url:
+        raise CWLWorkflowError(f"URL {url} has already a revision.")
 
     return f"{url}?rev={rev}"
 
@@ -433,14 +437,14 @@ def bisect_cell_collection_by_properties(
         cell_collection: The cells collection to split.
         properties:
             A dictionary the keys of which are property names and the values are property values.
-            Example:
-                {
-                    'mtype': ['L3_TPC:A', 'L23_SBC'],
-                    'region': ['SSp-bfd3', "CA3"]
-                }
-
         nodes_file: Path to node file.
         node_population_name: Name of node population.
+
+    Note: Example properties dictionary:
+        {
+            'mtype': ['L3_TPC:A', 'L23_SBC'],
+            'region': ['SSp-bfd3', "CA3"]
+        }
 
     Returns:
         A tuple with two elements of type SplitCellCollectionInfo or None.
@@ -576,7 +580,8 @@ def get_morphologies_dir(circuit_config, population_name, ext):
 def _get_population(node_list, population_name):
     for node_dict in node_list:
         populations = node_dict["populations"]
-        assert len(populations) == 1
+        if len(populations) != 1:
+            raise CWLWorkflowError(f"Multiple populations encountered in node dict: {node_dict}")
         if population_name in populations:
             return populations[population_name]
 

@@ -254,19 +254,10 @@ def write_functionalizer_xml_recipe(
 
     Args:
         synapse_config: Config for the recipe.
-        region_map: voxcell.RegionMap
+        region_map: RegionMap ontology to use.
+        annotation: Annotation volume to use.
         output_file: Output file to write the xml recipe.
-        circuit_pathways: Dataframe with the following columns
-            - source_hemisphere
-            - target_hemisphere
-            - source_region
-            - target_region
-            - source_mtype
-            - target_mtype
-            - source_etype
-            - target_etype
-            - source_synaptic_class
-            - target_synaptic_class
+        populations: The source and target populations to constrain the pathways.
     """
     output_file = Path(output_file)
 
@@ -351,9 +342,13 @@ def _expand_properties(
     """Return a list of properties matching the leaf regions.
 
     Args:
-        prop : Synapse property rule that needs to be expanded
-        region_map : brain region map
-        incldue_null : if True, retain the attributes even if they are null. Else remove them
+        prop : Synapse property rule that needs to be expanded.
+        region_map : brain region map.
+        annotation_ids: A set of annotation ids.
+        include_null : if True, retain the attributes even if they are null. Else remove them
+        cache: Optional cache to reuse elements.
+        allowed_from_region_leaves: Optional set of allowed from region leaves.
+        allowed_to_region_leaves: Optional test of allowed to region leaves.
 
     Returns:
         A list of synapse properties at the leaf region level.

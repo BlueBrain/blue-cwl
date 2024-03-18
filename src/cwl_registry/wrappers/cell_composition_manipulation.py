@@ -41,7 +41,7 @@ def app(  # pylint: disable=too-many-arguments
     variant_config,
     output_dir,
 ):
-    """Density Manipulation CLI"""
+    """Density Manipulation CLI."""
     output_dir = utils.create_dir(Path(output_dir).resolve())
     staging_dir = utils.create_dir(output_dir / "stage")
     atlas_dir = utils.create_dir(staging_dir / "atlas")
