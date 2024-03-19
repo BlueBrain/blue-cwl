@@ -12,7 +12,6 @@ class CustomBaseModel(pydantic.BaseModel):
         """Custom Model Config."""
 
         frozen = True
-        smart_union = True
         extra = pydantic.Extra.forbid
         validate_assignment = True
         arbitrary_types_allowed = True
