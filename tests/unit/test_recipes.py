@@ -1,3 +1,6 @@
+from unittest.mock import Mock
+
+from numpy import testing as npt
 import pytest
 import voxcell
 import libsonata
@@ -327,19 +330,23 @@ def test_get_leaf_regions__annotation_ids(region_map):
 
 @pytest.fixture(scope="module")
 def populations():
-    data = [
-        ("left", "SSp-bfd2"),
-        ("left", "SSp-bfd3"),
-        ("left", "CA1"),
-        ("right", "CA1"),
-    ]
-    df = pd.DataFrame(
-        data,
-        columns=["hemisphere", "region"],
-    )
+    def _mock_enumeration_values(name):
+        if name == "hemisphere":
+            return ["left", "right"]
 
-    pop = voxcell.CellCollection()
-    pop.add_properties(df)
+        if name == "region":
+            return ["SSp-bfd2", "SSp-bfd3", "CA1"]
+
+        if name == "mtype":
+            return []
+
+        if name == "etype":
+            return []
+
+        raise ValueError(name)
+
+    pop = Mock()
+    pop.enumeration_values = _mock_enumeration_values
 
     return (pop, pop)
 
@@ -575,17 +582,118 @@ def small_synapse_properties():
     ]
 
 
-def test_write_xml_tree(small_synapse_properties, synaptic_classification, tmp_path):
-    output_file = tmp_path / "recipe.xml"
+def test_write_functionalizer_json_recipe(
+    region_map, annotation, small_synapse_properties, synaptic_classification, populations, tmp_path
+):
 
-    tested._write_xml_tree(small_synapse_properties, synaptic_classification, output_file)
+    tdir = tmp_path / "tmpdir"
+    tdir.mkdir()
 
-    df = pd.DataFrame.from_dict(small_synapse_properties).rename(columns={"synapticType": "type"})
+    config = {
+        "synapse_properties": small_synapse_properties,
+        "synapses_classification": synaptic_classification,
+    }
 
-    res_properties = pd.read_xml(output_file, xpath="./SynapsesProperties/synapse")
+    tested.write_functionalizer_json_recipe(
+        synapse_config=config,
+        region_map=region_map,
+        annotation=annotation,
+        output_dir=Path(tdir),
+        output_recipe_filename="recipe.json",
+        populations=populations,
+    )
 
-    pdt.assert_frame_equal(res_properties, df[res_properties.columns])
+    res = load_json(tdir / "recipe.json")
 
-    res_classes = pd.read_xml(output_file, xpath="./SynapsesClassification/class")
+    synapse_rules_file = str(tdir / "synapse_rules.parquet")
 
-    assert set(res_classes.id) == {"E2", "I2", "E2_INH", "E2_L23PC"}
+    assert res == {
+        "version": 1,
+        "bouton_interval": {"min_distance": 5.0, "max_distance": 7.0, "region_gap": 5.0},
+        "bouton_distances": {
+            "inhibitory_synapse_distance": 5.0,
+            "excitatory_synapse_distance": 25.0,
+        },
+        "synapse_properties": {
+            "rules": synapse_rules_file,
+            "classes": [
+                {
+                    "class": "E2",
+                    "conductance_mu": 0.68,
+                    "conductance_sd": 0.44,
+                    "n_rrp_vesicles_mu": 1.5,
+                    "decay_time_mu": 1.74,
+                    "decay_time_sd": 0.18,
+                    "u_syn_mu": 0.5,
+                    "u_syn_sd": 0.02,
+                    "depression_time_mu": 671.0,
+                    "depression_time_sd": 17.0,
+                    "facilitation_time_mu": 17.0,
+                    "facilitation_time_sd": 5.0,
+                    "conductance_scale_factor": 0.7,
+                    "u_hill_coefficient": 2.79,
+                },
+                {
+                    "class": "E2_INH",
+                    "conductance_mu": 0.42,
+                    "conductance_sd": 0.14,
+                    "n_rrp_vesicles_mu": 1.5,
+                    "decay_time_mu": 1.74,
+                    "decay_time_sd": 0.18,
+                    "u_syn_mu": 0.5,
+                    "u_syn_sd": 0.02,
+                    "depression_time_mu": 671.0,
+                    "depression_time_sd": 17.0,
+                    "facilitation_time_mu": 17.0,
+                    "facilitation_time_sd": 5.0,
+                    "conductance_scale_factor": 0.8,
+                    "u_hill_coefficient": 1.94,
+                },
+                {
+                    "class": "I2",
+                    "conductance_mu": 2.26,
+                    "conductance_sd": 0.5,
+                    "n_rrp_vesicles_mu": 1.0,
+                    "decay_time_mu": 8.3,
+                    "decay_time_sd": 2.2,
+                    "u_syn_mu": 0.25,
+                    "u_syn_sd": 0.13,
+                    "depression_time_mu": 706.0,
+                    "depression_time_sd": 405.0,
+                    "facilitation_time_mu": 21.0,
+                    "facilitation_time_sd": 9.0,
+                    "conductance_scale_factor": 0.0,
+                    "u_hill_coefficient": 1.94,
+                },
+            ],
+        },
+    }
+
+    df = pd.read_parquet(synapse_rules_file)
+
+    assert df.columns.tolist() == [
+        "src_hemisphere_i",
+        "src_region_i",
+        "src_mtype_i",
+        "src_etype_i",
+        "dst_hemisphere_i",
+        "dst_region_i",
+        "dst_mtype_i",
+        "dst_etype_i",
+        "class",
+        "model",
+        "neural_transmitter_release_delay",
+        "axonal_conduction_velocity",
+    ]
+
+    assert df.src_hemisphere_i.tolist() == [-1] * 4
+    assert df.dst_hemisphere_i.tolist() == [-1] * 4
+    assert df.src_region_i.tolist() == [-1] * 4
+    assert df.dst_region_i.tolist() == [-1] * 4
+    assert df.src_mtype_i.tolist() == [-1] * 4
+    assert df.dst_mtype_i.tolist() == [-1] * 4
+    assert df.dst_etype_i.tolist() == [-1] * 4
+    assert df["class"].tolist() == ["E2", "E2_INH", "I2", "I2"]
+
+    npt.assert_allclose(df.neural_transmitter_release_delay, 0.1)
+    npt.assert_allclose(df.axonal_conduction_velocity, 300.0)

@@ -7,6 +7,8 @@ import subprocess
 from pathlib import Path
 
 import click
+import fz_td_recipe
+import libsonata
 import voxcell
 from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
@@ -62,7 +64,8 @@ def connectome_filtering_synapses(
     variant = get_entity(resource_id=variant_config_id, cls=Variant)
 
     partial_circuit = get_entity(resource_id=partial_circuit_id, cls=DetailedCircuit)
-    config = utils.load_json(partial_circuit.circuitConfigPath.get_url_as_path())
+    circuit_config_path = partial_circuit.circuitConfigPath.get_url_as_path()
+    config = utils.load_json(circuit_config_path)
 
     nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(config)
     validation.check_properties_in_population(
@@ -76,8 +79,6 @@ def connectome_filtering_synapses(
     )
 
     edges_file, edge_population_name = utils.get_first_edge_population_from_config(config)
-
-    morphologies_dir = utils.get_morphologies_dir(config, node_population_name, "h5")
 
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     L.info("Staging atlas to  %s", atlas_dir)
@@ -96,36 +97,28 @@ def connectome_filtering_synapses(
         configuration_id, staging_dir, output_file=staging_dir / "materialized_synapse_config.json"
     )["configuration"]
 
-    if configuration:
-        configuration = {name: utils.load_json(path) for name, path in configuration.items()}
+    configuration = {name: utils.load_json(path) for name, path in configuration.items()}
 
-        pop = voxcell.CellCollection.load_sonata(nodes_file)
+    pop = libsonata.NodeStorage(nodes_file).open_population(node_population_name)
 
-        L.info("Building functionalizer xml recipe...")
-        recipe_file = recipes.write_functionalizer_xml_recipe(
-            synapse_config=configuration,
-            region_map=voxcell.RegionMap.load_json(atlas_info.ontology_path),
-            annotation=voxcell.VoxelData.load_nrrd(atlas_info.annotation_path),
-            populations=(pop, pop),
-            output_file=build_dir / "recipe.xml",
-        )
-    else:
-        L.warning(
-            "Empty placeholder SynapseConfig was encountered. "
-            "A default xml recipe will be created for backwards compatibility."
-        )
-        recipe_file = recipes.write_default_functionalizer_xml_recipe(
-            output_file=build_dir / "recipe.xml"
-        )
+    L.info("Building functionalizer recipe...")
+    recipe_file = recipes.write_functionalizer_json_recipe(
+        synapse_config=configuration,
+        region_map=voxcell.RegionMap.load_json(atlas_info.ontology_path),
+        annotation=voxcell.VoxelData.load_nrrd(atlas_info.annotation_path),
+        populations=(pop, pop),
+        output_dir=build_dir,
+        output_recipe_filename="recipe.json",
+    )
+    # validate recipe
+    fz_td_recipe.Recipe(recipe_file, circuit_config_path, (pop.name, pop.name))
 
     L.info("Running functionalizer...")
     _run_functionalizer(
-        nodes_file,
+        circuit_config_path,
         node_population_name,
         edges_file,
-        edge_population_name,
         recipe_file,
-        morphologies_dir,
         build_dir,
         variant,
     )
@@ -164,12 +157,10 @@ def connectome_filtering_synapses(
 
 
 def _run_functionalizer(
-    nodes_file,
+    circuit_config_path,
     node_population_name,
     edges_file,
-    edge_population_name,
     recipe_file,
-    morphologies_dir,
     output_dir,
     variant,
 ):
@@ -181,23 +172,20 @@ def _run_functionalizer(
         "dplace",
         "functionalizer",
         str(edges_file),
-        edge_population_name,
+        "--circuit-config",
+        str(circuit_config_path),
         "--work-dir",
         str(work_dir),
         "--output-dir",
         str(output_dir),
         "--from",
-        str(nodes_file),
         node_population_name,
         "--to",
-        str(nodes_file),
         node_population_name,
         "--filters",
         "SynapseProperties",
         "--recipe",
         str(recipe_file),
-        "--morphologies",
-        str(morphologies_dir),
     ]
     str_base_command = " ".join(base_command)
     str_command = utils.build_variant_allocation_command(

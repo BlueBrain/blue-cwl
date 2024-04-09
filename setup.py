@@ -38,8 +38,7 @@ setup(
         "cwl-luigi>=0.3.1,<1",
         "entity_management>=1.2.44",
         "pyarrow>=3.0.0",
-        "lxml",
-        "fz_td_recipe",
+        "fz_td_recipe>=0.2.0",  # support for json recipe
         "pydantic",
         "morph-tool",
         "jsonschema",
