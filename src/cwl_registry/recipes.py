@@ -457,32 +457,51 @@ def _generate_tailored_properties(
     populations: tuple["NodePopulation", "NodePopulation"] | None = None,
 ) -> pd.DataFrame:
     """Generate properties tailored to a circuit if its pathways are passed."""
-    if populations:
-        available_sources = set(populations[0].enumeration_values("region"))
-        available_targets = set(populations[1].enumeration_values("region"))
-
-        available_sources = {region_map.find(r, attr="acronym").pop() for r in available_sources}
-        available_targets = {region_map.find(r, attr="acronym").pop() for r in available_targets}
-
-        available_sources.add(None)
-        available_targets.add(None)
-
-    else:
-        available_sources = None
-        available_targets = None
-
     annotation_ids = set(pd.unique(annotation.raw.flatten()))
 
+    available = {}
+    available_source_regions = None
+    available_target_regions = None
+    if populations:
+        mapping = {
+            "hemisphere": ("fromHemisphere", "toHemisphere"),
+            "synapse_class": ("fromSClass", "toSClass"),
+            "mtype": ("fromMType", "toMType"),
+            "etype": ("fromEType", "toEType"),
+        }
+
+        for name, (from_name, to_name) in mapping.items():
+            available[from_name] = set(populations[0].enumeration_values(name))
+            available[to_name] = set(populations[1].enumeration_values(name))
+
+        available_source_regions = {
+            rid
+            for acronym in populations[0].enumeration_values("region")
+            for rid in region_map.find(acronym, attr="acronym", with_descendants=True)
+        } | {None}
+        available_target_regions = {
+            rid
+            for acronym in populations[1].enumeration_values("region")
+            for rid in region_map.find(acronym, attr="acronym", with_descendants=True)
+        } | {None}
+
+    # slice based on other properties that are already expanded such as mtype, etype, sclass, etc.
+    df_properties = pd.DataFrame(synapse_properties, dtype=object).replace({np.nan: None})
+    for name, available_values in available.items():
+        if name in df_properties.columns:
+            col = df_properties.get(name)
+            df_properties = df_properties.loc[pd.isna(col) | col.isin(available_values)]
+
     cache: dict[str, set[int]] = {}
-    for prop in synapse_properties:
+    for prop in df_properties.to_dict(orient="records"):
         yield from _expand_properties(
             prop,
             region_map,
             annotation_ids,
             include_null=False,
             cache=cache,
-            allowed_from_region_leaves=available_sources,
-            allowed_to_region_leaves=available_targets,
+            allowed_from_region_leaves=available_source_regions,
+            allowed_to_region_leaves=available_target_regions,
         )
 
 
@@ -562,7 +581,7 @@ def _get_leaf_regions(
     if cache and acronym in cache:
         return cache[acronym]
 
-    ids = region_map.find(acronym, "acronym", with_descendants=True)
+    ids = region_map.find(acronym, attr="acronym", with_descendants=True)
 
     result = {rid for rid in ids if region_map.is_leaf_id(rid)}
 

@@ -338,10 +338,13 @@ def populations():
             return ["SSp-bfd2", "SSp-bfd3", "CA1"]
 
         if name == "mtype":
-            return []
+            return ["L5_TPC:A", "L5_TPC:B"]
 
         if name == "etype":
             return []
+
+        if name == "synapse_class":
+            return ["EXC", "INH"]
 
         raise ValueError(name)
 
@@ -357,7 +360,6 @@ def test_build_tailored_properties(synaptic_assignment, region_map, annotation, 
             synaptic_assignment, region_map, annotation, populations
         )
     )
-
     assert res == [
         {
             "fromSClass": "EXC",
@@ -606,6 +608,7 @@ def test_write_functionalizer_json_recipe(
     res = load_json(tdir / "recipe.json")
 
     synapse_rules_file = str(tdir / "synapse_rules.parquet")
+    df = pd.read_parquet(synapse_rules_file)
 
     assert res == {
         "version": 1,
@@ -668,8 +671,6 @@ def test_write_functionalizer_json_recipe(
             ],
         },
     }
-
-    df = pd.read_parquet(synapse_rules_file)
 
     assert df.columns.tolist() == [
         "src_hemisphere_i",
