@@ -682,7 +682,6 @@ def test_write_functionalizer_json_recipe(
         "dst_mtype_i",
         "dst_etype_i",
         "class",
-        "model",
         "neural_transmitter_release_delay",
         "axonal_conduction_velocity",
     ]

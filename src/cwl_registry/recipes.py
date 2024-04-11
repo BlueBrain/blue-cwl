@@ -355,7 +355,8 @@ def _write_synapse_properties_parquet(synapse_properties, populations, output_fi
         "dst_mtype_i": np.int16,
         "dst_etype_i": np.int16,
         "class": "category",
-        "model": "category",
+        "neural_transmitter_release_delay": np.float32,
+        "axonal_conduction_velocity": np.float32,
     }
     L.info("Constructing synapse rules dataframe...")
     result = pd.DataFrame(
@@ -370,25 +371,18 @@ def _write_synapse_properties_parquet(synapse_properties, populations, output_fi
                 prop.get("toMType", "*"),
                 prop.get("toEType", "*"),
                 prop["synapticType"],
-                prop["synapticModel"],
+                0.1,  # neural_transmitter_release_delay
+                300.0,  # axonal_conduction_velocity
             )
             for prop in synapse_properties
         ],
         columns=list(columns_dtypes),
     )
-
     L.info("Mapping string values to circuit @library indices...")
     _map_str_rows_to_int_library_positions(result, populations)
 
     for column_name, column_dtype in columns_dtypes.items():
         result[column_name] = result[column_name].astype(column_dtype)
-
-    result["neural_transmitter_release_delay"] = np.full(
-        fill_value=0.1, dtype=np.float32, shape=len(result)
-    )
-    result["axonal_conduction_velocity"] = np.full(
-        fill_value=300.0, dtype=np.float32, shape=len(result)
-    )
 
     result.to_parquet(path=output_file)
     L.info("Synapse rules written at %s", output_file)
