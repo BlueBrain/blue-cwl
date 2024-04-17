@@ -130,8 +130,8 @@
       "name": "emodel=cADpyr__etype=cADpyr__iteration=b40985f__parameters_distribution.pdf"
     }
   ],
-  "emodel": "cADpyr",
-  "etype": "cADpyr",
+  "eModel": "cADpyr",
+  "eType": "cADpyr",
   "generation": {
     "@type": "Generation",
     "activity": {

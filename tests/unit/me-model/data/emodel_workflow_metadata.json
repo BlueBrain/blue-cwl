@@ -59,8 +59,8 @@
     "encodingFormat": "application/json",
     "name": "EMW__emodel=cADpyr__etype=cADpyr__iteration=b40985f.json"
   },
-  "emodel": "cADpyr",
-  "etype": "cADpyr",
+  "eModel": "cADpyr",
+  "eType": "cADpyr",
   "generates": [
     {
       "@id": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/59247e15-8204-4bc9-b2a3-49d1d16015c1",

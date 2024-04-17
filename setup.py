@@ -36,7 +36,7 @@ setup(
         "voxcell",
         "joblib",
         "cwl-luigi>=0.3.1,<1",
-        "entity_management>=1.2.44",
+        "entity_management>=1.2.45",  # latest emodel definitions
         "pyarrow>=3.0.0",
         "fz_td_recipe>=0.2.0",  # support for json recipe
         "pydantic",

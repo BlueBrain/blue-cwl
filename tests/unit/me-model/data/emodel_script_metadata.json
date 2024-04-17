@@ -84,8 +84,8 @@
       "name": "model.hoc"
     }
   ],
-  "emodel": "cADpyr",
-  "etype": "cADpyr",
+  "eModel": "cADpyr",
+  "eType": "cADpyr",
   "generation": {
     "@type": "Generation",
     "activity": {

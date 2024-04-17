@@ -59,8 +59,8 @@
     "encodingFormat": "application/json",
     "name": "EMC__emodel=cADpyr__etype=cADpyr__iteration=b40985f.json"
   },
-  "emodel": "cADpyr",
-  "etype": "cADpyr",
+  "eModel": "cADpyr",
+  "eType": "cADpyr",
   "iteration": "b40985f",
   "name": "EMC__b40985f__cADpyr",
   "objectOfStudy": {

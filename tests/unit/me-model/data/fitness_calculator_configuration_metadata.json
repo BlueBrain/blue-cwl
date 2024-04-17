@@ -59,8 +59,8 @@
     "encodingFormat": "application/json",
     "name": "FCC__emodel=cADpyr__etype=cADpyr__iteration=b40985f.json"
   },
-  "emodel": "cADpyr",
-  "etype": "cADpyr",
+  "eModel": "cADpyr",
+  "eType": "cADpyr",
   "generation": {
     "@type": "Generation",
     "activity": {

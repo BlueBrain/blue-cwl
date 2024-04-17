@@ -13,6 +13,7 @@ environment:
   modules:
     - unstable
     - py-cwl-registry
+    - py-bba-data-push
   enable_internet: true
 
 
