@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable=fixme,invalid-name,len-as-condition,no-else-return, protected-access
+disable=fixme,invalid-name,len-as-condition,no-else-return, protected-access, too-many-return-statements
 
 [FORMAT]
 # Regexp for a line that is allowed to be longer than the limit.
@@ -49,4 +49,4 @@ ignore-docstrings=yes
 #as of numpy 1.8.0, name resolution seems to be a problem.  Ignore lookups in numpy
 ignored-classes=numpy,list
 
-extension-pkg-whitelist=numpy,lxml
+extension-pkg-whitelist=numpy,lxml,pydantic

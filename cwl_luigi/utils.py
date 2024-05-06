@@ -1,6 +1,6 @@
 """Utilities."""
+
 import functools
-import importlib.resources
 import inspect
 import json
 import logging
@@ -9,12 +9,10 @@ import os
 import pathlib
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Mapping, Optional
 
-import jsonschema
 import yaml
 
-from cwl_luigi.exceptions import CWLError
 from cwl_luigi.types import PathLike
 
 L = logging.getLogger(__name__)
@@ -73,7 +71,7 @@ def cwd(path):
 
 
 @log
-def load_yaml(filepath: PathLike) -> Dict[Any, Any]:
+def load_yaml(filepath: PathLike) -> dict:
     """Load from YAML file."""
     with open(filepath, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
@@ -102,14 +100,14 @@ def write_yaml(filepath: PathLike, data: dict) -> None:
 
 
 @log
-def load_json(filepath: PathLike) -> Dict[Any, Any]:
+def load_json(filepath: PathLike) -> dict:
     """Load from JSON file."""
     with open(filepath, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
 @log
-def write_json(filepath: PathLike, data: Dict[Any, Any]) -> None:
+def write_json(filepath: PathLike, data: dict) -> None:
     """Write json file."""
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
@@ -122,38 +120,6 @@ def resolve_path(path: PathLike, base_dir: Optional[PathLike] = None):
         return Path(base_dir, path).resolve()
 
     return Path(path).resolve()
-
-
-def validate_schema(data: Dict[str, Any], schema_name: str) -> None:
-    """Validata data against the schema with 'schema_name'."""
-    schema = _read_schema(schema_name)
-
-    cls = jsonschema.validators.validator_for(schema)
-    cls.check_schema(schema)
-    validator = cls(schema)
-    errors = validator.iter_errors(data)
-
-    messages: List[str] = []
-    for error in errors:
-        if error.context:
-            messages.extend(map(_format_error, error.context))
-        else:
-            messages.append(_format_error(error))
-
-    if messages:
-        raise CWLError("\n".join(messages))
-
-
-def _read_schema(schema_name: str) -> Dict[str, Any]:
-    """Load a schema and return the result as a dictionary."""
-    resource = importlib.resources.files("cwl_luigi") / "schemas" / schema_name
-    content = resource.read_text()
-    return yaml.safe_load(content)
-
-
-def _format_error(error):
-    paths = " -> ".join(map(str, error.absolute_path))
-    return f"[{paths}]: {error.message}"
 
 
 def sorted_dict(unsorted_dict):

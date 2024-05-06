@@ -1,7 +1,7 @@
 cwlVersion: v1.2
 class: CommandLineTool
-id: echo-command
-baseCommand: ./echo-and-write.py
+id: write-command
+baseCommand: ./write.py
 
 inputs:
   message:
@@ -13,4 +13,4 @@ outputs:
   example_file:
     type: File
     outputBinding:
-      glob: file-output.txt
+      glob: $(inputs.message)_file-output.txt

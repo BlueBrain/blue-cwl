@@ -13,6 +13,7 @@ required:
     type: string
     enum:
     - string
+    - boolean
     - File
     - Directory
     - NexusType
@@ -114,13 +115,11 @@ properties:
         id:
           type: string
         run:
-          type: string
+          oneOf:
+            - type: string
+            - type: object
         in:
           type: object
-          patternProperties:
-            "^.*$":
-              type: string
-          additionalProperties: false
         out:
           type: array
           items:

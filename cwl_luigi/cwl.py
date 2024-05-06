@@ -1,56 +1,30 @@
 """CWL workflow construction module."""
-import logging
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
 
-from cwl_luigi import cwl_parser
+import logging
+from typing import Any, Literal
+
+import cwl_luigi.process
+from cwl_luigi.common import CustomBaseModel
 from cwl_luigi.cwl_types import CWLType
+from cwl_luigi.executor import LocalExecutor, SallocExecutor
 
 L = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
-class ConfigInput:
+class ConfigInput(CustomBaseModel):
     """Dataclass for config's input entries."""
 
     type: CWLType
     value: str
 
-    @classmethod
-    def from_cwl(cls, data: Union[str, Dict[str, Any]]) -> "ConfigInput":
-        """Generate ConfigInput instance from cwl data."""
-        if isinstance(data, str):
-            input_type = CWLType.STRING
-            input_value = data
-        else:
-            input_type = CWLType.from_string(data["class"])
-            if input_type == CWLType.NEXUS_TYPE:
-                input_value = data["resource-id"]
-            else:
-                input_value = data["path"]
 
-        return cls(type=input_type, value=input_value)
-
-
-@dataclass(frozen=True)
-class Config:
+class Config(CustomBaseModel):
     """Dataclass for cwl config."""
 
-    inputs: Dict[str, ConfigInput]
-
-    @classmethod
-    def from_cwl(cls, cwl_file: Path) -> "Config":
-        """Generate a config instance from a cwl config file."""
-        data = cwl_parser.parse_config_file(cwl_file)
-
-        inputs = {name: ConfigInput.from_cwl(inp) for name, inp in data["inputs"].items()}
-
-        return cls(inputs=inputs)
+    inputs: dict[str, ConfigInput]
 
 
-@dataclass(frozen=True)
-class CommandLineBinding:
+class CommandLineBinding(CustomBaseModel):
     """Dataclass for a command line's tool input binding.
 
     Attributes:
@@ -58,85 +32,63 @@ class CommandLineBinding:
         prefix: Optional prefix for named argument.
     """
 
-    position: int
-    prefix: Optional[str]
-
-    @classmethod
-    def from_cwl(cls, data: Dict[str, Any]) -> "CommandLineBinding":
-        """Generate a CommandLineBinding from cwl data."""
-        return cls(
-            position=int(data.get("position", 0)),
-            prefix=data.get("prefix", None),
-        )
+    position: int = 0
+    prefix: str | None = None
+    separate: bool = True
+    itemSeparator: str = " "
 
 
-@dataclass(frozen=True)
-class CommandLineToolInput:
-    """Dataclass for a command line tool's input.
+class CommandInputArraySchema(CustomBaseModel):
+    """CommandInputArraySchema.
 
-    Attributes:
-        id: The name of the input.
-        type: The type of the input.
-        inputBinding: The prefix of the input, e.g. --region.
+    See: https://www.commonwl.org/v1.2/CommandLineTool.html#CommandInputArraySchema
+    """
+
+    items: CWLType
+    type: Literal["array"]
+    label: str | None = None
+    doc: str | None = None
+    name: str | None = None
+    inputBinding: CommandLineBinding | None = None
+
+
+class CommandInputParameter(CustomBaseModel):
+    """CommandInputParameter shema.
+
+    See: https://www.commonwl.org/v1.2/CommandLineTool.html#CommandInputParameter
     """
 
     id: str
-    type: CWLType
-    inputBinding: CommandLineBinding
-
-    @classmethod
-    def from_cwl(cls, name: str, data: Dict[str, Any]) -> "CommandLineToolInput":
-        """Construct a CommandLineToolInput from cwl data."""
-        return cls(
-            id=name,
-            type=CWLType.from_string(data["type"]),
-            inputBinding=CommandLineBinding.from_cwl(data=data["inputBinding"]),
-        )
+    label: str | None = None
+    doc: str | None = None
+    inputBinding: CommandLineBinding | None = None
+    default: Any = None
+    type: CWLType | CommandInputArraySchema
 
 
-@dataclass(frozen=True)
-class CommandLineToolOutput:
-    """Dataclass for a command line tool's output.
+class CommandOutputBinding(CustomBaseModel):
+    """CommandOutputbinding schema.
 
-    Attributes:
-        id: The unique identifier of this object.
-        type: The type of the output parameter.
-        doc: A documentation string for this object.
-        outputBinding:
-            Describes how to generate this output object based on the files produced by a
-            CommandLineTool.
+    See: https://www.commonwl.org/v1.2/CommandLineTool.html#CommandOutputBinding
     """
 
-    id: str
+    glob: str | None = None
+
+
+class CommandOutputParameter(CustomBaseModel):
+    """CommandOutputParameter schema.
+
+    See https://www.commonwl.org/v1.2/CommandLineTool.html#CommandOutputParameter
+    """
+
+    id: str | None = None
     type: CWLType
-    doc: str
-    outputBinding: Dict[str, Any]  # glob: "bmo/me-type-property/nodes.h5"
-
-    @property
-    def path(self):
-        """Return output binding's relative path."""
-        return Path(self.outputBinding["glob"])
-
-    @classmethod
-    def from_cwl(cls, name: str, data: Dict[str, Any], stdout=None) -> "CommandLineToolOutput":
-        """Construct a CommandLineToolOutput from cwl data."""
-        # make stdout behave like a normal file
-        if "outputBinding" not in data:
-            assert stdout is not None
-            output_binding = {"glob": stdout}
-        else:
-            output_binding = data["outputBinding"]
-
-        return cls(
-            id=name,
-            type=CWLType.from_string(data["type"]),
-            doc=data.get("doc", ""),
-            outputBinding=output_binding,
-        )
+    label: str | None = None
+    doc: str | None = None
+    outputBinding: CommandOutputBinding | None = None
 
 
-@dataclass(frozen=True)
-class CommandLineTool:
+class CommandLineTool(CustomBaseModel):
     """Dataclass for a command line tool's output.
 
     Attributes:
@@ -151,110 +103,105 @@ class CommandLineTool:
     """
 
     cwlVersion: str  # v1.2
-    id: str
-    label: str
-    baseCommand: List[str]
-    inputs: Dict[str, CommandLineToolInput]
-    outputs: Dict[str, CommandLineToolOutput]
-    stdout: str
-    environment: Optional[dict]
+    id: str = "CommandLineTool"
+    baseCommand: list[str]
+    inputs: dict[str, CommandInputParameter]
+    outputs: dict[str, CommandOutputParameter]
+    environment: dict | None = None
+    executor: LocalExecutor | SallocExecutor | None = None
+    label: str | None = None
+    stdout: str | None = None
 
-    @classmethod
-    def from_cwl(cls, cwl_path: Path) -> "CommandLineTool":
-        """Construct a CommandLineTool from cwl data."""
-        data = cwl_parser.parse_command_line_tool_file(cwl_path)
-
-        inputs = {
-            input_name: CommandLineToolInput.from_cwl(input_name, input_data)
-            for input_name, input_data in data["inputs"].items()
-        }
-        outputs = {
-            output_name: CommandLineToolOutput.from_cwl(output_name, output_data, data["stdout"])
-            for output_name, output_data in data["outputs"].items()
-        }
-        environment = data["environment"] if "environment" in data else None
-
-        return cls(
-            cwlVersion=data["cwlVersion"],
-            id=data.get("id", str(cwl_path)),
-            label=data.get("label", ""),
-            baseCommand=data["baseCommand"],
-            inputs=inputs,
-            outputs=outputs,
-            stdout=data.get("stdout", "stdout.txt"),
-            environment=environment,
-        )
-
-    def assort_inputs(self) -> Tuple[List[Tuple[int, str]], Dict[str, str]]:
-        """Categorize inputs into positional and named arguments."""
-        named_arguments: Dict[str, str] = {}
-        positional_arguments: List[Tuple[int, str]] = []
-
-        for cmd_input in self.inputs.values():
-            name = cmd_input.id
-            binding = cmd_input.inputBinding
-
-            if binding.prefix:
-                named_arguments[binding.prefix] = name
-            else:
-                positional_arguments.append((binding.position, name))
-
-        return positional_arguments, named_arguments
+    def make(self, input_values: dict):
+        """Make an executable process out of the template and the inputs."""
+        return cwl_luigi.process.build_command_line_tool_process(self, input_values)
 
 
-@dataclass(frozen=True)
-class WorkflowInput:
-    """Dataclass for a workflow's input.
+class InputArraySchema(CustomBaseModel):
+    """InputArraySchema.
 
-    Attributes:
-        id: The unique identifier for this object.
-        type: Specify valid types of data that may be assigned to this parameter.
-        label: A short, human-readable label of this object.
+    See: https://www.commonwl.org/v1.2/Workflow.html#InputArraySchema
     """
 
-    id: str
-    type: CWLType
-    label: Optional[str]
-
-    @classmethod
-    def from_cwl(cls, name: str, data: Dict[str, str]) -> "WorkflowInput":
-        """Construct a WorkflowInput from cwl data."""
-        return cls(
-            id=name,
-            type=CWLType.from_string(data["type"]),
-            label=data.get("label", ""),
-        )
+    items: CWLType
+    type: Literal["array"]
+    label: str | None = None
+    doc: str | None = None
+    name: str | None = None
 
 
-@dataclass(frozen=True)
-class WorkflowOutput:
+class WorkflowInputParameter(CustomBaseModel):
+    """WorkflowInputParameter schema.
+
+    See: https://www.commonwl.org/v1.2/Workflow.html#WorkflowInputParameter
+    """
+
+    type: InputArraySchema | CWLType
+    id: str | None = None
+    doc: str | None = None
+    label: str | None = None
+    default: Any = None
+
+
+class WorkflowOutputParameter(CustomBaseModel):
     """Dataclass for a workflow's output.
+
+    See: https://www.commonwl.org/v1.2/Workflow.html#WorkflowOutputParameter
 
     Attributes:
         type: The type of the output.
         outputSource:
     """
 
-    id: str
+    id: str | None = None
     type: CWLType
+    label: str | None = None
+    doc: str | None = None
     outputSource: str
 
-    @classmethod
-    def from_cwl(cls, name: str, data: Dict[str, str]) -> "WorkflowOutput":
-        """Construct a WorkflowOutput from cwl data."""
-        return cls(
-            id=name,
-            type=CWLType.from_string(data["type"]),
-            outputSource=data["outputSource"],
-        )
-
-    def source_step(self) -> str:
-        """Return the step name in the output source."""
-        return self.outputSource.split("/", maxsplit=1)[0]
+    def split_source_output(self) -> list[str]:
+        """Return step and output names for source."""
+        return self.outputSource.split("/", maxsplit=1)
 
 
-@dataclass(frozen=False)
-class WorkflowStep:
+class WorkflowStepInput(CustomBaseModel):
+    """Dataclass for a workflow'steps input.
+
+    See https://www.commonwl.org/v1.2/Workflow.html#WorkflowStepInput
+    """
+
+    id: str
+    label: str | None = None
+    source: list[str] | str | None = None
+    default: Any = None
+    valueFrom: list[str] | str | None = None
+
+    def split_source_output(self) -> list[tuple[str | None, str]] | None:
+        """Split source and return source and outputs names if any."""
+
+        def _split_source(source: str):
+            res = source.split("/")
+
+            # source is a workflow input
+            if len(res) == 1:
+                return (None, res[0])
+
+            if len(res) == 2:
+                return tuple(res)
+
+            raise ValueError(res)
+
+        if self.source is None:
+            return None
+
+        if isinstance(self.source, list):
+            # pylint: disable=not-an-iterable
+            return [_split_source(source) for source in self.source]
+
+        return [_split_source(self.source)]
+
+
+class WorkflowStep(CustomBaseModel):
     """Dataclass for a workflow's step.
 
     Attributes:
@@ -265,36 +212,19 @@ class WorkflowStep:
     """
 
     id: str
-    inputs: Dict[str, str]
-    outputs: List[str]
+    inputs: dict[str, WorkflowStepInput]
+    outputs: list[str]
     run: CommandLineTool
-
-    @classmethod
-    def from_cwl(cls, data: Dict[str, Any]) -> "WorkflowStep":
-        """Construct a WorkflowStep from cwl data."""
-        run_entry = data["run"]
-        if isinstance(run_entry, CommandLineTool):
-            run_obj = run_entry
-        else:
-            run_obj = CommandLineTool.from_cwl(Path(data["run"]))
-
-        return cls(
-            id=data["id"],
-            inputs=data.get("in", {}),
-            outputs=data["out"],
-            run=run_obj,
-        )
 
     def get_input_name_by_target(self, target: str) -> str:
         """Return the input name, given its target value."""
         for k, v in self.inputs.items():
-            if v == target:
+            if v.source == target:
                 return k
         raise ValueError("Target does not exist in inputs.")
 
 
-@dataclass(frozen=True)
-class Workflow:
+class Workflow(CustomBaseModel):
     """Dataclass for an entire workflow.
 
     Attributes:
@@ -304,31 +234,19 @@ class Workflow:
     """
 
     cwlVersion: str
-    id: str
+    id: str = "Workflow"
     label: str
-    inputs: Dict[str, WorkflowInput]
-    outputs: Dict[str, WorkflowOutput]
-    steps: List[WorkflowStep]
+    inputs: dict[str, WorkflowInputParameter]
+    outputs: dict[str, WorkflowOutputParameter]
+    steps: list[WorkflowStep]
 
-    def step_names(self) -> List[str]:
+    def __repr__(self):
+        """Return repr of instance."""
+        return f"Workflow(id={self.id})"
+
+    def step_names(self) -> list[str]:
         """Return the names of the workflow steps."""
         return [s.id for s in self.steps]
-
-    @classmethod
-    def from_cwl(cls, cwl_path: Path) -> "Workflow":
-        """Construct a Workflow from cwl data."""
-        data = cwl_parser.parse_workflow_file(cwl_path)
-        inputs = {k: WorkflowInput.from_cwl(k, v) for k, v in data["inputs"].items()}
-        outputs = {k: WorkflowOutput.from_cwl(k, v) for k, v in data["outputs"].items()}
-        steps = list(map(WorkflowStep.from_cwl, data["steps"]))
-        return cls(
-            cwlVersion=data["cwlVersion"],
-            id=data.get("id", str(cwl_path)),
-            label=data.get("label", ""),
-            inputs=inputs,
-            outputs=outputs,
-            steps=steps,
-        )
 
     def get_step_by_name(self, name):
         """Return the workflow step with given name."""
@@ -336,3 +254,28 @@ class Workflow:
             if s.id == name:
                 return s
         raise ValueError(f"Not found: {name}")
+
+    def get_step_source_names(self, name: str) -> list[str]:
+        """Get source names for workflow step."""
+        step = self.get_step_by_name(name)
+        sources = set()
+        for inp in step.inputs.values():
+
+            source_outputs = inp.split_source_output()
+
+            if source_outputs is None:
+                continue
+
+            for source_name, _ in source_outputs:
+                if source_name is not None:
+                    sources.add(source_name)
+
+        return sorted(sources)
+
+    def make(self, input_values):
+        """Make a concretized workflow process."""
+        return cwl_luigi.process.build_workflow_process(self, input_values)
+
+    def make_workflow_step(self, step_name, input_values, sources):
+        """Make workflow step."""
+        return cwl_luigi.process.build_workflow_step_process(self, step_name, input_values, sources)

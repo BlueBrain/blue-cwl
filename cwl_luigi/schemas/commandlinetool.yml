@@ -11,13 +11,19 @@ type: object
     - File
     - Directory
     - NexusType
+    - boolean
   output_type:
     type: string
     enum:
     - File
     - Directory
-    - stdout
     - NexusType
+  default_type:
+    type:
+      - string
+      - boolean
+      - integer
+      - number
   input_binding:
     additionalProperties: false
     properties:
@@ -112,12 +118,86 @@ type: object
         description: Absolute path to the python virtual environment.
         type: string
         example: "/path/to/venv"
+  local_executor:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+      env_vars:
+        type: object
+    additionalProperties: false
+  slurm_executor:
+    type: object
+    required:
+      - type
+      - slurm_config
+      - remote_config
+    properties:
+      type:
+        type: string
+      env_vars:
+        type: object
+      slurm_config:
+        type: object
+        parameters:
+          chdir:
+            type: string
+          account:
+            type: string
+          partition:
+            type: string
+          nodes:
+            type: int
+          qos:
+            type: string
+          ntasks:
+            type: int
+          ntasks_per_node:
+            type: int
+          cpus_per_task:
+            type: int
+          mpi:
+            type: string
+          mem:
+            type: string
+          mem_per_cpu:
+            type: string
+          constraint:
+            type: string
+          exclusive:
+            type: boolean
+          time:
+            type: string
+          dependency:
+            type: string
+          job_name:
+            type: string
+          output:
+            type: string
+          array:
+            type: string
+          wait:
+            type: boolean
+        additionalParameters: false
+        description: SLURM configuration
+      remote_config:
+        type: object
+        description: Remote config configuration
+        required:
+          - host
+        properties:
+          host:
+            type: string
+        additionalProperties: false
+    additionalProperties: false
 required:
 - cwlVersion
+- id
 - class
 - baseCommand
 - outputs
-- stdout
 additionalProperties: false
 properties:
   cwlVersion:
@@ -137,27 +217,10 @@ properties:
     - "$ref": "#/$defs/module_config"
     - "$ref": "#/$defs/apptainer_config"
     - "$ref": "#/$defs/venv_config"
-  allocation:
-    type: object
-    additionalProperties: false
-    required:
-    - salloc
-    properties:
-      jobname:
-        description: Override the name of the job that will be used in slurm (optional).
-        type: string
-      salloc:
-        description: Parameters to be passed to ``salloc`` as a string (required).
-        type: string
-      env_vars:
-        description: Environment variables that should be set before running ``salloc``
-          (optional).
-        type: object
-        propertyNames:
-          pattern: "^[A-Za-z_][A-Za-z0-9_]*$"
-        patternProperties:
-          ".*":
-            type: string
+  executor:
+    OneOf:
+    - "$ref": "#/$defs/local_executor"
+    - "$ref": "#/$defs/slurm_executor"
   baseCommand:
     oneOf:
     - type: string
@@ -180,6 +243,8 @@ properties:
             "$ref": "#/$defs/input_type"
           inputBinding:
             "$ref": "#/$defs/input_binding"
+          default:
+            "$ref": "#/$defs/default_type"
         additionalProperties: false
         required:
         - id
@@ -194,6 +259,8 @@ properties:
               type: string
             inputBinding:
               "$ref": "#/$defs/input_binding"
+            default:
+              "$ref": "#/$defs/default_type"
           additionalProperties: false
           required:
           - type
@@ -211,18 +278,9 @@ properties:
           outputBinding:
             "$ref": "#/$defs/output_binding"
         additionalProperties: false
-        if:
-          properties:
-            type:
-              const: stdout
-        then:
-          required:
-          - id
-          - type
-        else:
-          required:
-          - id
-          - type
+        required:
+        - id
+        - type
     - type: object
       patternProperties:
         "^.*$":
@@ -234,14 +292,6 @@ properties:
             outputBinding:
               "$ref": "#/$defs/output_binding"
           additionalProperties: false
-          if:
-            properties:
-              type:
-                const: stdout
-          then:
-            required:
-            - type
-          else:
-            required:
-            - type
-            - outputBinding
+          required:
+          - type
+          - outputBinding

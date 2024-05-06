@@ -35,35 +35,35 @@ steps:
     in:
       message: msg0
     out:
-      - example_stdout
+      - example_file
 
   - id: m1
     run: ./echo.cwl
     in:
       message: msg1
     out:
-      - example_stdout
+      - example_file
 
   - id: m2
     run: ./echo.cwl
     in:
       message: msg2
     out:
-      - example_stdout
+      - example_file
 
   - id: c0
     run: ./cat.cwl
     in:
-      f0: m0/example_stdout
-      f1: m1/example_stdout
+      f0: m0/example_file
+      f1: m1/example_file
     out:
       - cat_out
 
   - id: c1
     run: ./cat.cwl
     in:
-      f0: m1/example_stdout
-      f1: m2/example_stdout
+      f0: m1/example_file
+      f1: m2/example_file
     out:
       - cat_out
 

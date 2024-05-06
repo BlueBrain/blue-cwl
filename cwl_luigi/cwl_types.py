@@ -1,48 +1,27 @@
 """Types module."""
+
 import enum
+import os
+from typing import Literal
 
-from cwl_luigi.exceptions import CWLError
+from cwl_luigi.common import CustomBaseModel
 
-
-class CWLType(enum.Enum):
-    """Common Workflow Language types.
-
-    See https://www.commonwl.org/v1.2/Workflow.html#CWLType
-    """
-
-    NULL = enum.auto()
-    BOOLEAN = enum.auto()
-    INT = enum.auto()
-    LONG = enum.auto()
-    FLOAT = enum.auto()
-    DOUBLE = enum.auto()
-    STRING = enum.auto()
-    FILE = enum.auto()
-    DIRECTORY = enum.auto()
-    STDOUT = enum.auto()
-    NEXUS_TYPE = enum.auto()
-
-    @staticmethod
-    def from_string(string_value: str):
-        """Convert a string to its respective CWLType."""
-        string_to_enum = {
-            "null": CWLType.NULL,
-            "boolean": CWLType.BOOLEAN,
-            "int": CWLType.INT,
-            "long": CWLType.LONG,
-            "float": CWLType.FLOAT,
-            "double": CWLType.DOUBLE,
-            "string": CWLType.STRING,
-            "File": CWLType.FILE,
-            "Directory": CWLType.DIRECTORY,
-            "NexusType": CWLType.NEXUS_TYPE,
-            "stdout": CWLType.STDOUT,
-        }
-        if string_value not in string_to_enum:
-            raise CWLError(
-                f"Unknown type '{string_value}'. Expected on of {list(string_to_enum.keys())}."
-            )
-        return string_to_enum[string_value]
+CWLType = Literal[
+    "null",
+    "boolean",
+    "int",
+    "long",
+    "float",
+    "double",
+    "string",
+    "File",
+    "Directory",
+    "stdin",
+    "stdout",
+    "stderr",
+    "Any",
+    "NexusType",
+]
 
 
 class CWLWorkflowType(enum.Enum):
@@ -51,3 +30,53 @@ class CWLWorkflowType(enum.Enum):
     INPUT = enum.auto()
     OUTPUT = enum.auto()
     STEP = enum.auto()
+
+
+class _FileLike(CustomBaseModel):
+
+    path: str
+    location: str
+    basename: str
+
+    def __init__(self, **data):
+        """Initialize a FileLike object."""
+        path = data.get("path")
+        location = data.get("location")
+
+        assert path or location
+
+        if path and not location:
+            data["path"] = str(path)
+            data["location"] = f"file://{os.path.abspath(path)}"
+
+        if location and not path:
+            data["path"] = str(location)[7:]
+
+        if "basename" not in data:
+            data["basename"] = os.path.basename(data["path"])
+
+        super().__init__(**data)
+
+
+class File(_FileLike):
+    """File class."""
+
+
+class Directory(_FileLike):
+    """Directory class."""
+
+
+class NexusResource(CustomBaseModel):
+    """NexusResource class."""
+
+    id: str | None = None
+    path: str | None = None
+
+    def __init__(self, **data):
+        """Initialize NexusResource."""
+        resource_id = data.get("id")
+        resource_path = data.get("path")
+
+        assert resource_id or resource_path
+
+        super().__init__(**data)

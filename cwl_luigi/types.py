@@ -1,5 +1,9 @@
 """Common types."""
-import os
-from typing import Union
 
-PathLike = Union[str, os.PathLike]
+import os
+
+PathLike = str | os.PathLike[str]
+
+InputValueType = str | bool | int | float | list[str] | list[int] | list[float] | list[str]
+
+EnvVarDict = dict[str, int | float | str]

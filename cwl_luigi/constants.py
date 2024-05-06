@@ -1,4 +1,5 @@
 """Constants definitions."""
+
 SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/bsd/modules/_meta"
 MODULES_ENABLE_PATH = "/etc/profile.d/modules.sh"
 

@@ -1,22 +1,17 @@
 cwlVersion: v1.2
 class: CommandLineTool
-
-id: cat-command
-baseCommand: cat
-
+baseCommand: [cp]
 inputs:
-  f0:
+  source_file:
     type: File
     inputBinding:
       position: 1
-
-  f1:
-    type: File
+  target_file:
+    type: string
     inputBinding:
       position: 2
-
 outputs:
-  cat_out:
+  out_file:
     type: File
     outputBinding:
-        glob: output.txt
+      glob: $(inputs.target_file)

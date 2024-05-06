@@ -1,4 +1,5 @@
 """Task and Targe hashing utils."""
+
 from hashlib import sha256
 
 

@@ -1,9 +1,8 @@
 [tool.black]
 line-length = 100
 target-version = [
-    'py36',
-    'py37',
-    'py38',
+    'py310',
+    'py311'
 ]
 include = 'cwl_luigi\/.*\.py$|tests\/.*\.py$|doc\/source\/conf\.py$|setup\.py$'
 

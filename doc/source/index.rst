@@ -7,3 +7,5 @@
 
    Home <self>
    changelog
+   executors
+   spec
