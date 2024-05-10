@@ -4,12 +4,10 @@ import functools
 import inspect
 import json
 import logging
-import operator
 import os
 import pathlib
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Mapping, Optional
 
 import yaml
 
@@ -90,7 +88,7 @@ def write_yaml(filepath: PathLike, data: dict) -> None:
             if len(self.indents) == 1:
                 super().write_line_break()
 
-    def path_representer(dumper, path):
+    def path_representer(dumper, path):  # pragma: no cover
         return dumper.represent_scalar("tag:yaml.org,2002:str", str(path))
 
     Dumper.add_multi_representer(pathlib.PurePath, path_representer)
@@ -102,8 +100,7 @@ def write_yaml(filepath: PathLike, data: dict) -> None:
 @log
 def load_json(filepath: PathLike) -> dict:
     """Load from JSON file."""
-    with open(filepath, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return json.loads(Path(filepath).read_bytes())
 
 
 @log
@@ -114,20 +111,9 @@ def write_json(filepath: PathLike, data: dict) -> None:
 
 
 @log
-def resolve_path(path: PathLike, base_dir: Optional[PathLike] = None):
+def resolve_path(path: PathLike, base_dir: PathLike | None = None):
     """Resolve path if it's relative wrt base_dir if given."""
     if base_dir is not None:
         return Path(base_dir, path).resolve()
 
     return Path(path).resolve()
-
-
-def sorted_dict(unsorted_dict):
-    """Return a copy with sorted keys."""
-    return dict(sorted(unsorted_dict.items()))
-
-
-def zip_mappings(*mappings: Mapping[str, Any]):
-    """Zip mappings together."""
-    for key in mappings[0].keys():
-        yield key, tuple(map(operator.itemgetter(key), mappings))

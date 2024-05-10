@@ -1,35 +1,20 @@
 """Executable Process creation module."""
 
 import logging
-from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 
 import cwl_luigi.cwl
 from cwl_luigi.common import CustomBaseModel
 from cwl_luigi.cwl_types import Directory, File, NexusResource
 from cwl_luigi.exceptions import CWLError
-from cwl_luigi.executor import LocalExecutor, SallocExecutor
+from cwl_luigi.executor import Executor, LocalExecutor
 from cwl_luigi.resolve import resolve_parameter_references
-from cwl_luigi.types import EnvVarDict
+from cwl_luigi.types import EnvVarDict, InputValue, InputValueObject, OutputValueObject
 
 L = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from cwl_luigi.cwl import CommandLineTool, Workflow
-
-
-InputValueObject = (
-    str
-    | int
-    | float
-    | list[str]
-    | list[int]
-    | list[float]
-    | File
-    | list[File]
-    | Directory
-    | list[Directory]
-)
 
 
 class CommandLineToolProcess(CustomBaseModel):
@@ -39,10 +24,17 @@ class CommandLineToolProcess(CustomBaseModel):
     outputs: dict[str, Any]
     base_command: list[str]
     environment: dict | None = None
-    executor: LocalExecutor | SallocExecutor
+    executor: Executor
 
     def build_command(self, *, env_vars: EnvVarDict | None = None) -> str:
-        """Build command."""
+        """Build command from process attributes.
+
+        Args:
+            env_vars: Dictionary of env vars to export in the command.
+
+        Returns:
+            Command as a string.
+        """
         return self.executor.build_command(
             base_command=self.base_command,
             env_config=self.environment,
@@ -56,8 +48,15 @@ class CommandLineToolProcess(CustomBaseModel):
         redirect_to: str | None = None,
         masked_vars: list[str] | None = None,
         **kwargs,
-    ):
-        """Run command."""
+    ) -> None:
+        """Execute input command.
+
+        Args:
+            command: Command to execute as a string.
+            redirect_to: Output file path to redirect the output.
+            masked_vars: List of variables to mask from logging.
+            **kwargs: Key arguments to pass to the subprocess.
+        """
         self.executor.run(
             command=command, redirect_to=redirect_to, masked_vars=masked_vars, **kwargs
         )
@@ -70,7 +69,14 @@ class CommandLineToolProcess(CustomBaseModel):
         masked_vars: list[str] | None = None,
         **kwargs,
     ) -> None:
-        """Execute the process."""
+        """Execute the process.
+
+        Args:
+            env_vars: Environment variables dictionary.
+            redirect_to: Output file path to redirect the output.
+            masked_vars: List of variables to mask from logging.
+            **kwargs: Key arguments to pass to the subprocess.
+        """
         str_command = self.build_command(
             env_vars=env_vars,
         )
@@ -83,7 +89,7 @@ class CommandLineToolProcess(CustomBaseModel):
 
 
 class WorkflowProcess(CustomBaseModel):
-    """Executable Workflow process."""
+    """Workflow process."""
 
     inputs: dict[str, Any]
     outputs: dict[str, Any]
@@ -92,23 +98,32 @@ class WorkflowProcess(CustomBaseModel):
 
 def build_command_line_tool_process(
     tool: "CommandLineTool",
-    input_values: dict,
+    input_values: dict[str, InputValue],
 ) -> CommandLineToolProcess:
-    """Build CommandLineToolProcess."""
-    input_objects: dict[str, InputValueObject] = _make_input_objects(tool.inputs, input_values)
-    L.debug("Inputs objects: %s", input_values)
+    """Build CommandLineToolProcess.
 
-    concretized_inputs = _concretize_tool_inputs(tool.inputs, input_objects)
-    L.debug("Concretized tool inputs: %s", concretized_inputs)
+    Args:
+        tool: CommandLineTool template to make executable.
+        input_values: Input values for tool.
 
-    concretized_outputs = _concretize_tool_outputs(tool.outputs, input_objects)
-    L.debug("Concretized tool outputs: %s", concretized_outputs)
+    Returns:
+        Executable CommandLineToolProcess
+    """
+    L.debug("CommandLineTool input values: %s", input_values)
 
-    concretized_command = _concretize_tool_command(tool, concretized_inputs)
-    L.debug("Concretized tool command: %s", concretized_command)
+    concretized_inputs: dict[str, InputValueObject] = _concretize_inputs(tool.inputs, input_values)
+    L.debug("Concretized CommandLineTool inputs: %s", concretized_inputs)
 
-    executor = tool.executor or LocalExecutor()
-    L.debug("Tool executor: %s", executor)
+    concretized_outputs: dict[str, OutputValueObject] = _concretize_tool_outputs(
+        tool.outputs, concretized_inputs
+    )
+    L.debug("Concretized CommandLineTool outputs: %s", concretized_outputs)
+
+    concretized_command: list = _concretize_tool_command(tool, concretized_inputs)
+    L.debug("Concretized CommandLineTool command: %s", concretized_command)
+
+    executor: Executor = tool.executor or LocalExecutor()
+    L.debug("CommandLineTool executor: %s", executor)
 
     process = CommandLineToolProcess.from_dict(
         {
@@ -122,16 +137,22 @@ def build_command_line_tool_process(
     return process
 
 
-def _concretize_tool_inputs(inputs, input_values):
+def _concretize_inputs(
+    inputs: dict, input_values: dict[str, InputValue]
+) -> dict[str, InputValueObject]:
 
-    concretized_inputs = deepcopy(input_values)
+    concretized_inputs: dict[str, InputValueObject] = {}
 
-    # assign defaults
     for name, inp in inputs.items():
-        if inp.default is not None and name not in input_values:
-            concretized_inputs[name] = _input_value_to_object(inp.type, inp.default)
 
-    if inputs.keys() != concretized_inputs.keys():
+        value = input_values.get(name, None)
+        if value is None:
+            if inp.default is not None:
+                concretized_inputs[name] = _input_value_to_object(inp.type, inp.default)
+        else:
+            concretized_inputs[name] = _input_value_to_object(inp.type, value)
+
+    if not set(inputs).issubset(set(concretized_inputs)):
         raise CWLError(
             "Concretized input values are not consistent with the input template.\n"
             f"Expected: {sorted(inputs.keys())}.\n"
@@ -141,8 +162,10 @@ def _concretize_tool_inputs(inputs, input_values):
     return concretized_inputs
 
 
-def _concretize_tool_outputs(outputs, input_values):
-    concretized_outputs = {}
+def _concretize_tool_outputs(
+    outputs, input_values: dict[str, InputValueObject]
+) -> dict[str, OutputValueObject]:
+    concretized_outputs: dict[str, OutputValueObject] = {}
     for name, output in outputs.items():
 
         match output.type:
@@ -179,7 +202,7 @@ def _concretize_tool_outputs(outputs, input_values):
     return concretized_outputs
 
 
-def _concretize_tool_command(tool, input_values: dict) -> list:
+def _concretize_tool_command(tool, input_values: dict[str, InputValueObject]) -> list:
     """Construct tool command with input values."""
     args = []
     for i, inp in enumerate(tool.inputs.values()):
@@ -198,6 +221,15 @@ def _concretize_tool_command(tool, input_values: dict) -> list:
 
 
 def _cmd_elements(type_, binding, value) -> tuple | list[tuple] | None:
+    def _obj_to_string(obj):
+
+        match obj:
+            case File() | Directory() | NexusResource():
+                return str(obj.path)
+
+            case _:
+                return str(obj)
+
     def _separate(prefix, value, separate) -> tuple:
         if prefix is None:
             return (value,)
@@ -239,34 +271,9 @@ def _cmd_elements(type_, binding, value) -> tuple | list[tuple] | None:
             raise NotImplementedError(type(value))
 
 
-def _obj_to_string(obj):
-
-    match obj:
-        case File() | Directory():
-            return str(obj.path)
-
-        case str():
-            return obj
-
-        case _:
-            raise NotImplementedError(obj)
-
-
-def _get_step_output2(source, sources):
+def _get_step_output(source, sources):
     step_name, step_output = source.split("/")
     value = sources[step_name].outputs[step_output]
-    return value
-
-
-def _get_source_value2(source, input_objects, sources):
-    """Copy the value from the source."""
-    if isinstance(source, list):
-        return [_get_source_value2(s, input_objects, sources) for s in source]
-
-    try:
-        value = _get_step_output2(source, sources)
-    except ValueError:
-        value = input_objects[source]
     return value
 
 
@@ -274,9 +281,21 @@ def build_workflow_step_process(
     workflow, step_name: str, input_values, sources: dict[str, Any]
 ) -> CommandLineToolProcess:
     """Build workflow step process."""
+
+    def _get_source_value(source, input_objects, sources):
+        """Copy the value from the source."""
+        if isinstance(source, list):
+            return [_get_source_value(s, input_objects, sources) for s in source]
+
+        try:
+            value = _get_step_output(source, sources)
+        except ValueError:
+            value = input_objects[source]
+        return value
+
     step = workflow.get_step_by_name(step_name)
 
-    input_objects: dict[str, InputValueObject] = _make_input_objects(workflow.inputs, input_values)
+    input_objects = _concretize_inputs(workflow.inputs, input_values)
 
     step_input_values = {}
 
@@ -285,7 +304,7 @@ def build_workflow_step_process(
     # loop over inputs to assign sources as input values and defaults
     for name, inp in step.inputs.items():
         if inp.source:
-            result = _get_source_value2(inp.source, input_objects, sources)
+            result = _get_source_value(inp.source, input_objects, sources)
             step_sources[name] = result
         else:
             result = None
@@ -313,97 +332,36 @@ def build_workflow_step_process(
     return step_process
 
 
-def _get_step_output(source, global_outputs):
-    step_name, step_output = source.split("/")
-    value = global_outputs[step_name][step_output]
-    return value
-
-
-def build_workflow_process(workflow: "Workflow", input_values: dict) -> "WorkflowProcess":
+def build_workflow_process(
+    workflow: "Workflow", input_values: dict[str, InputValue]
+) -> "WorkflowProcess":
     """Build WorkflowProcess."""
-    input_objects: dict[str, InputValueObject] = _make_input_objects(workflow.inputs, input_values)
-
-    outputs: dict[str, Any] = {}
-
-    def _get_source_value(source):
-        """Copy the value from the source."""
-        if isinstance(source, list):
-            return [_get_source_value(s) for s in source]
-
-        try:
-            value = _get_step_output(source, outputs)
-        except ValueError:
-            value = input_objects[source]
-        return value
-
-    process_steps = []
-    for step in workflow.steps:
-        step_input_values = {}
-        step_sources = {}
-
-        # loop over inputs to assign sources as input values and defaults
-        for name, inp in step.inputs.items():
-
-            if inp.source:
-                result = _get_source_value(inp.source)
-                step_sources[name] = result
-            else:
-                result = None
-                step_sources[name] = None
-
-            # The default value for this parameter to use if either there is no source field,
-            # or the value produced by the source is null.
-            if result is None:
-                result = inp.default
-
-            step_input_values[name] = result
-
-        # The valueFrom fields are evaluated after the the source fields.
-        for name, inp in step.inputs.items():
-
-            if inp.valueFrom:
-                step_input_values[name] = resolve_parameter_references(
-                    expression=inp.valueFrom,
-                    inputs=step_input_values,
-                    context=step_sources[name],
-                    runtime={},
-                )
-
-        step_process = build_command_line_tool_process(step.run, step_input_values)
-        outputs[step.id] = step_process.outputs
-
-        process_steps.append(step_process)
-
-    concretized_outputs = _concretize_workflow_outputs(workflow.outputs, outputs)
-
-    return WorkflowProcess(
-        inputs=input_objects,
-        outputs=concretized_outputs,
-        steps=process_steps,
+    concretized_inputs: dict[str, InputValueObject] = _concretize_inputs(
+        workflow.inputs, input_values
     )
 
+    step_processes: dict[str, CommandLineToolProcess] = {}
+    for step in workflow.steps:
 
-def _concretize_workflow_outputs(workflow_outputs, global_outputs):
+        sources = {name: step_processes[name] for name in workflow.get_step_source_names(step.id)}
 
-    concretized_outputs = {}
-    for name, output in workflow_outputs.items():
-        concretized_outputs[name] = _get_step_output(output.outputSource, global_outputs)
-    return concretized_outputs
-
-
-def _make_input_objects(inputs: dict, input_values: dict) -> dict:
-
-    if inputs.keys() != input_values.keys():
-        raise CWLError(
-            "Input values are not consistent with the input template.\n"
-            f"Expected: {sorted(inputs.keys())}.\n"
-            f"Got     : {sorted(input_values.keys())}"
+        step_processes[step.id] = build_workflow_step_process(
+            workflow=workflow,
+            step_name=step.id,
+            input_values=concretized_inputs,
+            sources=sources,
         )
 
-    return {
-        name: _input_value_to_object(inputs[name].type, value)
-        for name, value in input_values.items()
+    concretized_outputs = {
+        name: _get_step_output(output.outputSource, step_processes)
+        for name, output in workflow.outputs.items()
     }
+
+    return WorkflowProcess(
+        inputs=concretized_inputs,
+        outputs=concretized_outputs,
+        steps=list(step_processes.values()),
+    )
 
 
 def _input_value_to_object(input_type, input_value):
@@ -445,12 +403,14 @@ def _input_value_to_object(input_type, input_value):
                     value = input_value.path
                 case str():
                     value = input_value
+                case int() | float():
+                    value = str(input_value)
                 case _:
                     raise ValueError(f"type: {input_type}, value: {input_value}")
 
         case "NexusType":
             match input_value:
-                case File() | Directory():
+                case File():
                     value = NexusResource(path=input_value.path)
                 case str():
                     value = NexusResource(id=input_value)

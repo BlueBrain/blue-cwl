@@ -34,9 +34,9 @@ class CWLWorkflowType(enum.Enum):
 
 class _FileLike(CustomBaseModel):
 
-    path: str
-    location: str
-    basename: str
+    path: str | None = None
+    location: str | None = None
+    basename: str | None = None
 
     def __init__(self, **data):
         """Initialize a FileLike object."""
@@ -52,7 +52,7 @@ class _FileLike(CustomBaseModel):
         if location and not path:
             data["path"] = str(location)[7:]
 
-        if "basename" not in data:
+        if data.get("basename", None) is None:
             data["basename"] = os.path.basename(data["path"])
 
         super().__init__(**data)

@@ -1,6 +1,7 @@
 import pytest
 from cwl_luigi import resolve as test_module
 from cwl_luigi.cwl_types import File, Directory
+from cwl_luigi.exceptions import ReferenceResolutionError
 
 
 def test_resolve_parameter_references__no_references():
@@ -76,6 +77,14 @@ def test_resolve_parameter_references__no_references():
             },
             "foo_foo.txt/bar.txt",
         ),
+        (
+            {
+                "expression": {"a": "foo_$(self.path)", "b": "bar_$(self.path)"},
+                "context": File(path="foo.txt"),
+                "inputs": {"bar": "bar.txt"},
+            },
+            {"a": "foo_foo.txt", "b": "bar_foo.txt"},
+        ),
     ],
 )
 def test_resolve_parameter_references(cfg, expected):
@@ -86,6 +95,23 @@ def test_resolve_parameter_references(cfg, expected):
         runtime=cfg.get("runtime"),
     )
     assert res == expected
+
+
+def test_resolve_parameter_references__raises():
+
+    with pytest.raises(ReferenceResolutionError):
+
+        test_module.resolve_parameter_references(
+            "$(inputs.bar)",
+            inputs={"bar": File(path="foo.txt")},
+        )
+
+    with pytest.raises(ReferenceResolutionError):
+
+        test_module.resolve_parameter_references(
+            "$(self)",
+            context=File(path="foo.txt"),
+        )
 
 
 def test_resolve_matches_to_keys():

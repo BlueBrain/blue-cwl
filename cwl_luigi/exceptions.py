@@ -7,3 +7,7 @@ class CWLError(Exception):
 
 class ReferenceResolutionError(CWLError):
     """Parameter reference resolution error."""
+
+
+class CWLValidationError(CWLError):
+    """CWL Validation error."""

@@ -1,6 +1,7 @@
 """Local/Remote command building and execution."""
 
 import logging
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -12,9 +13,10 @@ L = logging.getLogger(__name__)
 
 def run_command(
     str_command: str,
+    *,
     process_constructor=subprocess.Popen,
     masked_vars: list[str] | None = None,
-    redirect_to: str | None = None,
+    redirect_to: str | os.PathLike[str] | None = None,
 ) -> None:
     """Execute a command using the process constructed from the process_constructor.
 

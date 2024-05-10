@@ -1,10 +1,12 @@
 import os
+import re
+import json
 import pytest
 from pathlib import Path
 from cwl_luigi import parser as tested
 from cwl_luigi import cwl
-from cwl_luigi.exceptions import CWLError
-
+from cwl_luigi.exceptions import CWLError, CWLValidationError
+from cwl_luigi.executor import LocalExecutor, SallocExecutor
 from cwl_luigi import utils
 
 
@@ -14,10 +16,33 @@ DATA_DIR = TESTS_DIR / "data"
 WORKFLOW_CAT_ECHO_DIR = DATA_DIR / "cat-echo"
 
 
+def test_parse_cwl_data__raises_missing_class():
+    with pytest.raises(CWLError, match="Missing 'class' in cwl data."):
+        tested.parse_cwl_data({}, base_dir=None)
+
+
+def test_parse_cwl_data__raises_unknown_class():
+    with pytest.raises(TypeError, match="Unknown class"):
+        tested.parse_cwl_data({"class": "Foo"}, base_dir=None)
+
+
 def test_parse_io_parameters__no_outputs():
     cwl_data = {}
     outputs = tested._parse_io_parameters(cwl_data)
     assert outputs == {}
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("foo", "foo"),
+        ("foo[]", {"type": "array", "items": "foo"}),
+        ("foo?", ["foo", None]),
+    ],
+)
+def test_preprocess_type(value, expected):
+    res = tested._preprocess_type(value)
+    assert res == expected
 
 
 def test_parse_io_parameters__outputs_as_list():
@@ -138,6 +163,7 @@ def test_parse_config():
                 "spam": {"type": "File", "value": "/foo"},
                 "ham": {"type": "Directory", "value": "/bar"},
                 "eggs": {"type": "string", "value": "foo"},
+                "monty": {"type": "NexusType", "value": "foo"},
             }
         },
     )
@@ -650,3 +676,85 @@ def test_workflow_embedded():
     workflow1 = tested.parse_cwl_file(DATA_DIR / "use_cases/copy_file_chain_embedded.cwl")
     workflow2 = tested.parse_cwl_file(DATA_DIR / "use_cases/copy_file_chain.cwl")
     assert workflow1.to_dict() == workflow2.to_dict()
+
+
+def test_workflow_broken():
+
+    expected_errors = {
+        "s0": [
+            {
+                "type": "OutputNotInWorkflowInputs",
+                "output": "wrong_ref_file",
+                "workflow_inputs": ["input_file", "output_dir", "overwrite"],
+            }
+        ],
+        "s1": [
+            {
+                "type": "InvalidInputSourceOutput",
+                "source": "s0",
+                "output": "wrong_out_file",
+                "source_outputs": ["output_file"],
+            }
+        ],
+        "s2": [
+            {
+                "type": "InvalidInputSource",
+                "source": "wrong_source",
+                "output": "output_file",
+                "workflow_sources": ["s0", "s1", "s2"],
+            }
+        ],
+    }
+
+    expected_json_str = json.dumps(expected_errors, indent=2)
+
+    with pytest.raises(CWLValidationError, match=re.escape(expected_json_str)):
+        tested.parse_cwl_file(DATA_DIR / "use_cases/copy_file_chain_broken.cwl")
+
+
+def test_build_executor():
+
+    data = {"executor": None}
+
+    res = tested._build_executor(data)
+    assert isinstance(res, LocalExecutor)
+
+    data = {"executor": {"type": "local", "env_vars": {"foo": "bar"}}}
+    res = tested._build_executor(data)
+
+    assert isinstance(res, LocalExecutor)
+    assert res.env_vars == {"foo": "bar"}
+
+    data = {
+        "executor": {
+            "type": "slurm",
+            "env_vars": {"foo": "bar"},
+            "remote_config": {"host": "foo"},
+            "slurm_config": {"nodes": 1},
+        }
+    }
+    res = tested._build_executor(data)
+    assert isinstance(res, SallocExecutor)
+    assert res.env_vars == {"foo": "bar"}
+    assert res.remote_config.host == "foo"
+    assert res.slurm_config.nodes == 1
+
+    data = {
+        "executor": {
+            "type": "Foo",
+        }
+    }
+
+    with pytest.raises(TypeError, match="Unknown executor type"):
+        tested._build_executor(data)
+
+
+def test_dict_to_list_entries():
+
+    dataset = {"a": {"foo": "bar"}, "b": {"spam": "zee"}}
+
+    res = tested._dict_to_list_entries(dataset)
+
+    assert res == [{"id": "a", "foo": "bar"}, {"id": "b", "spam": "zee"}]
+
+    assert tested._dict_to_list_entries(res) == res

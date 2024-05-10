@@ -102,7 +102,7 @@ class CommandLineTool(CustomBaseModel):
             output directory.
     """
 
-    cwlVersion: str  # v1.2
+    cwlVersion: Literal["v1.2"]
     id: str = "CommandLineTool"
     baseCommand: list[str]
     inputs: dict[str, CommandInputParameter]
@@ -216,13 +216,6 @@ class WorkflowStep(CustomBaseModel):
     outputs: list[str]
     run: CommandLineTool
 
-    def get_input_name_by_target(self, target: str) -> str:
-        """Return the input name, given its target value."""
-        for k, v in self.inputs.items():
-            if v.source == target:
-                return k
-        raise ValueError("Target does not exist in inputs.")
-
 
 class Workflow(CustomBaseModel):
     """Dataclass for an entire workflow.
@@ -243,6 +236,10 @@ class Workflow(CustomBaseModel):
     def __repr__(self):
         """Return repr of instance."""
         return f"Workflow(id={self.id})"
+
+    def iter_steps(self):
+        """Iterate over steps."""
+        return iter(self.steps)
 
     def step_names(self) -> list[str]:
         """Return the names of the workflow steps."""

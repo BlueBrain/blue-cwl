@@ -10,6 +10,7 @@ from cwl_luigi.exceptions import CWLError
 from cwl_luigi.executor import LocalExecutor, SallocExecutor
 from cwl_luigi.types import PathLike
 from cwl_luigi.utils import load_yaml, resolve_path
+from cwl_luigi.validate import validate_workflow
 
 L = logging.getLogger(__name__)
 
@@ -110,7 +111,7 @@ def _build_config_input(input_data: dict):
         input_value = input_data
     else:
         input_type = input_data["class"]
-        if input_type == "NexusType":
+        if input_type == "NexusType" and "resource-id" in input_data:
             input_value = input_data["resource-id"]
         else:
             input_value = input_data["path"]
@@ -120,7 +121,9 @@ def _build_config_input(input_data: dict):
 
 def _build_workflow(data: dict, base_dir: Path) -> cwl.Workflow:
     document = _preprocess_workflow_document(data, base_dir)
-    return cwl.Workflow.from_dict(document)
+    workflow = cwl.Workflow.from_dict(document)
+    validate_workflow(workflow)
+    return workflow
 
 
 def _preprocess_workflow_document(document, base_dir):
@@ -156,8 +159,7 @@ def _preprocess_workflow_steps(steps, base_dir):
 
         # in -> inputs
         if "in" in step:
-            step["inputs"] = step.pop("in")
-            step["inputs"] = _preprocess_step_inputs(step["inputs"])
+            step["inputs"] = _preprocess_step_inputs(step.pop("in"))
 
         # out -> outputs
         if "out" in step:
@@ -194,28 +196,6 @@ def _build_workflow_run(data_or_file, base_dir):
         return parse_cwl_data(data_or_file, base_dir)
 
     return parse_cwl_file(data_or_file)
-
-
-def _build_workflow_step_inputs(step: dict) -> dict[str, cwl.WorkflowStepInput]:
-    inputs = {}
-
-    for name, data in step["in"].items():
-        # in: some-string
-        if isinstance(data, (str, list)):
-            inp = cwl.WorkflowStepInput(
-                id=name,
-                source=data,
-            )
-        else:
-            inp = cwl.WorkflowStepInput(
-                id=name,
-                source=data.get("source", None),
-                valueFrom=data.get("valueFrom", None),
-                default=data.get("default", None),
-            )
-        inputs[name] = inp
-
-    return inputs
 
 
 def _build_command_line_tool(data: dict, base_dir: Path) -> cwl.CommandLineTool:

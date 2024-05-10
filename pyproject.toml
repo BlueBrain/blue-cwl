@@ -9,3 +9,14 @@ include = 'cwl_luigi\/.*\.py$|tests\/.*\.py$|doc\/source\/conf\.py$|setup\.py$'
 [tool.isort]
 profile = "black"
 line_length = 100
+
+[tool.coverage.run]
+omit = [
+  "constants.py",
+]
+
+[tool.coverage.report]
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError"
+]

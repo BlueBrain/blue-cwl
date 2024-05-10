@@ -6,3 +6,6 @@ inputs:
     path: /bar
     class: Directory
   eggs: foo
+  monty:
+    resource-id: foo
+    class: NexusType

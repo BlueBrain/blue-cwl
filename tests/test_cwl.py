@@ -10,7 +10,7 @@ import luigi
 from luigi.freezing import recursively_unfreeze
 import pytest
 from cwl_luigi import cwl as tested
-from cwl_luigi.cwl_types import File, Directory
+from cwl_luigi.cwl_types import File, Directory, CWLType
 from cwl_luigi.exceptions import CWLError
 
 from cwl_luigi import utils
@@ -24,6 +24,57 @@ def _test_dataclass_instance(obj, expected_attributes):
     assert obj.to_dict() == expected_attributes, (
         f"dataclass: {obj}\n" f"Expected attrs: {expected_attributes}"
     )
+
+
+def test_workflow_step_output_parameter():
+
+    p = tested.WorkflowOutputParameter(
+        id="foo",
+        type="File",
+        label="foo",
+        doc="foo",
+        outputSource="bar/out",
+    )
+
+    assert p.split_source_output() == ["bar", "out"]
+
+
+def test_workflow_step_input():
+
+    p = tested.WorkflowStepInput(
+        id="foo",
+        source="bar/out",
+    )
+
+    assert p.split_source_output() == [("bar", "out")]
+
+    p = tested.WorkflowStepInput(
+        id="foo",
+        source="out",
+    )
+
+    assert p.split_source_output() == [(None, "out")]
+
+    p = tested.WorkflowStepInput(
+        id="foo",
+        source=["bar/out", "out"],
+    )
+
+    assert p.split_source_output() == [("bar", "out"), (None, "out")]
+
+    p = tested.WorkflowStepInput(
+        id="foo",
+        source=None,
+    )
+    assert p.split_source_output() is None
+
+    p = tested.WorkflowStepInput(
+        id="foo",
+        source="a/b/c",
+    )
+
+    with pytest.raises(ValueError):
+        p.split_source_output()
 
 
 @contextmanager
@@ -102,6 +153,10 @@ def workflow():
     return parse_cwl_file(WORKFLOW_CAT_ECHO_DIR / "workflow-cat-echo.cwl")
 
 
+def test_Workflow__repr(workflow):
+    assert repr(workflow) == "Workflow(id=cat-echo)"
+
+
 def test_Workflow__dict(workflow):
     data = workflow.to_dict()
     new_workflow = tested.Workflow.from_dict(data)
@@ -125,3 +180,10 @@ def test_Workflow__luigi_DictParameter(workflow):
     new_workflow = tested.Workflow.from_dict(new_data)
 
     assert workflow == new_workflow
+
+
+def test_Workflow__make_workflow_step(workflow):
+
+    res = workflow.make_workflow_step("m0", {"msg0": "foo", "msg1": "bar", "msg2": "spam"}, {})
+
+    assert res.base_command is not None

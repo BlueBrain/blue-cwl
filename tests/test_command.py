@@ -1,9 +1,37 @@
 import re
 from unittest.mock import Mock
+from pathlib import Path
 
 import pytest
 from cwl_luigi import command as test_module
 from cwl_luigi.config import SlurmConfig
+
+
+def test_run_command(tmp_path):
+
+    source_file = Path(tmp_path / "source.txt")
+    target_file = Path(tmp_path / "target.txt")
+
+    log_file = Path(tmp_path / "log.txt")
+
+    source_file.write_text("foo")
+
+    test_module.run_command(
+        str_command=f"export FOO=foo && cp {source_file} {target_file}",
+        masked_vars=["FOO"],
+        redirect_to=log_file,
+    )
+
+    assert target_file.exists()
+    assert target_file.read_text() == source_file.read_text()
+
+    assert log_file.exists()
+    log = log_file.read_text()
+
+    assert log == (
+        "COMMAND:\n"
+        f"( set -e && export FOO=$FOO && cp {source_file} {target_file} ) >> {log_file} 2>&1"
+    )
 
 
 def test_mask_token__single():
