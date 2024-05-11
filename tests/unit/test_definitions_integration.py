@@ -17,4 +17,4 @@ def test_pipeline_definitions_inputs_outputs():
 
     for prev_tool, curr_tool in zip(tools[:-1], tools[1:]):
         for output_name in prev_tool.outputs.keys():
-            assert output_name in curr_tool.inputs
+            assert output_name in curr_tool.inputs, (output_name, curr_tool.inputs)

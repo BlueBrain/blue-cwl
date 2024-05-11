@@ -39,16 +39,23 @@ INPUT_NODE_POPULATION_COLUMNS = [
 ]
 
 
-@click.command()
-@click.option("--configuration", required=True)
-@click.option("--partial-circuit", required=True)
-@click.option("--macro-connectome-config", required=True)
-@click.option("--variant-config", required=True)
+@click.group()
+def app():
+    """Placeholder micro connectome generation."""
+
+
+@app.command(name="mono-execution")
+@click.option("--configuration-id", required=True)
+@click.option("--circuit-id", required=True)
+@click.option("--macro-connectome-config-id", required=True)
+@click.option("--variant-id", required=True)
 @click.option("--output-dir", required=True)
-def app(configuration, partial_circuit, macro_connectome_config, variant_config, output_dir):
+def mono_execution(
+    configuration_id, circuit_id, macro_connectome_config_id, variant_id, output_dir
+):
     """Build micro connectome."""
     output_dir = utils.create_dir(output_dir)
-    _app(configuration, partial_circuit, macro_connectome_config, variant_config, output_dir)
+    _app(configuration_id, circuit_id, macro_connectome_config_id, variant_id, output_dir)
 
 
 def _app(configuration, partial_circuit, macro_connectome_config, variant_config, output_dir):

@@ -8,7 +8,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import cast
 
-from cwl_luigi import cwl
+from cwl_luigi import cwl, parse_cwl_file
 from entity_management.base import attributes
 from entity_management.core import DataDownload, Entity
 from entity_management.nexus import sparql_query
@@ -19,6 +19,9 @@ from cwl_registry.typing import StrOrPath
 from cwl_registry.utils import dump_yaml, load_yaml, write_yaml
 
 L = logging.getLogger(__name__)
+
+
+CWL_DEFINITION_FILENAME = "definition.cwl"
 
 
 # pylint: disable=no-member
@@ -143,7 +146,13 @@ class Variant(Entity):
         )
 
     @property
-    def tool_definition(self) -> cwl.CommandLineTool:
+    def tool_definition(self) -> cwl.CommandLineTool | cwl.Workflow:
+        """Return the cwl definition for this variant."""
+        # TODO: Deprecate
+        return self.definition
+
+    @property
+    def definition(self) -> cwl.CommandLineTool | cwl.Workflow:
         """Return the cwl definition for this variant."""
         content = deepcopy(self.get_content())
 
@@ -154,7 +163,7 @@ class Variant(Entity):
         # TODO: make CommandLineTool constructor work with both the data and the file
         with tempfile.NamedTemporaryFile(suffix=".cwl") as tfile:
             write_yaml(data=content, filepath=tfile.name)
-            return cwl.CommandLineTool.from_cwl(tfile.name)
+            return parse_cwl_file(tfile.name)
 
     def evolve(self, **changes) -> "Variant":
         """Create a new Variant instance with updated attributes.
@@ -210,7 +219,13 @@ class Variant(Entity):
 
         # local distribution not yet registered in nexus
         if variant.distribution.url is not None:
-            buffer = io.BytesIO(Path(unquote_uri_path(variant.distribution.url)).read_bytes())
+            path = variant.distribution.get_url_as_path()
+
+            with tempfile.TemporaryDirectory() as tdir:
+                definition_file = str(Path(tdir, "definition.cwl"))
+                packed_data = _pack(load_yaml(path), Path(path).parent)
+                write_yaml(data=packed_data, filepath=definition_file)
+                buffer = io.BytesIO(Path(unquote_uri_path(definition_file)).read_bytes())
 
             # the from_file classmethod uploads the distribution file to nexus
             distribution = DataDownload.from_file(
@@ -284,12 +299,33 @@ def _load_variant_distribution(
 
     # local distribution
     if distribution.url is not None:
-        return load_yaml(unquote_uri_path(distribution.url))
+        path = unquote_uri_path(distribution.url)
+        return _pack(load_yaml(path), Path(path).parent)
 
     # remote distribution
     with tempfile.TemporaryDirectory() as tdir:
-        filepath = distribution.download(path=tdir, use_auth=token)
-        return load_yaml(filepath)
+        path = distribution.download(path=tdir, use_auth=token)
+        return _pack(load_yaml(path), Path(path).parent)
+
+
+def _pack(document: dict, base_dir: Path):
+    if document["class"] == "CommandLineTool":
+        return document
+
+    base_dir = base_dir.resolve()
+
+    if isinstance(document["steps"], dict):
+        for value in document["steps"].values():
+            tool = value["run"]
+            if isinstance(tool, str):
+                value["run"] = load_yaml(base_dir / tool)
+
+    for step in document["steps"]:
+        tool = step["run"]
+        if isinstance(tool, str):
+            step["run"] = load_yaml(base_dir / tool)
+
+    return document
 
 
 def search_variant_in_nexus(
@@ -371,12 +407,10 @@ def _get_variant_directory(generator_name: str, variant_name: str, version: str)
 def _get_variant_file(generator_name: str, variant_name: str, version: str) -> Path:
     variant_dir = _get_variant_directory(generator_name, variant_name, version)
 
-    files = list(variant_dir.glob("*.cwl"))
+    if match := list(variant_dir.glob(CWL_DEFINITION_FILENAME)):
+        return match[0]
 
-    if len(files) == 1:
-        return files[0]
-    else:
-        raise CWLRegistryError(f"One cwl file is allowed in {variant_dir}. Found: {len(files)}.")
+    raise CWLRegistryError(f"There is no '{CWL_DEFINITION_FILENAME}' in {variant_dir}.")
 
 
 def _check_directory_exists(directory: Path) -> Path:

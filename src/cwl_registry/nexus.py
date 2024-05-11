@@ -73,9 +73,9 @@ def get_distribution(
 
     if encoding_format and encoding_format != distribution.encodingFormat:
         raise CWLRegistryError(
-            "Entity {entity.get_id()} distribution's "
-            "encoding format '{encoding_format}' does not match "
-            "distribution's format '{distribution.encodingFormat}'"
+            f"Entity {entity.get_id()} distribution's "
+            f"encoding format '{encoding_format}' does not match "
+            f"distribution's format '{distribution.encodingFormat}'"
         )
 
     return entity.distribution

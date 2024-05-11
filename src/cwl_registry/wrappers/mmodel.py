@@ -53,21 +53,26 @@ OUTPUT_POPULATION_COLUMNS = INPUT_POPULATION_COLUMNS + [
 ]
 
 
-@click.command()
-@click.option("--configuration", required=True)
-@click.option("--partial-circuit", required=True)
-@click.option("--variant-config", required=True)
+@click.group
+def app():
+    """Morphology synthesis of neurons."""
+
+
+@app.command(name="mono-execution")
+@click.option("--configuration-id", required=True)
+@click.option("--circuit-id", required=True)
+@click.option("--variant-id", required=True)
 @click.option("--output-dir", required=True)
 @click.option("--parallel", required=False, default=True)
-def app(
-    configuration,
-    partial_circuit,
-    variant_config,
+def mono_execution(
+    configuration_id,
+    circuit_id,
+    variant_id,
     output_dir,
     parallel,
 ):
-    """Morphoelectrical type generator cli entry."""
-    return _app(configuration, partial_circuit, variant_config, output_dir, parallel)
+    """Morphology synthesis of neuronal cells."""
+    return _app(configuration_id, circuit_id, variant_id, output_dir, parallel)
 
 
 def _app(configuration, partial_circuit, variant_config, output_dir, parallel):

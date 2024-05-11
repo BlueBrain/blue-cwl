@@ -1,0 +1,11 @@
+
+
+configuration_id: c
+
+partial_circuit_id: p
+
+variant_id: v
+
+output_dir:
+  class: Directory
+  path: ./out

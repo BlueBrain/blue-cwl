@@ -42,19 +42,27 @@ OUTPUT_POPULATION_COLUMNS = [
 ]
 
 
-@click.command()
+@click.group
+def app():
+    """Cell placement."""
+
+
+@app.command(name="mono-execution")
 @click.option("--region", required=True)
-@click.option("--variant-config", required=False)
-@click.option("--cell-composition", required=True)
+@click.option("--variant-id", required=False)
+@click.option("--configuration-id", required=True)
+@click.option("--cell-composition-id", required=True)
 @click.option("--output-dir", required=True)
-def app(region, variant_config, cell_composition, output_dir):
+def mono_execution(region, variant_id, configuration_id, cell_composition_id, output_dir):
     """Morphoelectrical type generator cli entry."""
     output_dir = utils.create_dir(Path(output_dir).resolve())
 
+    L.warning("Configuration %s is currently not taken into account.", configuration_id)
+
     staged_entities = _extract(
         region,
-        variant_config,
-        cell_composition,
+        variant_id,
+        cell_composition_id,
         output_dir,
     )
 

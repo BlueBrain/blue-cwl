@@ -1,10 +1,11 @@
 cwlVersion: v1.2
 class: CommandLineTool
 
-id: cell_composition_manipulation
-label: Cell Composition Manipulation
+id: me_type_property
+label: Morph-Electric type property generator
+stdout: stdout.txt
 
-baseCommand: ['cwl-registry', 'execute', 'cell-composition-manipulation', 'mono-execution']
+baseCommand: ['cwl-registry', 'execute', 'neurons-cell-position', 'mono-execution']
 
 
 environment:
@@ -26,14 +27,14 @@ executor:
 inputs:
 
     - id: region
-      type: NexusType
+      type: string
       inputBinding:
         prefix: --region
 
-    - id: base_cell_composition
+    - id: cell_composition
       type: NexusType
       inputBinding:
-        prefix: --base-cell-composition-id
+        prefix: --cell-composition-id
 
     - id: configuration
       type: NexusType
@@ -52,7 +53,8 @@ inputs:
 
 outputs:
 
-    - id: cell_composition
+    - id: partial_circuit
       type: NexusType
+      doc: Circuit bundle with me-types and soma positions.
       outputBinding:
-        glob: "$(inputs.output_dir.path)/resource.json"
+        glob: "$(inputs.output_dir.path)/partial-circuit.json"

@@ -3,18 +3,18 @@ class: CommandLineTool
 
 id: connectome_distance_dependent
 label: Distance dependent connectome manipulation
-stdout: stdout.txt
 
-baseCommand: ['cwl-registry', 'execute', 'connectome-filtering-synapses']
+baseCommand: ['cwl-registry', 'execute', 'connectome-filtering-synapses', 'mono-execution']
 
 
 environment:
-  env_type: MODULE
-  modules:
-    - unstable
-    - spykfunc
-    - parquet-converters
-    - py-cwl-registry
+  env_type: VENV
+  path: /gpfs/bbp.cscs.ch/project/proj134/scratch/zisis/sub-workflows/venv311
+  #modules:
+  #  - unstable
+  #  - spykfunc
+  #  - parquet-converters
+  #  - py-cwl-registry
   enable_internet: true
 
 
@@ -57,17 +57,17 @@ inputs:
     - id: configuration
       type: NexusType
       inputBinding:
-        prefix: --configuration
+        prefix: --configuration-id
 
     - id: partial_circuit
       type: NexusType
       inputBinding:
-        prefix: --partial-circuit
+        prefix: --circuit-id
 
     - id: variant_config
       type: NexusType
       inputBinding:
-        prefix: --variant-config
+        prefix: --variant-id
 
     - id: output_dir
       type: Directory

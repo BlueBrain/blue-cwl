@@ -377,9 +377,15 @@ def write_resource_to_definition_output(
             raise CWLWorkflowError("More than 1 workflow outputs found.")
         output_name = list(outputs)[0]
 
-    out_filename = outputs[output_name].outputBinding["glob"]
+    output_binding = outputs[output_name].outputBinding
 
-    out_filepath = Path(output_dir, out_filename)
+    if hasattr(output_binding, "glob"):
+        out_filename = output_binding.glob
+    else:
+        out_filename = output_binding["glob"]
+
+    # worarkound to work with $(inputs.output_dir.path)/file
+    out_filepath = Path(output_dir, Path(out_filename).name)
 
     write_json(filepath=out_filepath, data=json_resource)
 

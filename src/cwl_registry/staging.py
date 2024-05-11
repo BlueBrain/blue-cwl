@@ -6,7 +6,7 @@ import shutil
 from collections import deque
 from collections.abc import Callable, Iterator, Sequence
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from functools import partial
 from pathlib import Path
 from typing import Any
@@ -16,11 +16,13 @@ from entity_management.atlas import AtlasRelease, CellCompositionSummary, CellCo
 from entity_management.config import MacroConnectomeConfig, MicroConnectomeConfig, SynapseConfig
 from entity_management.core import Entity
 from entity_management.nexus import load_by_id
+from entity_management.simulation import DetailedCircuit
 from entity_management.util import unquote_uri_path
 
 from cwl_registry import utils
 from cwl_registry.exceptions import CWLWorkflowError
 from cwl_registry.nexus import (
+    download_distribution,
     forge_to_config,
     get_distribution,
     get_distribution_as_dict,
@@ -29,6 +31,7 @@ from cwl_registry.nexus import (
 from cwl_registry.typing import IdOrEntity, StrOrPath
 from cwl_registry.utils import get_obj
 from cwl_registry.validation import validate_schema
+from cwl_registry.variant import Variant
 
 L = logging.getLogger(__name__)
 
@@ -439,6 +442,24 @@ class AtlasInfo:
     cell_orientation_field_path: str | None
     directory: Path
 
+    @classmethod
+    def from_file(cls, filepath: StrOrPath):
+        """Instantiate from a file."""
+        data = utils.load_json(filepath)
+        return cls(
+            ontology_path=data["ontology_path"],
+            annotation_path=data["annotation_path"],
+            hemisphere_path=data.get("annotation_path"),
+            ph_catalog=data.get("ph_catalog"),
+            cell_orientation_field_path=data.get("cell_orientation_field_path"),
+            directory=Path(data["directory"]),
+        )
+
+    def to_file(self, filepath: StrOrPath):
+        """Dump atlas info to a json file."""
+        data = asdict(self)
+        utils.write_json(data=data, filepath=filepath)
+
 
 def stage_atlas(
     id_or_entity: str,
@@ -449,6 +470,7 @@ def stage_atlas(
     parcellation_hemisphere_basename: str = "hemisphere.nrrd",
     cell_orientation_field_basename: str = "orientation.nrrd",
     symbolic=True,
+    output_file: StrOrPath | None = None,
     base: str | None = None,
     org: str | None = None,
     proj: str | None = None,
@@ -465,6 +487,7 @@ def stage_atlas(
         cell_orientation_field_basename: The filename of the cell orientation field file.
         symbolic: If True symbolic links will be attempted if the datasets exist on gpfs
             otherwise the files will be downloaded.
+        output_file: Optional output file to write the atlas info file.
         base: The nexus base endpoint. If None entity-management's runtime base is used.
         org: The nexus organization. If None entity-management's runtime org is used.
         proj: The nexus project. If None entity-management's runtime proj is used.
@@ -558,7 +581,7 @@ def stage_atlas(
         L.warning("Atlas Release %s has no cellOrientationField", resource_id)
         cell_orientation_field_path = None
 
-    return AtlasInfo(
+    atlas_info = AtlasInfo(
         ontology_path=ontology_path,
         annotation_path=annotation_path,
         hemisphere_path=hemisphere_path,
@@ -566,6 +589,11 @@ def stage_atlas(
         cell_orientation_field_path=cell_orientation_field_path,
         directory=Path(output_dir),
     )
+
+    if output_file:
+        atlas_info.to_file(output_file)
+
+    return atlas_info
 
 
 def stage_file(source: Path, target: Path, symbolic: bool = True) -> None:
@@ -826,7 +854,6 @@ def materialize_synapse_config(
                 base=base,
                 org=org,
                 proj=proj,
-                token=token,
             )
             for dset_name, dset_data in section_data.items()
         }
@@ -911,3 +938,51 @@ def materialize_ph_catalog(
         ),
     }
     return {"placement_hints": phs, "voxel_distance_to_region_bottom": ph_y}
+
+
+def stage_variant(
+    obj,
+    *,
+    output_file: StrOrPath,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+):
+    """Stage variant nexus resource to a cwl local definition."""
+    output_file = Path(output_file)
+
+    variant = get_obj(obj, cls=Variant, base=base, org=org, proj=proj, token=token)
+
+    download_distribution(
+        variant,
+        output_dir=output_file.parent,
+        filename=output_file.name,
+        encoding_format="application/cwl",
+        base=base,
+        org=org,
+        proj=proj,
+        token=token,
+    )
+
+    return Variant.from_file(
+        output_file,
+        generator_name=variant.generator_name,
+        variant_name=variant.variant_name,
+        version=variant.version,
+    )
+
+
+def stage_detailed_circuit(
+    obj,
+    *,
+    output_file: StrOrPath,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> None:
+    """Stage DetailedCircuit a resource to its circuit config file."""
+    circuit = get_obj(obj, cls=DetailedCircuit, base=base, org=org, proj=proj, token=token)
+    circuit_config_path = circuit.circuitConfigPath.get_url_as_path()
+    stage_file(source=Path(circuit_config_path), target=Path(output_file))

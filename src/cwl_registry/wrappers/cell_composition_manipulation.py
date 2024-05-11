@@ -26,19 +26,24 @@ from cwl_registry.variant import Variant
 L = logging.getLogger(__name__)
 
 
-@click.command()
+@click.group
+def app():
+    """Cell composition manipulation."""
+
+
+@app.command(name="mono-execution")
 @click.option("--region", required=True)
-@click.option("--brain-region-selector-config", required=False)
-@click.option("--base-cell-composition", required=True)
-@click.option("--configuration", help="Recipe for manipulations")
-@click.option("--variant-config", required=True)
+@click.option("--brain-region-selector-config-id", required=False)
+@click.option("--base-cell-composition-id", required=True)
+@click.option("--configuration-id", help="Recipe for manipulations")
+@click.option("--variant-id", required=True)
 @click.option("--output-dir", required=True)
-def app(  # pylint: disable=too-many-arguments
+def mono_execution(  # pylint: disable=too-many-arguments
     region,  # pylint: disable=unused-argument
-    brain_region_selector_config,
-    base_cell_composition,
-    configuration,
-    variant_config,
+    brain_region_selector_config_id,
+    base_cell_composition_id,
+    configuration_id,
+    variant_id,
     output_dir,
 ):
     """Density Manipulation CLI."""
@@ -47,7 +52,7 @@ def app(  # pylint: disable=too-many-arguments
     atlas_dir = utils.create_dir(staging_dir / "atlas")
     build_dir = utils.create_dir(output_dir / "build")
 
-    cell_composition = get_entity(base_cell_composition, cls=CellComposition)
+    cell_composition = get_entity(base_cell_composition_id, cls=CellComposition)
     _validate_cell_composition_schemas(cell_composition)
 
     # the materialized version that has gpfs paths instead of ids
@@ -63,7 +68,7 @@ def app(  # pylint: disable=too-many-arguments
     )
 
     manipulation_recipe = read_density_manipulation_recipe(
-        get_distribution_as_dict(configuration, cls=CellCompositionConfig)
+        get_distribution_as_dict(configuration_id, cls=CellCompositionConfig)
     )
     manipulation_recipe.to_parquet(path=staging_dir / "manipulation_recipe.parquet")
 
@@ -80,9 +85,9 @@ def app(  # pylint: disable=too-many-arguments
     brain_regions = voxcell.VoxelData.load_nrrd(atlas_info.annotation_path)
 
     L.info("Updating density distribution...")
-    if brain_region_selector_config:
+    if brain_region_selector_config_id:
         distribution_payload = BrainRegionSelectorConfig.from_id(
-            brain_region_selector_config, cross_bucket=True
+            brain_region_selector_config_id, cross_bucket=True
         ).distribution.as_dict()
 
         validate_schema(
@@ -147,7 +152,7 @@ def app(  # pylint: disable=too-many-arguments
 
     utils.write_resource_to_definition_output(
         json_resource=load_by_id(cell_composition_id),
-        variant=get_entity(variant_config, cls=Variant),
+        variant=get_entity(variant_id, cls=Variant),
         output_dir=output_dir,
     )
 

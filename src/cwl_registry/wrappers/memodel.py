@@ -51,13 +51,13 @@ def app():
 
 
 @app.command()
-@click.option("--configuration", required=True, help="Configuration id.")
-@click.option("--partial-circuit", required=True, help="Partial circuit id.")
-@click.option("--variant-config", required=True, help="Variant id.")
+@click.option("--configuration-id", required=True, help="Configuration id.")
+@click.option("--circuit-id", required=True, help="Partial circuit id.")
+@click.option("--variant-id", required=True, help="Variant id.")
 @click.option("--output-dir", required=True, help="Output directory path")
-def mono_execution(configuration, partial_circuit, variant_config, output_dir):
+def mono_execution(configuration_id, circuit_id, variant_id, output_dir):
     """Single execution endpoint."""
-    _mono_execution(configuration, partial_circuit, variant_config, output_dir)
+    _mono_execution(configuration_id, circuit_id, variant_id, output_dir)
 
 
 def _mono_execution(configuration, partial_circuit, variant_config, output_dir):

@@ -422,7 +422,6 @@ def _stage_emodel_mechanisms(
         if mechanism_id := mechanism_dict["id"]:
             path = download_distribution(
                 mechanism_id,
-                encoding_format="application/mod",
                 output_dir=staging_dir,
                 base=base,
                 org=org,
