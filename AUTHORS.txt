@@ -1,0 +1,8 @@
+Maintainer
+----------
+* BBP/NSE
+
+Authors
+-------
+Eleftherios Zisis
+Mike Gevaert
