@@ -46,6 +46,11 @@ docs = [
   "sphinx-bluebrain-theme",
 ]
 
+[project.urls]
+Homepage = "https://github.com/BlueBrain/blue-cwl"
+Repository = "https://github.com/BlueBrain/blue-cwl"
+Issues = "https://github.com/BlueBrain/blue-cwl/issues"
+
 [project.scripts]
 blue-cwl = "blue_cwl.cli:main"
 
