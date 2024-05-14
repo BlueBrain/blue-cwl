@@ -24,6 +24,7 @@ def run_command(
         str_command: command string to execute.
         process_constructor: The process constructor to use. Default is the subprocess.Popen.
         masked_vars: Optional var names to mask when the command is printed.
+        redirect_to: Optional file to redirect the process output.
     """
     if masked_vars is None:
         masked_vars = []

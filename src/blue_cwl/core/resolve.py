@@ -90,7 +90,7 @@ def _find_reference_values(
                 # e.g. File, Directory
                 current = getattr(current, key)
 
-        if isinstance(current, (File, Directory)):
+        if isinstance(current, File | Directory):
             raise ValueError(f"Parameter resolution should return a string. Got {type(current)}")
 
         return current

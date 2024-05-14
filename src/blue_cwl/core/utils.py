@@ -32,7 +32,7 @@ def log(function, logger=L):
         ]
 
         # create argument pairs
-        arg_pairs = [(name, v) for (name, _), v in zip(params[: len(args)], args)]
+        arg_pairs = [(name, v) for (name, _), v in zip(params[: len(args)], args, strict=True)]
 
         # use kwargs or defaults for the rest of the parameters
         arg_pairs.extend(
@@ -71,7 +71,7 @@ def cwd(path):
 @log
 def load_yaml(filepath: PathLike) -> dict:
     """Load from YAML file."""
-    with open(filepath, "r", encoding="utf-8") as f:
+    with open(filepath, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 

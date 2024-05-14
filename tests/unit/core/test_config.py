@@ -1,5 +1,6 @@
 import pytest
 from blue_cwl.core import config as test_module
+from blue_cwl.core.exceptions import CWLError
 
 
 def test_config__update():
@@ -23,7 +24,7 @@ def test_config__update():
     assert f4.exclusive == False
     assert f4.mem is None
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(CWLError):
         f1.update(c1)
         c1.update(f1)
 

@@ -3,6 +3,7 @@
 from typing import Literal
 
 from blue_cwl.core.common import CustomBaseModel
+from blue_cwl.core.exceptions import CWLError
 
 
 class Config(CustomBaseModel):
@@ -10,7 +11,8 @@ class Config(CustomBaseModel):
 
     def update(self, other):
         """Update config with other config."""
-        assert type(other) is type(self), "Incompatible config types."
+        if type(other) is not type(self):
+            raise CWLError("Incompatible config types.")
         return self.from_dict(self.to_dict() | other.to_dict())
 
 

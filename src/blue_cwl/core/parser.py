@@ -3,7 +3,7 @@
 import logging
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any
 
 from blue_cwl.core import config, cwl
 from blue_cwl.core.exceptions import CWLError
@@ -70,7 +70,7 @@ def parse_config_file(cwl_file: PathLike) -> cwl.Config:
 def _preprocess_types(document):
     """Type transformations.
 
-    List of transformations:
+    list of transformations:
         1. Type <T> ending with ? should be transformed to [<T>, "null"].
         2. Type <T> ending with [] should be transformed to {"type": "array", "items": <T>}
 
@@ -92,7 +92,6 @@ def _preprocess_types(document):
 
 
 def _preprocess_type(type_string: str | dict) -> str | list | dict:
-
     if isinstance(type_string, dict):
         return type_string
 
@@ -127,7 +126,6 @@ def _build_workflow(data: dict, base_dir: Path) -> cwl.Workflow:
 
 
 def _preprocess_workflow_document(document, base_dir):
-
     document = deepcopy(document)
     document.pop("class")
 
@@ -150,13 +148,11 @@ def _preprocess_workflow_document(document, base_dir):
 
 
 def _preprocess_workflow_steps(steps, base_dir):
-
     steps = deepcopy(steps)
 
     step_list = _dict_to_list_entries(steps)
 
     for step in step_list:
-
         # in -> inputs
         if "in" in step:
             step["inputs"] = _preprocess_step_inputs(step.pop("in"))
@@ -173,7 +169,6 @@ def _preprocess_workflow_steps(steps, base_dir):
 
 
 def _preprocess_step_inputs(data):
-
     processed = {}
     for k, v in data.items():
         if isinstance(v, str):
@@ -227,7 +222,7 @@ def _preprocess_io(data):
     return {k: {"id": k} | v for k, v in data.items()}
 
 
-def _resolve_paths(raw: Dict[str, Any], base_dir: Path) -> Dict[str, Any]:
+def _resolve_paths(raw: dict[str, Any], base_dir: Path) -> dict[str, Any]:
     """Return a copy of raw data, with paths resolves wrt base_dir."""
 
     def recursive_resolve(entry):
@@ -247,7 +242,7 @@ def _resolve_paths(raw: Dict[str, Any], base_dir: Path) -> Dict[str, Any]:
     return data
 
 
-def _parse_io_parameters(data: Union[List[Dict[str, Any]], Dict[str, Any]]) -> Dict[str, Any]:
+def _parse_io_parameters(data: list[dict[str, Any]] | dict[str, Any]) -> dict[str, Any]:
     """Return inputs or outputs in dictionary format."""
     if isinstance(data, list):
         return {entry["id"]: {k: v for k, v in entry.items() if k != "id"} for entry in data}
@@ -255,7 +250,7 @@ def _parse_io_parameters(data: Union[List[Dict[str, Any]], Dict[str, Any]]) -> D
     return data
 
 
-def _parse_baseCommand(raw: Union[str, List[str]], base_dir: Path) -> List[str]:
+def _parse_baseCommand(raw: str | list[str], base_dir: Path) -> list[str]:
     base_command = raw
 
     if isinstance(base_command, str):

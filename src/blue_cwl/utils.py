@@ -28,6 +28,7 @@ from entity_management.util import get_entity
 from pyarrow.pandas_compat import get_logical_type, get_logical_type_map
 
 from blue_cwl.constants import DEFAULT_CIRCUIT_BUILD_PARAMETERS
+from blue_cwl.core import cwl
 from blue_cwl.exceptions import CWLWorkflowError
 from blue_cwl.model import CustomBaseModel
 from blue_cwl.typing import StrOrPath
@@ -554,7 +555,15 @@ def build_variant_allocation_command(
     """Construct an allocation command based on variant resource default definition."""
     slurm_config = _get_variant_resources_config(variant, sub_task_index=sub_task_index)
 
-    env_vars = variant.tool_definition.environment.get("env_vars", {})
+    if isinstance(variant.tool_definition, cwl.Workflow):
+        raise CWLWorkflowError(
+            "Workflow definition is not compatible with legacy allocation command."
+        )
+
+    if variant.tool_definition.environment is not None:
+        env_vars = variant.tool_definition.environment.get("env_vars", {})
+    else:
+        env_vars = {}
 
     if env_vars:
         str_env_vars = " ".join(f"{k}={v}" for k, v in env_vars.items())

@@ -56,14 +56,12 @@ def validate_workflow(workflow) -> None:
         """Check that each step has valid input references to upstream outputs."""
         errs = []
         for step_input in step.inputs.values():
-
             step_source = step_input.source
 
             if step_source is None:
                 continue
 
             for source_name, source_output in step_input.split_source_output():
-
                 if source_name is None:
                     if source_output not in input_names:
                         errs.append(
@@ -101,7 +99,6 @@ def validate_workflow(workflow) -> None:
     errors = {}
 
     for step in workflow_steps.values():
-
         step_errors = _validate_step_inputs(step)
 
         if step_errors:

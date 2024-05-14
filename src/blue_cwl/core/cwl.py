@@ -257,7 +257,6 @@ class Workflow(CustomBaseModel):
         step = self.get_step_by_name(name)
         sources = set()
         for inp in step.inputs.values():
-
             source_outputs = inp.split_source_output()
 
             if source_outputs is None:

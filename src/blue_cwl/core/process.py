@@ -140,11 +140,9 @@ def build_command_line_tool_process(
 def _concretize_inputs(
     inputs: dict, input_values: dict[str, InputValue]
 ) -> dict[str, InputValueObject]:
-
     concretized_inputs: dict[str, InputValueObject] = {}
 
     for name, inp in inputs.items():
-
         value = input_values.get(name, None)
         if value is None:
             if inp.default is not None:
@@ -167,7 +165,6 @@ def _concretize_tool_outputs(
 ) -> dict[str, OutputValueObject]:
     concretized_outputs: dict[str, OutputValueObject] = {}
     for name, output in outputs.items():
-
         match output.type:
             case "File":
                 out_binding = output.outputBinding
@@ -222,7 +219,6 @@ def _concretize_tool_command(tool, input_values: dict[str, InputValueObject]) ->
 
 def _cmd_elements(type_, binding, value) -> tuple | list[tuple] | None:
     def _obj_to_string(obj):
-
         match obj:
             case File() | Directory() | NexusResource():
                 return str(obj.path)
@@ -238,18 +234,20 @@ def _cmd_elements(type_, binding, value) -> tuple | list[tuple] | None:
         return (f"{prefix}{value}",)
 
     match type_:
-
         case "File" | "Directory":
             return _separate(binding.prefix, _obj_to_string(value), binding.separate)
 
         case "boolean":
             if bool(value):
-                assert binding.prefix is not None
+                if binding.prefix is None:
+                    raise CWLError("Binding prefix for boolean values cannot be None.")
                 return (binding.prefix,)
             return None
 
         case blue_cwl.core.cwl.CommandInputArraySchema():
-            assert isinstance(value, list)
+            if not isinstance(value, list):
+                raise CWLError(f"Value '{value}' is not a list.")
+
             if item_binding := type_.inputBinding:
                 elements: list[tuple] = []
                 for v in value:
@@ -264,7 +262,8 @@ def _cmd_elements(type_, binding, value) -> tuple | list[tuple] | None:
             return _separate(binding.prefix, value, binding.separate)
 
         case "NexusType":
-            assert isinstance(value.id, str), value
+            if not isinstance(value.id, str):
+                raise CWLError(f"NexusType id '{value.id}' is not a string.")
             return _separate(binding.prefix, value.id, binding.separate)
 
         case _:
@@ -319,7 +318,6 @@ def build_workflow_step_process(
 
     # The valueFrom fields are evaluated after the the source fields.
     for name, inp in step.inputs.items():
-
         if inp.valueFrom:
             step_input_values[name] = resolve_parameter_references(
                 expression=inp.valueFrom,
@@ -342,7 +340,6 @@ def build_workflow_process(
 
     step_processes: dict[str, CommandLineToolProcess] = {}
     for step in workflow.steps:
-
         sources = {name: step_processes[name] for name in workflow.get_step_source_names(step.id)}
 
         step_processes[step.id] = build_workflow_step_process(
@@ -365,13 +362,16 @@ def build_workflow_process(
 
 
 def _input_value_to_object(input_type, input_value):
-
     match input_type:
-
         case dict():
             # e.g. {"type": "array", "items": "string"}
-            assert input_type["type"] == "array", input_type
-            assert isinstance(input_value, list)
+
+            if input_type["type"] != "array":
+                raise CWLError("Input type is not 'array' for array schema.")
+
+            if not isinstance(input_value, list):
+                raise CWLError(f"Input value '{input_value}' for array is not a list")
+
             element_type = input_type["items"]
             value = [_input_value_to_object(element_type, v) for v in input_value]
 

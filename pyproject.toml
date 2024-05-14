@@ -30,6 +30,9 @@ ignore = [
     "S107", "S602", "S603", "S608"
 ]
 
+[tool.ruff.lint.pylint]
+max-args=12
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
@@ -95,7 +98,7 @@ ignored-argument-names = '_.*'
 # Maximum number of locals for function / method body
 max-locals = 15
 # Maximum number of return / yield for function / method body
-max-returns = 6
+max-returns = 10
 # Maximum number of branch for function / method body
 max-branches = 12
 # Maximum number of statements in function / method body

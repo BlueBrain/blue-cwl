@@ -8,12 +8,12 @@ from copy import deepcopy
 from pathlib import Path
 from typing import cast
 
-from blue_cwl.core import cwl, parse_cwl_file
 from entity_management.base import attributes
 from entity_management.core import DataDownload, Entity
 from entity_management.nexus import sparql_query
 from entity_management.util import AttrOf, unquote_uri_path
 
+from blue_cwl.core import cwl, parse_cwl_file
 from blue_cwl.exceptions import CWLRegistryError
 from blue_cwl.typing import StrOrPath
 from blue_cwl.utils import dump_yaml, load_yaml, write_yaml

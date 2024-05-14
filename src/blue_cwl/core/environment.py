@@ -1,7 +1,7 @@
 """Environment related utilities."""
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 SPACK_MODULEPATH = "/gpfs/bbp.cscs.ch/ssd/apps/bsd/modules/_meta"
 MODULES_ENABLE_PATH = "/etc/profile.d/modules.sh"
@@ -13,7 +13,7 @@ APPTAINER_OPTIONS = "--cleanenv --containall --bind $TMPDIR:/tmp,/gpfs/bbp.cscs.
 APPTAINER_IMAGEPATH = "/gpfs/bbp.cscs.ch/ssd/containers"
 
 
-def _build_module_cmd(cmd: str, config: Dict[str, Any]) -> str:
+def _build_module_cmd(cmd: str, config: dict[str, Any]) -> str:
     """Wrap the command with modules."""
     modulepath = config.get("modulepath", SPACK_MODULEPATH)
     modules = config["modules"]
@@ -29,7 +29,7 @@ def _build_module_cmd(cmd: str, config: Dict[str, Any]) -> str:
     )
 
 
-def _build_apptainer_cmd(cmd: str, config: Dict[str, Any]) -> str:
+def _build_apptainer_cmd(cmd: str, config: dict[str, Any]) -> str:
     """Wrap the command with apptainer/singularity."""
     modulepath = config.get("modulepath", APPTAINER_MODULEPATH)
     modules = config.get("modules", APPTAINER_MODULES)
@@ -52,13 +52,13 @@ def _build_apptainer_cmd(cmd: str, config: Dict[str, Any]) -> str:
     return cmd
 
 
-def _build_venv_cmd(cmd: str, config: Dict[str, Any]):
+def _build_venv_cmd(cmd: str, config: dict[str, Any]):
     """Wrap the command with an existing virtual environment."""
     path = config["path"]
     return f". {path}/bin/activate && {cmd}"
 
 
-ENV_MAPPING: Dict[str, Any] = {
+ENV_MAPPING: dict[str, Any] = {
     "MODULE": _build_module_cmd,
     "APPTAINER": _build_apptainer_cmd,
     "VENV": _build_venv_cmd,

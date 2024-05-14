@@ -5,6 +5,7 @@ import os
 from typing import Literal
 
 from blue_cwl.core.common import CustomBaseModel
+from blue_cwl.core.exceptions import CWLError
 
 CWLType = Literal[
     "null",
@@ -33,7 +34,6 @@ class CWLWorkflowType(enum.Enum):
 
 
 class _FileLike(CustomBaseModel):
-
     path: str | None = None
     location: str | None = None
     basename: str | None = None
@@ -43,7 +43,8 @@ class _FileLike(CustomBaseModel):
         path = data.get("path")
         location = data.get("location")
 
-        assert path or location
+        if path is None and location is None:
+            raise CWLError("Either 'path' or 'location' can be None, not both.")
 
         if path and not location:
             data["path"] = str(path)
@@ -77,6 +78,7 @@ class NexusResource(CustomBaseModel):
         resource_id = data.get("id")
         resource_path = data.get("path")
 
-        assert resource_id or resource_path
+        if resource_id is None and resource_path is None:
+            raise CWLError("Either 'resource_id' or 'resource_path' can be None, not both.")
 
         super().__init__(**data)
