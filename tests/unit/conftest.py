@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 import voxcell
 
-from cwl_registry.utils import load_json, write_json
+from blue_cwl.utils import load_json, write_json
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -44,7 +44,7 @@ def annotation(annotation_file):
 
 @pytest.fixture
 def region_volumes(region_map):
-    from cwl_registry import brain_regions
+    from blue_cwl import brain_regions
 
     return brain_regions.volumes(region_map, brain_regions.all_acronyms())
 

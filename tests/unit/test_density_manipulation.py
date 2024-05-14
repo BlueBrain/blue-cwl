@@ -8,10 +8,10 @@ import pytest
 from pathlib import Path
 
 from voxcell.nexus.voxelbrain import Atlas
-from cwl_registry import density_manipulation as test_module
-from cwl_registry import statistics, utils
-from cwl_registry.staging import materialize_cell_composition_summary
-from cwl_registry.statistics import _get_nrrd_statistics
+from blue_cwl import density_manipulation as test_module
+from blue_cwl import statistics, utils
+from blue_cwl.staging import materialize_cell_composition_summary
+from blue_cwl.statistics import _get_nrrd_statistics
 import pandas as pd
 import pandas.testing as pdt
 

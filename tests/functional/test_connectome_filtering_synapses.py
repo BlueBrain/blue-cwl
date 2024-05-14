@@ -3,12 +3,12 @@ import json
 import pytest
 import libsonata
 from pathlib import Path
-from cwl_registry.testing import WrapperBuild
+from blue_cwl.testing import WrapperBuild
 from entity_management.simulation import DetailedCircuit
 
 import subprocess
 
-GPFS_DIR = Path("/gpfs/bbp.cscs.ch/project/proj12/NSE/cwl-registry/data/")
+GPFS_DIR = Path("/gpfs/bbp.cscs.ch/project/proj12/NSE/blue-cwl/data/")
 
 
 @pytest.fixture(scope="module")
@@ -25,7 +25,7 @@ def connectome_filtering(output_dir):
         "output-dir": str(output_dir),
     }
     base_command_list = [
-        "cwl-registry",
+        "blue-cwl",
         "-vv",
         "execute",
         "connectome-filtering-synapses",

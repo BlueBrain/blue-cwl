@@ -3,14 +3,14 @@ import tempfile
 import pandas as pd
 import pandas.testing as pdt
 from unittest.mock import patch
-from cwl_registry import staging as test_module
+from blue_cwl import staging as test_module
 from pathlib import Path
 import pytest
 from entity_management import nexus
 
 from unittest.mock import patch, Mock
 
-from cwl_registry.utils import load_json
+from blue_cwl.utils import load_json
 
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -112,7 +112,7 @@ def test_materialize_cell_composition_volume(
             return "path"
         raise ValueError(entry_id)
 
-    with patch("cwl_registry.staging.get_distribution_location_path", side_effect=mock_func):
+    with patch("blue_cwl.staging.get_distribution_location_path", side_effect=mock_func):
         res1 = test_module.materialize_cell_composition_volume(
             cell_composition_volume_dataset, output_file=output_file
         )
@@ -248,7 +248,7 @@ def test_materialize_cell_composition_summary(
 
 
 def _materialize_connectome_config(config):
-    with patch("cwl_registry.staging._config_to_path") as mock:
+    with patch("blue_cwl.staging._config_to_path") as mock:
         mock.return_value = "foo"
 
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
@@ -342,7 +342,7 @@ def _materialize_micro_config(config):
         assert config
         return "foo"
 
-    with patch("cwl_registry.staging._config_to_path", side_effect=mock_config_to_path):
+    with patch("blue_cwl.staging._config_to_path", side_effect=mock_config_to_path):
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
             out_file = Path(tfile.name)
 
@@ -566,7 +566,7 @@ def json_synapse_config():
 
 def test_materialize_synapse_config(json_synapse_config):
     with patch(
-        "cwl_registry.staging.stage_distribution_file",
+        "blue_cwl.staging.stage_distribution_file",
         side_effect=lambda *args, **kwargs: args[0],
     ):
         res = test_module.materialize_synapse_config(obj=json_synapse_config, output_dir=None)
@@ -636,7 +636,7 @@ def test_materialize_placement_hints_catalog(json_ph_catalog):
 
 
 def test_materialize_placement_hints_catalog__output_dir(json_ph_catalog):
-    with patch("cwl_registry.staging.stage_file"):
+    with patch("blue_cwl.staging.stage_file"):
         res = test_module.materialize_ph_catalog(obj=json_ph_catalog, output_dir="/my-dir")
 
         expected = {

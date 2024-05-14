@@ -1,6 +1,6 @@
 import pytest
 
-from cwl_registry.testing import WrapperBuild
+from blue_cwl.testing import WrapperBuild
 
 from entity_management.simulation import DetailedCircuit
 
@@ -15,7 +15,7 @@ def morphology_assignment(tmpdir_factory):
         "output-dir": tmpdir_factory.mktemp("placeholder-morphology-assignment"),
     }
     command = [
-        "cwl-registry",
+        "blue-cwl",
         "-vv",
         "execute",
         "placeholder-morphology-assignment",

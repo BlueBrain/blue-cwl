@@ -6,7 +6,7 @@ import requests
 from unittest.mock import patch
 from unittest.mock import Mock
 from pathlib import Path
-from cwl_registry import nexus as tested
+from blue_cwl import nexus as tested
 from kgforge.core import Resource
 from datetime import datetime
 

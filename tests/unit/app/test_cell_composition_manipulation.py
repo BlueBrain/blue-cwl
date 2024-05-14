@@ -3,10 +3,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 import pandas as pd
-from cwl_registry.exceptions import CWLRegistryError, SchemaValidationError, CWLWorkflowError
+from blue_cwl.exceptions import CWLRegistryError, SchemaValidationError, CWLWorkflowError
 
-from cwl_registry.wrappers import cell_composition_manipulation as test_module
-from cwl_registry.density_manipulation import read_density_manipulation_recipe
+from blue_cwl.wrappers import cell_composition_manipulation as test_module
+from blue_cwl.density_manipulation import read_density_manipulation_recipe
 
 
 def test_check_recipe_compatibility_with_density_distribution__correct():
@@ -84,16 +84,16 @@ def test_validate_cell_composition_schemas():
     cell_composition.cellCompositionSummary.get_id.return_value = "bar"
 
     with (
-        patch("cwl_registry.wrappers.cell_composition_manipulation.validate_schema"),
-        patch("cwl_registry.wrappers.cell_composition_manipulation.get_distribution_as_dict"),
+        patch("blue_cwl.wrappers.cell_composition_manipulation.validate_schema"),
+        patch("blue_cwl.wrappers.cell_composition_manipulation.get_distribution_as_dict"),
     ):
         test_module._validate_cell_composition_schemas(cell_composition)
 
 
 def test_validate_cell_composition_volume_schema():
     with (
-        patch("cwl_registry.wrappers.cell_composition_manipulation.validate_schema"),
-        patch("cwl_registry.wrappers.cell_composition_manipulation.get_distribution_as_dict"),
+        patch("blue_cwl.wrappers.cell_composition_manipulation.validate_schema"),
+        patch("blue_cwl.wrappers.cell_composition_manipulation.get_distribution_as_dict"),
     ):
         test_module._validate_cell_composition_volume_schema(None)
 
@@ -107,10 +107,10 @@ def test_validate_cell_composition_volume_schema__raises():
     )
     with (
         patch(
-            "cwl_registry.wrappers.cell_composition_manipulation.validate_schema",
+            "blue_cwl.wrappers.cell_composition_manipulation.validate_schema",
             side_effect=SchemaValidationError("foo"),
         ),
-        patch("cwl_registry.wrappers.cell_composition_manipulation.get_distribution_as_dict"),
+        patch("blue_cwl.wrappers.cell_composition_manipulation.get_distribution_as_dict"),
     ):
         with pytest.raises(CWLWorkflowError, match=re.escape(expected_error)):
             test_module._validate_cell_composition_volume_schema(volume_id)
@@ -118,8 +118,8 @@ def test_validate_cell_composition_volume_schema__raises():
 
 def test_validate_cell_composition_summary_schema():
     with (
-        patch("cwl_registry.wrappers.cell_composition_manipulation.validate_schema"),
-        patch("cwl_registry.wrappers.cell_composition_manipulation.get_distribution_as_dict"),
+        patch("blue_cwl.wrappers.cell_composition_manipulation.validate_schema"),
+        patch("blue_cwl.wrappers.cell_composition_manipulation.get_distribution_as_dict"),
     ):
         test_module._validate_cell_composition_summary_schema(None)
 
@@ -133,10 +133,10 @@ def test_validate_cell_composition_summary_schema__raises():
     )
     with (
         patch(
-            "cwl_registry.wrappers.cell_composition_manipulation.validate_schema",
+            "blue_cwl.wrappers.cell_composition_manipulation.validate_schema",
             side_effect=SchemaValidationError("bar"),
         ),
-        patch("cwl_registry.wrappers.cell_composition_manipulation.get_distribution_as_dict"),
+        patch("blue_cwl.wrappers.cell_composition_manipulation.get_distribution_as_dict"),
     ):
         with pytest.raises(CWLWorkflowError, match=re.escape(expected_error)):
             test_module._validate_cell_composition_summary_schema(summary_id)

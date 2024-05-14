@@ -6,7 +6,7 @@ Version 0.2.0
 
 New Features
 ~~~~~~~~~~~~
-- Merge cwl-workflow into cwl-registry
+- Merge cwl-workflow into blue-cwl
 
 
 Bug Fixes

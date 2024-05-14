@@ -2,8 +2,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch, Mock
 
-from cwl_registry import registering as test_module
-from cwl_registry.testing import patchenv
+from blue_cwl import registering as test_module
+from blue_cwl.testing import patchenv
 from kgforge.core import Resource
 
 from entity_management import nexus

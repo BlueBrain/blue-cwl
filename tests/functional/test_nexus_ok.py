@@ -1,6 +1,6 @@
 import os
 import certifi
-from cwl_registry.nexus import get_forge
+from blue_cwl.nexus import get_forge
 from kgforge.core import Resource
 
 

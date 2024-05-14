@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 import libsonata
-from cwl_registry import validation as test_module
-from cwl_registry.exceptions import CWLRegistryError
+from blue_cwl import validation as test_module
+from blue_cwl.exceptions import CWLRegistryError
 
 
 DATA_DIR = Path(__file__).parent / "data"

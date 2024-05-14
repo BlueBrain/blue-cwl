@@ -1,4 +1,4 @@
-from cwl_registry import brain_regions as test_module
+from blue_cwl import brain_regions as test_module
 
 from numpy import testing as npt
 

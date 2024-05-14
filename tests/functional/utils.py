@@ -3,11 +3,11 @@ import json
 import subprocess
 
 from click.testing import CliRunner
-from cwl_registry.cli import main
+from blue_cwl.cli import main
 import subprocess
 from pathlib import Path
-from cwl_registry.nexus import get_forge, get_resource
-from cwl_registry.variant import Variant
+from blue_cwl.nexus import get_forge, get_resource
+from blue_cwl.variant import Variant
 
 
 def _print_details(command, inputs):
@@ -38,7 +38,7 @@ def _print_details(command, inputs):
         },
     }
 
-    print(f"Test Command:\ncwl-registry {' '.join(command)}")
+    print(f"Test Command:\nblue-cwl {' '.join(command)}")
     print(json.dumps(details, indent=2))
 
 

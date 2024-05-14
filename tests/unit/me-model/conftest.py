@@ -2,7 +2,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from cwl_registry.utils import load_json
+from blue_cwl.utils import load_json
 
 from entity_management.emodel import EModel
 

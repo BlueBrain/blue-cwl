@@ -1,0 +1,7 @@
+{
+  "input_file": {
+      "class": "File",
+      "path": "/gpfs/bbp.cscs.ch/project/proj134/scratch/zisis/sub-workflows/blue-cwl/tests/data/use_cases/foo.txt",
+  },
+  "output_file": "bar.txt"
+}

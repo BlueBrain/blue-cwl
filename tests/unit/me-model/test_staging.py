@@ -2,8 +2,8 @@ from pathlib import Path
 from unittest.mock import patch
 import pytest
 
-from cwl_registry.me_model import staging as test_module
-from cwl_registry.utils import load_json
+from blue_cwl.me_model import staging as test_module
+from blue_cwl.utils import load_json
 
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -36,7 +36,7 @@ def test_stage_placeholder_emodel_config(
     output_dir.mkdir()
     output_file = tmp_path / "output_file.json"
 
-    with patch("cwl_registry.me_model.staging._stage_emodel_entry", side_effect=mock_get_emodel):
+    with patch("blue_cwl.me_model.staging._stage_emodel_entry", side_effect=mock_get_emodel):
         res1 = test_module.stage_placeholder_emodel_config(
             emodel_config,
             staging_dir=output_dir,
@@ -58,10 +58,10 @@ def test_stage_me_model_config(
 
     with (
         patch(
-            "cwl_registry.me_model.staging.get_distribution_as_dict",
+            "blue_cwl.me_model.staging.get_distribution_as_dict",
             return_value=emodel_config,
         ),
-        patch("cwl_registry.me_model.staging._stage_emodel_entry", side_effect=mock_get_emodel),
+        patch("blue_cwl.me_model.staging._stage_emodel_entry", side_effect=mock_get_emodel),
     ):
         res1 = test_module.stage_me_model_config(
             me_model_config,
@@ -98,10 +98,10 @@ def test_stage_me_model_config__empty_overrides(
 
     with (
         patch(
-            "cwl_registry.me_model.staging.get_distribution_as_dict",
+            "blue_cwl.me_model.staging.get_distribution_as_dict",
             return_value=emodel_config,
         ),
-        patch("cwl_registry.me_model.staging._stage_emodel_entry", side_effect=mock_get_emodel),
+        patch("blue_cwl.me_model.staging._stage_emodel_entry", side_effect=mock_get_emodel),
     ):
         res1 = test_module.stage_me_model_config(
             me_model_config,

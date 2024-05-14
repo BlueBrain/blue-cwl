@@ -2,9 +2,9 @@ import os
 import pytest
 from pathlib import Path
 from unittest.mock import patch, Mock
-from cwl_registry.wrappers.mmodel import _app
-from cwl_registry.wrappers import mmodel as test_module
-from cwl_registry.testing import WrapperBuild
+from blue_cwl.wrappers.mmodel import _app
+from blue_cwl.wrappers import mmodel as test_module
+from blue_cwl.testing import WrapperBuild
 import pytest
 
 out_dir = Path(
@@ -37,7 +37,7 @@ def _test_mmodel():
         "output-dir": out_dir,
     }
     base_command_list = [
-        "cwl-registry",
+        "blue-cwl",
         "-vv",
         "execute",
         "mmodel-neurons",

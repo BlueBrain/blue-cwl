@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pytest
 import libsonata
-from cwl_registry.testing import WrapperBuild
+from blue_cwl.testing import WrapperBuild
 
 from entity_management.simulation import DetailedCircuit
 
 
-GPFS_DIR = Path("/gpfs/bbp.cscs.ch/project/proj12/NSE/cwl-registry/data/")
+GPFS_DIR = Path("/gpfs/bbp.cscs.ch/project/proj12/NSE/blue-cwl/data/")
 
 
 @pytest.fixture(scope="module")
@@ -26,7 +26,7 @@ def dd_connectome(output_dir):
         "variant-config": "https://bbp.epfl.ch/neurosciencegraph/data/870cc5fe-91c2-4cfb-9298-a5af1d0664e7",
         "output-dir": str(output_dir),
     }
-    command = ["cwl-registry", "-vv", "execute", "connectome-generation-placeholder"]
+    command = ["blue-cwl", "-vv", "execute", "connectome-generation-placeholder"]
     return WrapperBuild(command=command, inputs=inputs)
 """
 
@@ -40,7 +40,7 @@ def dd_connectome(output_dir):
         "variant-config": "https://bbp.epfl.ch/data/bbp/mmb-point-neuron-framework-model/5c4dcdf9-d547-4a44-8861-82a0781c68dc",
         "output-dir": str(output_dir),
     }
-    command = ["cwl-registry", "-vv", "execute", "connectome-generation-placeholder"]
+    command = ["blue-cwl", "-vv", "execute", "connectome-generation-placeholder"]
     return WrapperBuild(command=command, inputs=inputs)
 
 

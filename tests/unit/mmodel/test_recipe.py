@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from cwl_registry.mmodel import recipe as test_module
+from blue_cwl.mmodel import recipe as test_module
 
 
 @pytest.fixture

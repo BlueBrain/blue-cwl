@@ -14,10 +14,10 @@ from pandas import testing as pdt
 import numpy as np
 from numpy import testing as npt
 
-from cwl_registry import utils as tested
-from cwl_registry.exceptions import CWLWorkflowError
-from cwl_registry import constants
-from cwl_registry.variant import Variant
+from blue_cwl import utils as tested
+from blue_cwl.exceptions import CWLWorkflowError
+from blue_cwl import constants
+from blue_cwl.variant import Variant
 
 
 DATA_DIR = Path(__file__).parent / "data"

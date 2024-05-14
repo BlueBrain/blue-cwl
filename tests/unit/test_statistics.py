@@ -10,7 +10,7 @@ import voxcell
 from pandas import testing as pdt
 from voxcell.nexus.voxelbrain import Atlas
 
-from cwl_registry import statistics as test_module
+from blue_cwl import statistics as test_module
 
 DATA_DIR = Path(__file__).parent / "data"
 

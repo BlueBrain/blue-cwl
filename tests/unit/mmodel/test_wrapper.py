@@ -1,8 +1,8 @@
 from unittest.mock import patch, Mock
 from pathlib import Path
 import pytest
-from cwl_registry.wrappers import mmodel as test_module
-from cwl_registry.utils import load_json
+from blue_cwl.wrappers import mmodel as test_module
+from blue_cwl.utils import load_json
 
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -10,7 +10,7 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 
 def test_assign_morphologies__raises():
     with pytest.raises(ValueError, match="Both canonical and placeholder nodes are empty."):
-        with patch("cwl_registry.wrappers.mmodel._split_circuit", return_value=(None, None)):
+        with patch("blue_cwl.wrappers.mmodel._split_circuit", return_value=(None, None)):
             test_module._assign_morphologies(
                 None, None, None, None, None, None, None, None, None, None, None
             )
@@ -26,8 +26,8 @@ def test_assign_morphologies__only_placeholders(tmp_path):
     out_dir.mkdir()
 
     with (
-        patch("cwl_registry.wrappers.mmodel._split_circuit", return_value=(None, "nodes")),
-        patch("cwl_registry.wrappers.mmodel._run_placeholder_assignment") as patched,
+        patch("blue_cwl.wrappers.mmodel._split_circuit", return_value=(None, "nodes")),
+        patch("blue_cwl.wrappers.mmodel._run_placeholder_assignment") as patched,
         patch("shutil.move"),
     ):
         test_module._assign_morphologies(
@@ -60,8 +60,8 @@ def test_assign_morphologies__only_canonicals(tmp_path):
     out_dir.mkdir()
 
     with (
-        patch("cwl_registry.wrappers.mmodel._split_circuit", return_value=("nodes", None)),
-        patch("cwl_registry.wrappers.mmodel._run_topological_synthesis") as patched,
+        patch("blue_cwl.wrappers.mmodel._split_circuit", return_value=("nodes", None)),
+        patch("blue_cwl.wrappers.mmodel._run_topological_synthesis") as patched,
         patch("shutil.move"),
     ):
         test_module._assign_morphologies(
@@ -101,12 +101,12 @@ def test_assign_morphologies__both_placeholders_canonicals(tmp_path):
 
     with (
         patch(
-            "cwl_registry.wrappers.mmodel._split_circuit",
+            "blue_cwl.wrappers.mmodel._split_circuit",
             return_value=(synthesized_file, placeholder_file),
         ),
-        patch("cwl_registry.wrappers.mmodel._run_placeholder_assignment") as place_patched,
-        patch("cwl_registry.wrappers.mmodel._run_topological_synthesis") as topo_patched,
-        patch("cwl_registry.wrappers.mmodel.merge_cell_collections") as merged_patched,
+        patch("blue_cwl.wrappers.mmodel._run_placeholder_assignment") as place_patched,
+        patch("blue_cwl.wrappers.mmodel._run_topological_synthesis") as topo_patched,
+        patch("blue_cwl.wrappers.mmodel.merge_cell_collections") as merged_patched,
         patch("voxcell.CellCollection.load_sonata", return_value=mock),
     ):
         test_module._assign_morphologies(

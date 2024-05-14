@@ -4,8 +4,8 @@ import pytest
 
 from entity_management import nexus
 
-from cwl_registry.utils import load_json
-from cwl_registry.mmodel import schemas, entity
+from blue_cwl.utils import load_json
+from blue_cwl.mmodel import schemas, entity
 
 
 DATA_DIR = Path(__file__).parent / "data"

@@ -4,8 +4,8 @@ import pytest
 from pathlib import Path
 from copy import deepcopy
 
-from cwl_registry.mmodel import schemas as test_module
-from cwl_registry.utils import load_json, write_json
+from blue_cwl.mmodel import schemas as test_module
+from blue_cwl.utils import load_json, write_json
 
 
 MOCK_ID = "https://bbp.epfl.ch/my-id"

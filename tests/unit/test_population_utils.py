@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 import libsonata
-from cwl_registry import population_utils as test_module
+from blue_cwl import population_utils as test_module
 
 DATA_DIR = Path(__file__).parent / "data"
 

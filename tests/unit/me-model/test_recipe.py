@@ -1,5 +1,5 @@
 from copy import deepcopy
-from cwl_registry.me_model import recipe as test_module
+from blue_cwl.me_model import recipe as test_module
 
 
 def test_build_me_model_recipe(materialized_me_model_config):

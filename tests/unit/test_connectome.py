@@ -10,10 +10,10 @@ import pytest
 from numpy import testing as npt
 
 
-from cwl_registry import connectome as test_module
-from cwl_registry.utils import load_arrow, write_arrow
-from cwl_registry import brain_regions
-from cwl_registry.connectome import Constants
+from blue_cwl import connectome as test_module
+from blue_cwl.utils import load_arrow, write_arrow
+from blue_cwl import brain_regions
+from blue_cwl.connectome import Constants
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -647,7 +647,7 @@ def test_resolve_micro_matrix__dd(
     region_volumes,
     hrm_cell_positions,
 ):
-    with patch("cwl_registry.population_utils.get_HRM_positions", return_value=hrm_cell_positions):
+    with patch("blue_cwl.population_utils.get_HRM_positions", return_value=hrm_cell_positions):
         res = test_module._resolve_micro_matrix(
             micro_config=micro_config,
             variant_name="placeholder__distance_dependent",
@@ -683,8 +683,8 @@ def test_resolve_micro_matrices(
     hrm_cell_positions,
     region_volumes,
 ):
-    with patch("cwl_registry.population_utils.get_HRM_positions", return_value=hrm_cell_positions):
-        with patch("cwl_registry.population_utils.get_HRM_counts", return_value=hrm_cell_counts):
+    with patch("blue_cwl.population_utils.get_HRM_positions", return_value=hrm_cell_positions):
+        with patch("blue_cwl.population_utils.get_HRM_counts", return_value=hrm_cell_counts):
             res = test_module.resolve_micro_matrices(
                 micro_config, macro_assembled, None, region_volumes
             )
@@ -729,7 +729,7 @@ def test_macro_synapse_counts(macro_assembled, region_volumes):
     npt.assert_allclose(res.values, expected, rtol=1e-6)
 
 
-from cwl_registry.utils import write_parquet
+from blue_cwl.utils import write_parquet
 
 
 def test_pre_post_cell_counts(micro_er_conformed, hrm_cell_counts):

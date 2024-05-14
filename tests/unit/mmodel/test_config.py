@@ -1,8 +1,8 @@
 import re
 from copy import deepcopy
-from cwl_registry.mmodel import config as test_module
+from blue_cwl.mmodel import config as test_module
 import pytest
-from cwl_registry.exceptions import CWLWorkflowError
+from blue_cwl.exceptions import CWLWorkflowError
 
 
 @pytest.fixture

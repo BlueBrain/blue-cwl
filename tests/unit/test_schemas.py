@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
-from cwl_registry import validation as test_module
-from cwl_registry.utils import load_json
+from blue_cwl import validation as test_module
+from blue_cwl.utils import load_json
 
 DATA_DIR = Path(__file__).parent / "data/schemas"
 

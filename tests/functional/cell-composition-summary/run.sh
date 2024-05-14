@@ -6,7 +6,7 @@ ME_TYPE_DENSITIES="https://bbp.epfl.ch/neurosciencegraph/data/d6485af7-820c-465b
 
 rm -rf out && mkdir out
 
-cwl-registry -vv execute cell-composition-summary from-density-distribution \
+blue-cwl -vv execute cell-composition-summary from-density-distribution \
     --atlas-release $ATLAS \
     --density-distribution $ME_TYPE_DENSITIES \
     --nexus-base ${NEXUS_BASE:-"https://bbp.epfl.ch/nexus/v1"} \

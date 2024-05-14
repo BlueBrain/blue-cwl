@@ -7,8 +7,8 @@ import libsonata
 from pathlib import Path
 import pandas as pd
 from pandas import testing as pdt
-from cwl_registry import recipes as tested
-from cwl_registry.utils import load_json
+from blue_cwl import recipes as tested
+from blue_cwl.utils import load_json
 
 
 DATA_DIR = Path(__file__).parent / "data"

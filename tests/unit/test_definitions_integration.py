@@ -1,4 +1,4 @@
-from cwl_registry.variant import Variant
+from blue_cwl.variant import Variant
 
 
 def test_pipeline_definitions_inputs_outputs():

@@ -1,4 +1,4 @@
-from cwl_registry.testing import WrapperBuild
+from blue_cwl.testing import WrapperBuild
 
 
 import pytest
@@ -14,7 +14,7 @@ def cell_composition(tmpdir_factory):
         "output-dir": tmpdir_factory.mktemp("cell-composition"),
     }
     command = [
-        "cwl-registry",
+        "blue-cwl",
         "-vv",
         "execute",
         "cell-composition-manipulation",

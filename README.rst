@@ -1,4 +1,4 @@
-cwl-registry
+blue-cwl
 ============
 
 Common Workflow Language tool definitions

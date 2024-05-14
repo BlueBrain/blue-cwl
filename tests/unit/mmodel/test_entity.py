@@ -3,8 +3,8 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, Mock
 
-from cwl_registry.mmodel import entity as test_module
-from cwl_registry.mmodel import schemas
+from blue_cwl.mmodel import entity as test_module
+from blue_cwl.mmodel import schemas
 
 from entity_management import nexus, util
 
@@ -21,8 +21,8 @@ def test_morphology_assignment_config__to_model(monkeypatch, morphology_assignme
     monkeypatch.setattr(nexus, "file_as_dict", lambda *args, **kwargs: {"data": "my-data"})
 
     with (
-        patch("cwl_registry.mmodel.entity.validate_schema"),
-        patch(f"cwl_registry.mmodel.schemas.MModelConfigRaw.from_dict") as patched,
+        patch("blue_cwl.mmodel.entity.validate_schema"),
+        patch(f"blue_cwl.mmodel.schemas.MModelConfigRaw.from_dict") as patched,
     ):
         model = morphology_assignment_config.to_model()
         patched.assert_called_once_with({"data": "my-data"})
@@ -40,7 +40,7 @@ def test_canonical_morphology_model_config__to_model(
     """Test distribution schema call."""
 
     with (
-        patch("cwl_registry.mmodel.entity.validate_schema"),
+        patch("blue_cwl.mmodel.entity.validate_schema"),
         patch("entity_management.nexus.file_as_dict", return_value={"data": "my-data"}),
     ):
         res = canonical_morphology_model_config.to_model()
@@ -57,7 +57,7 @@ def test_placeholder_morphology_config__to_model(monkeypatch, placeholder_morpho
     monkeypatch.setattr(nexus, "file_as_dict", lambda *args, **kwargs: {"data": "my-data"})
 
     with (
-        patch("cwl_registry.mmodel.entity.validate_schema"),
+        patch("blue_cwl.mmodel.entity.validate_schema"),
         patch("entity_management.nexus.file_as_dict", return_value={"data": "my-data"}),
     ):
         res = placeholder_morphology_config.to_model()

@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 from click.testing import CliRunner
 
-from cwl_registry.cli import main
-from cwl_registry.utils import load_json, write_json
+from blue_cwl.cli import main
+from blue_cwl.utils import load_json, write_json
 
 
 def test_from_atlas_density_cli(

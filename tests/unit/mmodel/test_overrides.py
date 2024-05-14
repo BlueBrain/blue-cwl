@@ -3,10 +3,10 @@ from pathlib import Path
 
 import pytest
 import numpy as np
-from cwl_registry.mmodel import overrides as test_module
+from blue_cwl.mmodel import overrides as test_module
 
-from cwl_registry.mmodel import schemas
-from cwl_registry.utils import load_json
+from blue_cwl.mmodel import schemas
+from blue_cwl.utils import load_json
 from numpy import testing as npt
 
 

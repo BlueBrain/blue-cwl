@@ -7,9 +7,9 @@ from pathlib import Path
 
 from entity_management import nexus
 
-from cwl_registry.exceptions import CWLRegistryError
-from cwl_registry import variant as tested
-from cwl_registry.utils import load_json
+from blue_cwl.exceptions import CWLRegistryError
+from blue_cwl import variant as tested
+from blue_cwl.utils import load_json
 
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -22,7 +22,7 @@ EXPECTED_DEFINITION_DATA = {
     "id": "me_type_property",
     "label": "Morph-Electric type property generator",
     "stdout": "stdout.txt",
-    "baseCommand": ["cwl-registry", "execute", "neurons-me-type-property"],
+    "baseCommand": ["blue-cwl", "execute", "neurons-me-type-property"],
     "environment": {
         "env_type": "VENV",
         "path": "/gpfs/bbp.cscs.ch/project/proj134/workflows/environments/venv-config",
@@ -111,7 +111,7 @@ def variant_from_search(monkeypatch, variant_metadata):
     query_response = {"results": {"bindings": [{"id": {"value": "not-None"}}]}}
 
     with (
-        patch("cwl_registry.variant.sparql_query", return_value=query_response),
+        patch("blue_cwl.variant.sparql_query", return_value=query_response),
         patch("entity_management.nexus.load_by_id", return_value=variant_metadata),
     ):
         return tested.Variant.from_search("testing", "position", _VERSION)
@@ -316,7 +316,7 @@ def test_variant__publish__local_variant(
     query_response = {"results": {"bindings": None}}
 
     with (
-        patch("cwl_registry.variant.sparql_query", return_value=query_response),
+        patch("blue_cwl.variant.sparql_query", return_value=query_response),
         patch("entity_management.nexus.upload_file", return_value=resp_upload_file),
         patch("entity_management.nexus.load_by_id", return_value=variant_metadata),
         patch("entity_management.nexus.create") as patched,

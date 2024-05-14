@@ -1,9 +1,9 @@
 from unittest.mock import patch
 import pytest
 
-from cwl_registry.mmodel import staging as test_module
-from cwl_registry.exceptions import CWLWorkflowError
-from cwl_registry.utils import load_json
+from blue_cwl.mmodel import staging as test_module
+from blue_cwl.exceptions import CWLWorkflowError
+from blue_cwl.utils import load_json
 
 
 MORPH_ID = "https://bbp.epfl.ch/neurosciencegraph/data/50d708b6-1868-419b-8995-aea05972f100"
@@ -29,8 +29,8 @@ def test_get_parameter_distributions():
     }
 
     with (
-        patch("cwl_registry.mmodel.staging.load_by_id", return_value=metadata),
-        patch("cwl_registry.mmodel.staging.get_distribution_location_path", side_effect=get_path),
+        patch("blue_cwl.mmodel.staging.load_by_id", return_value=metadata),
+        patch("blue_cwl.mmodel.staging.get_distribution_location_path", side_effect=get_path),
     ):
         res = test_module._get_parameters_distributions(
             entry_id="my-id",
@@ -148,7 +148,7 @@ def test__materialize_canonical_config(canonicals_config, materialized_canonical
         raise ValueError(entry_id)
 
     with patch(
-        "cwl_registry.mmodel.staging._get_parameters_distributions", side_effect=get_params_distrs
+        "blue_cwl.mmodel.staging._get_parameters_distributions", side_effect=get_params_distrs
     ):
         res = test_module._materialize_canonical_config(canonicals_config, None)
         assert res == materialized_canonical_config
@@ -158,7 +158,7 @@ def test_materialize_canonical_config(canonicals_config, materialized_canonical_
     output_file = tmp_path / "out.json"
 
     with patch(
-        "cwl_registry.mmodel.staging._materialize_canonical_config",
+        "blue_cwl.mmodel.staging._materialize_canonical_config",
         return_value=materialized_canonical_config,
     ):
         res = test_module.materialize_canonical_config(
@@ -275,7 +275,7 @@ def test_materialize_placeholders_config(placeholders_config, materialized_confi
     output_file = tmp_path / "out.json"
 
     with patch(
-        "cwl_registry.mmodel.staging._materialize_placeholders_config",
+        "blue_cwl.mmodel.staging._materialize_placeholders_config",
         return_value=materialized_config,
     ):
         res = test_module.materialize_placeholders_config(
@@ -297,6 +297,6 @@ def test__materialize_placeholders_config(placeholders_config, materialized_conf
 
         raise ValueError()
 
-    with patch("cwl_registry.mmodel.staging.get_distribution_path_entry", side_effect=get_path):
+    with patch("blue_cwl.mmodel.staging.get_distribution_path_entry", side_effect=get_path):
         res = test_module._materialize_placeholders_config(placeholders_config)
         assert res == materialized_config

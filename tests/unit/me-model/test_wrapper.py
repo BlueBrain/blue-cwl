@@ -3,9 +3,9 @@ from pathlib import Path
 from unittest.mock import patch, Mock
 import pytest
 
-from cwl_registry.wrappers import memodel as test_module
-from cwl_registry.utils import load_json
-from cwl_registry.testing import patchenv
+from blue_cwl.wrappers import memodel as test_module
+from blue_cwl.utils import load_json
+from blue_cwl.testing import patchenv
 
 
 def test_get_biophysical_population_info(circuit_config_file):
@@ -31,7 +31,7 @@ def test_stage_circuit(tmp_path, detailed_circuit_metadata, circuit_config_file)
     mock = Mock()
     mock.circuitConfigPath.url = f"file://{circuit_config_file}"
 
-    with patch("cwl_registry.wrappers.memodel.DetailedCircuit.from_id", return_value=mock):
+    with patch("blue_cwl.wrappers.memodel.DetailedCircuit.from_id", return_value=mock):
         test_module._stage_circuit(None, output_file)
 
     res = load_json(output_file)
@@ -82,7 +82,7 @@ def test_run_emodel_prepare():
     with (
         patch("subprocess.run") as patched_subprocess,
         patch(
-            "cwl_registry.utils.build_variant_allocation_command",
+            "blue_cwl.utils.build_variant_allocation_command",
             side_effect=lambda e, *args, **kwargs: e,
         ),
     ):
@@ -113,9 +113,9 @@ def test_run_emodel_prepare():
 def test_run_emodel_assign(circuit_config_file):
     with (
         patch("subprocess.run") as patched_subprocess,
-        patch("cwl_registry.validation.check_properties_in_population"),
+        patch("blue_cwl.validation.check_properties_in_population"),
         patch(
-            "cwl_registry.utils.build_variant_allocation_command",
+            "blue_cwl.utils.build_variant_allocation_command",
             side_effect=lambda e, *args, **kwargs: e,
         ),
     ):
@@ -149,9 +149,9 @@ def test_run_emodel_assign(circuit_config_file):
 def test_run_emodel_adapt(circuit_config_file):
     with (
         patch("subprocess.run") as patched_subprocess,
-        patch("cwl_registry.validation.check_properties_in_population"),
+        patch("blue_cwl.validation.check_properties_in_population"),
         patch(
-            "cwl_registry.utils.build_variant_allocation_command",
+            "blue_cwl.utils.build_variant_allocation_command",
             side_effect=lambda e, *args, **kwargs: e,
         ),
     ):
@@ -192,9 +192,9 @@ def test_run_emodel_adapt(circuit_config_file):
 def test_run_emodel_currents(circuit_config_file):
     with (
         patch("subprocess.run") as patched_subprocess,
-        patch("cwl_registry.validation.check_properties_in_population"),
+        patch("blue_cwl.validation.check_properties_in_population"),
         patch(
-            "cwl_registry.utils.build_variant_allocation_command",
+            "blue_cwl.utils.build_variant_allocation_command",
             side_effect=lambda e, *args, **kwargs: e,
         ),
     ):
@@ -246,8 +246,8 @@ def test_register(tmp_path, circuit_config_file, circuit_config, detailed_circui
     mock_circuit.brainLocation.brainRegion.id = "foo"
 
     with (
-        patch("cwl_registry.wrappers.memodel._register_circuit"),
-        patch("cwl_registry.wrappers.memodel.load_by_id", return_value=detailed_circuit_metadata),
+        patch("blue_cwl.wrappers.memodel._register_circuit"),
+        patch("blue_cwl.wrappers.memodel.load_by_id", return_value=detailed_circuit_metadata),
     ):
         test_module._register(
             partial_circuit=partial_circuit,

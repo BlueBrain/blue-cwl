@@ -19,10 +19,10 @@ from pkg_resources import get_distribution
 
 # -- Project information -----------------------------------------------------
 
-project = "cwl-registry"
+project = "blue-cwl"
 
 # The short X.Y version
-version = get_distribution("cwl_registry").version
+version = get_distribution("blue_cwl").version
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -57,10 +57,10 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
-    "metadata_distribution": "cwl_registry",
+    "metadata_distribution": "blue_cwl",
 }
 
-html_title = "cwl-registry"
+html_title = "blue-cwl"
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False

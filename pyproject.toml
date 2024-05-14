@@ -5,7 +5,7 @@ target-version = [
     'py38',
     'py39',
 ]
-include = 'src/cwl_registry\/.*\.py$|tests\/.*\.py$|doc\/source\/conf\.py$|setup\.py$'
+include = 'src/blue_cwl\/.*\.py$|tests\/.*\.py$|doc\/source\/conf\.py$|setup\.py$'
 
 [tool.isort]
 profile = "black"
