@@ -1,0 +1,297 @@
+%YAML 1.1
+---
+"$schema": https://json-schema.org/draft/2020-12/schema
+title: Common Workflow Language CommandLineTool schema
+type: object
+"$defs":
+  input_type:
+    type: string
+    enum:
+    - string
+    - File
+    - Directory
+    - NexusType
+    - boolean
+  output_type:
+    type: string
+    enum:
+    - File
+    - Directory
+    - NexusType
+  default_type:
+    type:
+      - string
+      - boolean
+      - integer
+      - number
+  input_binding:
+    additionalProperties: false
+    properties:
+      position:
+        type: integer
+        minimum: 1
+      prefix:
+        type: string
+    oneOf:
+    - required:
+      - position
+    - required:
+      - prefix
+  output_binding:
+    type: object
+    properties:
+      glob:
+        type: string
+    additionalProperties: false
+    required:
+    - glob
+  module_config:
+    type: object
+    additionalProperties: false
+    required:
+    - env_type
+    - modules
+    properties:
+      env_type:
+        description: Literal value MODULE.
+        const: MODULE
+      modules:
+        description: Spack modules to be loaded.
+        type: array
+        items:
+          type: string
+        uniqueItems: true
+        example:
+        - archive/2022-03
+        - brainbuilder/0.17.0
+      modulepath:
+        description: Optional base path to the spack modules.
+        type: string
+        example: "/gpfs/bbp.cscs.ch/ssd/apps/bsd/modules/_meta"
+  apptainer_config:
+    type: object
+    additionalProperties: false
+    required:
+    - env_type
+    - image
+    properties:
+      env_type:
+        description: Literal value APPTAINER.
+        const: APPTAINER
+      image:
+        description: Absolute or relative path to the Apptainer/Singularity image
+          to run.
+        type: string
+        example: nse/brainbuilder_0.17.1.sif
+      executable:
+        description: Apptainer/Singularity executable.
+        type: string
+        example: singularity
+      options:
+        description: Options to pass to Apptainer/Singularity.
+        type: string
+        example: "--cleanenv --containall --bind $TMPDIR:/tmp,/gpfs/bbp.cscs.ch/project"
+      modules:
+        description: Apptainer/Singularity spack modules to be loaded.
+        type: array
+        items:
+          type: string
+        uniqueItems: true
+        example:
+        - archive/2022-06
+        - singularityce
+      modulepath:
+        description: Optional base path to the Apptainer/Singularity spack module.
+        type: string
+        example: "/gpfs/bbp.cscs.ch/ssd/apps/bsd/modules/_meta"
+  venv_config:
+    type: object
+    additionalProperties: false
+    required:
+    - env_type
+    - path
+    properties:
+      env_type:
+        description: Literal value VENV.
+        const: VENV
+      path:
+        description: Absolute path to the python virtual environment.
+        type: string
+        example: "/path/to/venv"
+  local_executor:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+      env_vars:
+        type: object
+    additionalProperties: false
+  slurm_executor:
+    type: object
+    required:
+      - type
+      - slurm_config
+      - remote_config
+    properties:
+      type:
+        type: string
+      env_vars:
+        type: object
+      slurm_config:
+        type: object
+        parameters:
+          chdir:
+            type: string
+          account:
+            type: string
+          partition:
+            type: string
+          nodes:
+            type: int
+          qos:
+            type: string
+          ntasks:
+            type: int
+          ntasks_per_node:
+            type: int
+          cpus_per_task:
+            type: int
+          mpi:
+            type: string
+          mem:
+            type: string
+          mem_per_cpu:
+            type: string
+          constraint:
+            type: string
+          exclusive:
+            type: boolean
+          time:
+            type: string
+          dependency:
+            type: string
+          job_name:
+            type: string
+          output:
+            type: string
+          array:
+            type: string
+          wait:
+            type: boolean
+        additionalParameters: false
+        description: SLURM configuration
+      remote_config:
+        type: object
+        description: Remote config configuration
+        required:
+          - host
+        properties:
+          host:
+            type: string
+        additionalProperties: false
+    additionalProperties: false
+required:
+- cwlVersion
+- id
+- class
+- baseCommand
+- outputs
+additionalProperties: false
+properties:
+  cwlVersion:
+    const: v1.2
+    type: string
+  class:
+    const: CommandLineTool
+    type: string
+  id:
+    type: string
+  label:
+    type: string
+  stdout:
+    type: string
+  environment:
+    OneOf:
+    - "$ref": "#/$defs/module_config"
+    - "$ref": "#/$defs/apptainer_config"
+    - "$ref": "#/$defs/venv_config"
+  executor:
+    OneOf:
+    - "$ref": "#/$defs/local_executor"
+    - "$ref": "#/$defs/slurm_executor"
+  baseCommand:
+    oneOf:
+    - type: string
+    - type: array
+      items:
+        anyOf:
+        - type: string
+        - type: number
+  inputs:
+    oneOf:
+    - type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          doc:
+            type: string
+          type:
+            "$ref": "#/$defs/input_type"
+          inputBinding:
+            "$ref": "#/$defs/input_binding"
+          default:
+            "$ref": "#/$defs/default_type"
+        additionalProperties: false
+        required:
+        - id
+        - type
+    - type: object
+      patternProperties:
+        "^.*$":
+          properties:
+            type:
+              "$ref": "#/$defs/input_type"
+            doc:
+              type: string
+            inputBinding:
+              "$ref": "#/$defs/input_binding"
+            default:
+              "$ref": "#/$defs/default_type"
+          additionalProperties: false
+          required:
+          - type
+  outputs:
+    oneOf:
+    - type: array
+      items:
+        properties:
+          id:
+            type: string
+          doc:
+            type: string
+          type:
+            "$ref": "#/$defs/output_type"
+          outputBinding:
+            "$ref": "#/$defs/output_binding"
+        additionalProperties: false
+        required:
+        - id
+        - type
+    - type: object
+      patternProperties:
+        "^.*$":
+          properties:
+            doc:
+              type: string
+            type:
+              "$ref": "#/$defs/output_type"
+            outputBinding:
+              "$ref": "#/$defs/output_binding"
+          additionalProperties: false
+          required:
+          - type
+          - outputBinding
