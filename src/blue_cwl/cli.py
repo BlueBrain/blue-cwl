@@ -5,7 +5,7 @@ import os
 
 import click
 
-from blue_cwl.version import VERSION
+from blue_cwl import __version__ as VERSION
 from blue_cwl.wrappers import (
     cell_composition_manipulation,
     cell_composition_summary,
