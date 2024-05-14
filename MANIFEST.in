@@ -1,4 +1,0 @@
-graft tests
-graft cwl_luigi/schemas
-
-global-exclude *.py[co] .DS_Store
