@@ -1,16 +1,30 @@
 blue-cwl
-============
+========
 
-Common Workflow Language tool definitions
-
+Common Workflow Language tool/workflow definitions, wrappers, and API
 
 Installation
-------------
+============
 
-.. Replace this text by proper installation instructions.
+blue-cwl can be pip installed with the following command:
 
+.. code-block:: bash
 
-Examples
---------
+    $ pip install blue-cwl
 
-.. Provide here some examples on how this software can be used.
+Tests
+=====
+
+.. code-block:: bash
+
+    pip install tox
+    tox
+
+Acknowledgements
+================
+
+The development of this software was supported by funding to the Blue Brain Project, a research center of the École polytechnique fédérale de Lausanne (EPFL), from the Swiss government’s ETH Board of the Swiss Federal Institutes of Technology.
+
+For license and authors, see LICENSE.txt and AUTHORS.txt respectively.
+
+Copyright (c) 2022-2024 Blue Brain Project/EPFL
