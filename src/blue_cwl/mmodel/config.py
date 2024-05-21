@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Config splitting function."""
 
 from copy import deepcopy

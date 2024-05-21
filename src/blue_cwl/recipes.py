@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Construction of recipes for circuit building."""
 
 import itertools

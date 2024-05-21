@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Local/Remote command building and execution."""
 
 import logging

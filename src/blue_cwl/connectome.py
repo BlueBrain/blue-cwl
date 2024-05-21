@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Connectome assembly of macro and micro connectome matrices.
 
 All matrices are comprised of columns, a subset of which is the index columns and the rest the

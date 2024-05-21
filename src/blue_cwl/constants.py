@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Constants."""
 
 DEFAULT_CIRCUIT_BUILD_PARAMETERS = {

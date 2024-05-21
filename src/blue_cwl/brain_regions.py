@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Brain regions helper functions module."""
 
 import importlib
