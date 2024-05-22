@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Topological synthesis inputs overrides."""
 
 from copy import deepcopy

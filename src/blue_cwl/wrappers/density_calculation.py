@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Density calculation app."""
 
 import multiprocessing

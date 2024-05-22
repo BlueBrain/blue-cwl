@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Morphoelectrical type generator function module."""
 
 import logging

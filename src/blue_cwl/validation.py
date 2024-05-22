@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Validation functions."""
 
 from importlib import resources

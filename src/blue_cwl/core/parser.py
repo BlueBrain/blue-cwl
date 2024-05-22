@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Parsing module for cwl files."""
 
 import logging

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Entities."""
 
 from entity_management.config import MEModelConfig as _MEModelConfig

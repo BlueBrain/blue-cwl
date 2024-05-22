@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Utils for building mmodel tool inputs."""
 
 from pathlib import Path

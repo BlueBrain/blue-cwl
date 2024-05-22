@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Custom Base Model for pydantic classes."""
 
 import pydantic

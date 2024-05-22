@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """blue_cwl."""
 
 from importlib.metadata import version
