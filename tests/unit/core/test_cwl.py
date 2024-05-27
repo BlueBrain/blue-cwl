@@ -187,3 +187,8 @@ def test_Workflow__make_workflow_step(workflow):
     res = workflow.make_workflow_step("m0", {"msg0": "foo", "msg1": "bar", "msg2": "spam"}, {})
 
     assert res.base_command is not None
+
+
+def test_Workflow_viz(workflow):
+
+    workflow.viz()
