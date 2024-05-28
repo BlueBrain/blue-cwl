@@ -280,70 +280,14 @@ class Workflow(CustomBaseModel):
             self, step_name, input_values, sources
         )
 
-    def viz(self):
-        import io
-        import pydot
-        import matplotlib.pyplot as plt
-        import matplotlib.image as mpimg
+    def show_image(self):
+        """Show workflow graph image."""
+        from blue_cwl.core import viz
 
+        viz.show_workflow_graph_image(self)
 
-        def file_node(name, label):
-            return pydot.Node(
-                name,
-                label=label,
-                fontsize=10,
-                shape="note",
-            )
+    def write_image(self, filepath):
+        """Save workflow graph as an image."""
+        from blue_cwl.core import viz
 
-        def step_node(name, label):
-            return pydot.Node(
-                name,
-                label=label,
-                fontsize=30,
-                style="rounded",
-                shape="rectangle",
-                width=5,
-            )
-
-        graph = pydot.Dot(repr(self), graph_type="digraph", ranksep=2)
-
-
-        for name in self.inputs:
-            node_name = f"inputs__{name}"
-            graph.add_node(file_node(node_name, name))
-
-        for step in self.iter_steps():
-            graph.add_node(step_node(step.id, step.id))
-            for name in step.outputs:
-                node_name = f"{step.id}__{name}"
-                graph.add_node(file_node(node_name, name))
-
-        for step in self.iter_steps():
-            for name, inp in step.inputs.items():
-                res = inp.split_source_output()
-
-                if res is None:
-                    continue
-
-                for source_name, output_name in res:
-                    if source_name is None:
-                        source_name = f"inputs__{output_name}"
-                    else:
-                        source_name = f"{source_name}__{output_name}"
-                    edge = pydot.Edge(
-                        source_name,
-                        step.id,
-                    )
-                graph.add_edge(edge)
-
-        png_str = graph.create_png()
-        # treat the DOT output as an image file
-        sio = io.BytesIO()
-        sio.write(png_str)
-        sio.seek(0)
-        img = mpimg.imread(sio)
-
-        # plot the image
-        imgplot = plt.imshow(img, aspect='equal')
-        plt.axis("off")
-        plt.show()
+        viz.write_workflow_graph_image(self, filepath)

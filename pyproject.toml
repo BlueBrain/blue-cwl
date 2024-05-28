@@ -28,6 +28,8 @@ dependencies = [
   "morph-tool",
   "jsonschema",
   "luigi",
+  "pydot",
+  "matplotlib",
 ]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
