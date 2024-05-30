@@ -407,6 +407,7 @@ def _get_variant_directory(generator_name: str, variant_name: str, version: str)
 
 
 def iter_registered_variants():
+    """Iterate over all variants in the registry."""
     package_path = importlib.resources.files("blue_cwl")
     root_dir = _check_directory_exists(package_path / "generators")
 
