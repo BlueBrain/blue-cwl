@@ -9,7 +9,7 @@ import pydot
 
 
 def show_workflow_graph_image(cwl_workflow):
-    """Show workflow graph."""
+    """Show Workflow graph."""
     graph = _build_workflow_graph(cwl_workflow)
 
     png_str = graph.create_png()  # pylint: disable=no-member
