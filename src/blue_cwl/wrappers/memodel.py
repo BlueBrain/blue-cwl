@@ -3,9 +3,7 @@
 """me-model wrapper."""
 
 import logging
-import os
 import shutil
-import subprocess
 from pathlib import Path
 
 import click
@@ -20,7 +18,7 @@ from blue_cwl.me_model.staging import stage_me_model_config
 from blue_cwl.nexus import get_distribution_as_dict
 from blue_cwl.staging import stage_file
 from blue_cwl.utils import get_partial_circuit_region_id
-from blue_cwl.variant import Variant
+from blue_cwl.wrappers import common
 
 L = logging.getLogger(__name__)
 
@@ -52,88 +50,123 @@ def app():
     """me-model app."""
 
 
-@app.command()
-@click.option("--configuration-id", required=True, help="Configuration id.")
-@click.option("--circuit-id", required=True, help="Partial circuit id.")
-@click.option("--variant-id", required=True, help="Variant id.")
+@app.command(name="setup")
 @click.option("--output-dir", required=True, help="Output directory path")
-def mono_execution(configuration_id, circuit_id, variant_id, output_dir):
-    """Single execution endpoint."""
-    _mono_execution(configuration_id, circuit_id, variant_id, output_dir)
+def setup_cli(output_dir):
+    """Setup wrapper output directories."""
+    common.setup_directories(output_dir=output_dir)
 
 
-def _mono_execution(configuration, partial_circuit, variant_config, output_dir):
-    output_dir = utils.create_dir(output_dir)
+@app.command(name="stage")
+@click.option("--configuration-id", required=True, help="me-model configuration id.")
+@click.option("--circuit-id", required=True, help="Circuit id.")
+@click.option("--stage-dir", required=True, help="Stagind directory")
+def stage_cli(**kwargs):
+    """Stage cli."""
+    stage(**kwargs)
 
-    variant = get_entity(resource_id=variant_config, cls=Variant)
-    staging_dir = utils.create_dir(output_dir / "stage")
-    build_dir = utils.create_dir(output_dir / "build")
 
-    configuration_file = staging_dir / "materialized_me_model_config.json"
+def stage(*, configuration_id, circuit_id, stage_dir):
+    """Stage NEXUS resources to local files."""
+    utils.create_dir(stage_dir)
 
+    config_file = Path(stage_dir, "materialized_me_model_config.json")
     stage_me_model_config(
-        dataset=get_distribution_as_dict(configuration, cls=MEModelConfig),
-        staging_dir=staging_dir / "me-model-config",
-        output_file=configuration_file,
+        dataset=get_distribution_as_dict(configuration_id, cls=MEModelConfig),
+        staging_dir=Path(stage_dir, "me-model-config"),
+        output_file=config_file,
     )
+    L.debug("me-model config %s materialized at %s", configuration_id, config_file)
 
-    circuit_config_file = staging_dir / "circuit_config.json"
+    circuit_file = Path(stage_dir, "circuit_config.json")
     _stage_circuit(
-        partial_circuit=partial_circuit,
-        output_file=circuit_config_file,
+        partial_circuit=circuit_id,
+        output_file=Path(stage_dir, "circuit_config.json"),
+    )
+    L.debug("Circuit %s staged at %s", circuit_id, circuit_file)
+
+    nodes_file, _, morphologies_dir = _get_biophysical_population_info(
+        circuit_config_file=circuit_file,
+        ext="asc",
     )
 
-    recipe_file = build_dir / "recipe.json"
-    _build_recipe(configuration_file=configuration_file, output_file=recipe_file)
+    staged_morphologies_dir = Path(stage_dir, "morphologies")
+    stage_file(source=morphologies_dir, target=staged_morphologies_dir)
+    L.debug("Staged %s -> %s", morphologies_dir, staged_morphologies_dir)
 
-    mechanisms_dir = utils.create_dir(build_dir / "mechanisms")
-    _run_emodel_prepare(
-        recipe_file=recipe_file,
-        mechanisms_dir=mechanisms_dir,
-        variant=variant,
-        work_dir=build_dir,
+    staged_nodes_file = Path(stage_dir, "nodes.h5")
+    stage_file(source=nodes_file, target=staged_nodes_file)
+    L.debug("Staged %s -> %s", nodes_file, staged_nodes_file)
+
+
+@app.command(name="recipe")
+@click.option("--config-file", required=True, help="me-model configuration file")
+@click.option("--output-file", required=True, help="Output recipe file")
+def recipe_cli(**kwargs):
+    """Generate me-model recipe."""
+    recipe(**kwargs)
+
+
+def recipe(*, config_file, output_file):
+    """Generate me-model recipe."""
+    configuration = utils.load_json(config_file)
+    recipe_config = build_me_model_recipe(me_model_config=configuration)
+    utils.write_json(data=recipe_config, filepath=output_file)
+
+
+@app.command(name="register")
+@click.option("--circuit-id", required=True)
+@click.option("--circuit-file", required=True)
+@click.option("--nodes-file", required=True)
+@click.option("--hoc-dir", required=True)
+@click.option("--output-dir", required=True)
+def register_cli(**kwargs):
+    """Register cli."""
+    register(**kwargs)
+
+
+def register(
+    *,
+    circuit_id,
+    circuit_file,
+    nodes_file,
+    hoc_dir,
+    output_dir,
+):
+    """Register new circuit with generated nodes and hoc directory."""
+    config = utils.load_json(circuit_file)
+
+    _, population_name = utils.get_biophysical_partial_population_from_config(config)
+
+    L.info("Validating odes file...")
+    validation.check_properties_in_population(
+        population_name=population_name,
+        nodes_file=nodes_file,
+        property_names=INPUT_POPULATION_COLUMNS
+        + ASSIGN_PROPERTIES
+        + ADAPT_PROPERTIES
+        + CURRENTS_PROPERTIES,
     )
 
-    assign_nodes_file = build_dir / "assign_nodes.h5"
-    _run_emodel_assign(
-        circuit_config_file=circuit_config_file,
-        recipe_file=recipe_file,
-        output_nodes_file=assign_nodes_file,
-        work_dir=build_dir,
-        variant=variant,
+    updated_config = utils.update_circuit_config_population(
+        config=config,
+        population_name=population_name,
+        population_data={
+            "biophysical_neuron_models_dir": str(hoc_dir),
+        },
+        filepath=str(nodes_file),
     )
+    output_circuit_config_file = Path(output_dir, "circuit_config.json")
+    utils.write_json(filepath=output_circuit_config_file, data=updated_config)
+    L.info("Created circuit config file at %s", output_circuit_config_file)
 
-    output_biophysical_models_dir = utils.create_dir(build_dir / "hoc")
+    validation.check_population_name_in_config(population_name, output_circuit_config_file)
 
-    adapt_nodes_file = build_dir / "adapt_nodes.h5"
-    _run_emodel_adapt(
-        circuit_config_file=circuit_config_file,
-        nodes_file=assign_nodes_file,
-        recipe_file=recipe_file,
-        output_nodes_file=adapt_nodes_file,
-        output_biophysical_models_dir=output_biophysical_models_dir,
-        variant=variant,
-        work_dir=build_dir,
-        mechanisms_dir=mechanisms_dir,
-    )
+    circuit = _register_circuit(circuit_id, output_circuit_config_file)
 
-    output_nodes_file = build_dir / "nodes.h5"
-    _run_emodel_currents(
-        circuit_config_file=circuit_config_file,
-        nodes_file=adapt_nodes_file,
-        biophysical_neuron_models_dir=output_biophysical_models_dir,
-        output_nodes_file=output_nodes_file,
-        variant=variant,
-        mechanisms_dir=mechanisms_dir,
-    )
-
-    _register(
-        partial_circuit=partial_circuit,
-        variant=variant,
-        circuit_config_file=circuit_config_file,
-        nodes_file=output_nodes_file,
-        biophysical_neuron_models_dir=output_biophysical_models_dir,
-        output_dir=output_dir,
+    utils.write_json(
+        data=load_by_id(circuit.get_id()),
+        filepath=Path(output_dir, "resource.json"),
     )
 
 
@@ -149,187 +182,6 @@ def _stage_circuit(partial_circuit, output_file):
         source=unquote_uri_path(entity.circuitConfigPath.url),
         target=output_file,
         symbolic=True,
-    )
-
-
-def _build_recipe(configuration_file, output_file):
-    configuration = utils.load_json(configuration_file)
-    recipe = build_me_model_recipe(me_model_config=configuration)
-    utils.write_json(data=recipe, filepath=output_file)
-
-
-def _run_emodel_prepare(recipe_file, mechanisms_dir, variant, work_dir):
-    local_config_path = _rmdir_if_exists(Path(work_dir, "configs"))
-
-    arglist = [
-        "emodel-generalisation",
-        "-v",
-        "prepare",
-        "--config-path",
-        str(recipe_file),
-        "--local-config-path",
-        str(local_config_path),
-        "--mechanisms-path",
-        str(mechanisms_dir),
-    ]
-
-    cmd = " ".join(arglist)
-    cmd = utils.build_variant_allocation_command(cmd, variant, sub_task_index=0)
-
-    env = os.environ | {"NEURON_MODULE_OPTIONS": "-nogui"}
-
-    L.info("Tool command :%s", cmd)
-    subprocess.run(cmd, check=True, shell=True, env=env)
-
-
-def _run_emodel_assign(circuit_config_file, recipe_file, output_nodes_file, work_dir, variant):
-    nodes_file, population_name, _ = _get_biophysical_population_info(
-        circuit_config_file=circuit_config_file,
-        ext="asc",
-    )
-    validation.check_properties_in_population(population_name, nodes_file, INPUT_POPULATION_COLUMNS)
-
-    arglist = [
-        "emodel-generalisation",
-        "-v",
-        "--no-progress",
-        "assign",
-        "--input-node-path",
-        str(nodes_file),
-        "--config-path",
-        str(recipe_file),
-        "--output-node-path",
-        str(output_nodes_file),
-        "--local-config-path",
-        str(Path(work_dir, "configs")),
-    ]
-
-    cmd = " ".join(arglist)
-    cmd = utils.build_variant_allocation_command(cmd, variant, sub_task_index=0)
-
-    env = os.environ | {"NEURON_MODULE_OPTIONS": "-nogui"}
-
-    L.info("Tool command :%s", cmd)
-    subprocess.run(cmd, check=True, shell=True, env=env)
-
-    L.info("Validating generated nodes file...")
-    validation.check_properties_in_population(
-        population_name=population_name,
-        nodes_file=output_nodes_file,
-        property_names=INPUT_POPULATION_COLUMNS + ASSIGN_PROPERTIES,
-    )
-
-
-def _run_emodel_adapt(
-    circuit_config_file,
-    nodes_file,
-    recipe_file,
-    output_nodes_file,
-    output_biophysical_models_dir,
-    variant,
-    work_dir,
-    mechanisms_dir,
-):
-    _, population_name, morphologies_dir = _get_biophysical_population_info(
-        circuit_config_file=circuit_config_file,
-        ext="asc",
-    )
-
-    local_dir = _rmdir_if_exists(work_dir / "local")
-
-    arglist = [
-        "emodel-generalisation",
-        "-v",
-        "--no-progress",
-        "adapt",
-        "--input-node-path",
-        str(nodes_file),
-        "--output-node-path",
-        str(output_nodes_file),
-        "--morphology-path",
-        str(morphologies_dir),
-        "--config-path",
-        str(recipe_file),
-        "--output-hoc-path",
-        str(output_biophysical_models_dir),
-        "--parallel-lib",
-        _parallel_mode(),
-        "--local-config-path",
-        str(work_dir / "configs"),
-        "--local-dir",
-        str(local_dir),
-    ]
-    cmd = " ".join(arglist)
-    cmd = utils.build_variant_allocation_command(cmd, variant, sub_task_index=1)
-
-    L.info("Tool command :%s", cmd)
-
-    env = os.environ.copy()
-    env.update(
-        {
-            "EMODEL_GENERALISATION_MOD_LIBRARY_PATH": str(mechanisms_dir),
-            "NEURON_MODULE_OPTIONS": "-nogui",
-        }
-    )
-    subprocess.run(cmd, check=True, shell=True, env=env)
-
-    L.info("Validating generated nodes file...")
-    validation.check_properties_in_population(
-        population_name=population_name,
-        nodes_file=output_nodes_file,
-        property_names=INPUT_POPULATION_COLUMNS + ASSIGN_PROPERTIES + ADAPT_PROPERTIES,
-    )
-
-
-def _run_emodel_currents(
-    circuit_config_file,
-    nodes_file,
-    biophysical_neuron_models_dir,
-    output_nodes_file,
-    variant,
-    mechanisms_dir,
-):
-    _, population_name, morphologies_dir = _get_biophysical_population_info(
-        circuit_config_file=circuit_config_file,
-        ext="asc",
-    )
-    arglist = [
-        "emodel-generalisation",
-        "-v",
-        "--no-progress",
-        "compute_currents",
-        "--input-path",
-        str(nodes_file),
-        "--output-path",
-        str(output_nodes_file),
-        "--morphology-path",
-        str(morphologies_dir),
-        "--hoc-path",
-        str(biophysical_neuron_models_dir),
-        "--parallel-lib",
-        _parallel_mode(),
-    ]
-    cmd = " ".join(arglist)
-    cmd = utils.build_variant_allocation_command(cmd, variant, sub_task_index=2)
-
-    L.info("Tool command :%s", cmd)
-    env = os.environ.copy()
-    env.update(
-        {
-            "EMODEL_GENERALISATION_MOD_LIBRARY_PATH": str(mechanisms_dir),
-            "NEURON_MODULE_OPTIONS": "-nogui",
-        }
-    )
-    subprocess.run(cmd, check=True, shell=True, env=env)
-
-    L.info("Validating generated nodes file...")
-    validation.check_properties_in_population(
-        population_name=population_name,
-        nodes_file=output_nodes_file,
-        property_names=INPUT_POPULATION_COLUMNS
-        + ASSIGN_PROPERTIES
-        + ADAPT_PROPERTIES
-        + CURRENTS_PROPERTIES,
     )
 
 
@@ -391,9 +243,3 @@ def _register_circuit(partial_circuit, output_circuit_config_file):
     )
 
     return circuit
-
-
-def _parallel_mode():
-    mode = os.getenv("ME_MODEL_MULTIPROCESSING_BACKEND", "dask_dataframe")
-    L.debug("Multiprocessing backend: %s", mode)
-    return mode

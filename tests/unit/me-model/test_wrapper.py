@@ -38,10 +38,10 @@ def test_stage_circuit(tmp_path, detailed_circuit_metadata, circuit_config_file)
     assert res == load_json(circuit_config_file)
 
 
-def test_build_recipe(tmp_path, materialized_me_model_config_file):
+def test_recipe(tmp_path, materialized_me_model_config_file):
     output_file = tmp_path / "recipe.json"
 
-    test_module._build_recipe(materialized_me_model_config_file, output_file)
+    test_module.recipe(config_file=materialized_me_model_config_file, output_file=output_file)
 
     res = load_json(output_file)
 
@@ -75,155 +75,6 @@ def test_build_recipe(tmp_path, materialized_me_model_config_file):
             },
         },
     }
-
-
-@patchenv(foo="bar")
-def test_run_emodel_prepare():
-    with (
-        patch("subprocess.run") as patched_subprocess,
-        patch(
-            "blue_cwl.utils.build_variant_allocation_command",
-            side_effect=lambda e, *args, **kwargs: e,
-        ),
-    ):
-        test_module._run_emodel_prepare(
-            recipe_file="recipe-file",
-            mechanisms_dir="mechanisms-dir",
-            work_dir="work-dir",
-            variant=None,
-        )
-        expected_command = (
-            "emodel-generalisation -v prepare "
-            "--config-path recipe-file "
-            "--local-config-path work-dir/configs "
-            "--mechanisms-path mechanisms-dir"
-        )
-        patched_subprocess.assert_called_once_with(
-            expected_command,
-            check=True,
-            shell=True,
-            env={
-                "foo": "bar",
-                "NEURON_MODULE_OPTIONS": "-nogui",
-            },
-        )
-
-
-@patchenv(foo="bar")
-def test_run_emodel_assign(circuit_config_file):
-    with (
-        patch("subprocess.run") as patched_subprocess,
-        patch("blue_cwl.validation.check_properties_in_population"),
-        patch(
-            "blue_cwl.utils.build_variant_allocation_command",
-            side_effect=lambda e, *args, **kwargs: e,
-        ),
-    ):
-        test_module._run_emodel_assign(
-            circuit_config_file=circuit_config_file,
-            recipe_file="recipe-file",
-            output_nodes_file="out-file",
-            variant=None,
-            work_dir=Path("work-dir"),
-        )
-        expected_command = (
-            "emodel-generalisation -v --no-progress assign "
-            "--input-node-path nodes.h5 "
-            "--config-path recipe-file "
-            "--output-node-path out-file "
-            "--local-config-path work-dir/configs"
-        )
-
-        patched_subprocess.assert_called_once_with(
-            expected_command,
-            check=True,
-            shell=True,
-            env={
-                "foo": "bar",
-                "NEURON_MODULE_OPTIONS": "-nogui",
-            },
-        )
-
-
-@patchenv(foo="bar")
-def test_run_emodel_adapt(circuit_config_file):
-    with (
-        patch("subprocess.run") as patched_subprocess,
-        patch("blue_cwl.validation.check_properties_in_population"),
-        patch(
-            "blue_cwl.utils.build_variant_allocation_command",
-            side_effect=lambda e, *args, **kwargs: e,
-        ),
-    ):
-        test_module._run_emodel_adapt(
-            circuit_config_file=circuit_config_file,
-            nodes_file="nodes-file-path",
-            recipe_file="recipe-file",
-            output_nodes_file="out-file",
-            output_biophysical_models_dir="hoc-dir",
-            variant=None,
-            work_dir=Path("work-dir"),
-            mechanisms_dir="mechanisms-dir",
-        )
-        expected_command = (
-            "emodel-generalisation -v --no-progress adapt "
-            "--input-node-path nodes-file-path "
-            "--output-node-path out-file "
-            "--morphology-path morphologies "
-            "--config-path recipe-file "
-            "--output-hoc-path hoc-dir "
-            "--parallel-lib dask_dataframe "
-            "--local-config-path work-dir/configs "
-            "--local-dir work-dir/local"
-        )
-        patched_subprocess.assert_called_once_with(
-            expected_command,
-            check=True,
-            shell=True,
-            env={
-                "foo": "bar",
-                "EMODEL_GENERALISATION_MOD_LIBRARY_PATH": "mechanisms-dir",
-                "NEURON_MODULE_OPTIONS": "-nogui",
-            },
-        )
-
-
-@patchenv(foo="bar")
-def test_run_emodel_currents(circuit_config_file):
-    with (
-        patch("subprocess.run") as patched_subprocess,
-        patch("blue_cwl.validation.check_properties_in_population"),
-        patch(
-            "blue_cwl.utils.build_variant_allocation_command",
-            side_effect=lambda e, *args, **kwargs: e,
-        ),
-    ):
-        test_module._run_emodel_currents(
-            circuit_config_file=circuit_config_file,
-            nodes_file="nodes-file-path",
-            biophysical_neuron_models_dir="hoc-dir",
-            output_nodes_file="out-file",
-            variant=None,
-            mechanisms_dir="mechanisms-dir",
-        )
-        expected_command = (
-            "emodel-generalisation -v --no-progress compute_currents "
-            "--input-path nodes-file-path "
-            "--output-path out-file "
-            "--morphology-path morphologies "
-            "--hoc-path hoc-dir "
-            "--parallel-lib dask_dataframe"
-        )
-        patched_subprocess.assert_called_once_with(
-            expected_command,
-            check=True,
-            shell=True,
-            env={
-                "foo": "bar",
-                "EMODEL_GENERALISATION_MOD_LIBRARY_PATH": "mechanisms-dir",
-                "NEURON_MODULE_OPTIONS": "-nogui",
-            },
-        )
 
 
 def test_register(tmp_path, circuit_config_file, circuit_config, detailed_circuit_metadata):
