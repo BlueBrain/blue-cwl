@@ -13,3 +13,7 @@ class ReferenceResolutionError(CWLError):
 
 class CWLValidationError(CWLError):
     """CWL Validation error."""
+
+
+class InputConcretizationError(CWLError):
+    """Input concretization error."""

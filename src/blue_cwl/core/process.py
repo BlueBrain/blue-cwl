@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 import blue_cwl.core.cwl
 from blue_cwl.core.common import CustomBaseModel
 from blue_cwl.core.cwl_types import Directory, File, NexusResource
-from blue_cwl.core.exceptions import CWLError
+from blue_cwl.core.exceptions import CWLError, InputConcretizationError, ReferenceResolutionError
 from blue_cwl.core.executor import Executor, LocalExecutor
 from blue_cwl.core.resolve import resolve_parameter_references
 from blue_cwl.core.types import EnvVarDict, InputValue, InputValueObject, OutputValueObject
@@ -113,7 +113,12 @@ def build_command_line_tool_process(
     """
     L.debug("CommandLineTool input values: %s", input_values)
 
-    concretized_inputs: dict[str, InputValueObject] = _concretize_inputs(tool.inputs, input_values)
+    try:
+        concretized_inputs: dict[str, InputValueObject] = _concretize_inputs(
+            tool.inputs, input_values
+        )
+    except Exception as e:
+        raise CWLError(f"CommandLineTool'{tool.id}' inputs concretization failed.\n") from e
     L.debug("Concretized CommandLineTool inputs: %s", concretized_inputs)
 
     concretized_outputs: dict[str, OutputValueObject] = _concretize_tool_outputs(
@@ -153,7 +158,7 @@ def _concretize_inputs(
             concretized_inputs[name] = _input_value_to_object(inp.type, value)
 
     if not set(inputs).issubset(set(concretized_inputs)):
-        raise CWLError(
+        raise InputConcretizationError(
             "Concretized input values are not consistent with the input template.\n"
             f"Expected: {sorted(inputs.keys())}.\n"
             f"Got     : {sorted(concretized_inputs.keys())}"
@@ -321,14 +326,32 @@ def build_workflow_step_process(
     # The valueFrom fields are evaluated after the the source fields.
     for name, inp in step.inputs.items():
         if inp.valueFrom:
-            step_input_values[name] = resolve_parameter_references(
-                expression=inp.valueFrom,
-                inputs=step_input_values,
-                context=step_sources[name],
-                runtime={},
-            )
+            try:
+                step_input_values[name] = resolve_parameter_references(
+                    expression=inp.valueFrom,
+                    inputs=step_input_values,
+                    context=step_sources[name],
+                    runtime={},
+                )
+            except ReferenceResolutionError as e:
+                raise CWLError(
+                    f"Workflow step '{step_name}' parameter reference resolution failed.\n"
+                    f"Input    : {name}\n"
+                    f"valueFrom: {inp.valueFrom}\n"
+                    f"self type: {type(step_sources[name])}"
+                ) from e
 
-    step_process = build_command_line_tool_process(step.run, step_input_values)
+    try:
+        step_process = build_command_line_tool_process(step.run, step_input_values)
+    except InputConcretizationError as e:
+        raise CWLError(
+            f"Workflow step '{step_name}' process build failed.\n"
+            f"Workflow step input values     : {sorted(step_input_values.keys())}\n"
+            f"CommandLineTool expected inputs: {sorted(step.run.inputs.keys())}"
+        ) from e
+    except Exception as e:
+        raise CWLError(f"Workflow step '{step_name}' process build failed.\n") from e
+
     return step_process
 
 
