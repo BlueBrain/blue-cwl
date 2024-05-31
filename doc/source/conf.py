@@ -57,6 +57,8 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
+    "repo_url": "https://github.com/BlueBrain/blue-cwl",
+    "repo_name": "BlueBrain/blue-cwl",
     "metadata_distribution": "blue_cwl",
 }
 
@@ -64,3 +66,17 @@ html_title = "blue-cwl"
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False
+
+import os
+from pathlib import Path
+from blue_cwl.variant import iter_registered_variants
+from blue_cwl.core import cwl
+from blue_cwl.utils import create_dir
+
+graph_dir = create_dir("./generated")
+
+for variant in iter_registered_variants():
+    tool = variant.tool_definition
+    name = f"{variant.generator_name}__{variant.variant_name}__{variant.version}.svg"
+    if isinstance(tool, cwl.Workflow):
+        tool.write_image(filepath=graph_dir / name)

@@ -279,3 +279,15 @@ class Workflow(CustomBaseModel):
         return blue_cwl.core.process.build_workflow_step_process(
             self, step_name, input_values, sources
         )
+
+    def show_image(self):
+        """Show workflow graph image."""
+        from blue_cwl.core import viz
+
+        viz.show_workflow_graph_image(self)
+
+    def write_image(self, filepath):
+        """Save workflow graph as an image."""
+        from blue_cwl.core import viz
+
+        viz.write_workflow_graph_image(self, filepath)

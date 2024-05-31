@@ -406,6 +406,17 @@ def _get_variant_directory(generator_name: str, variant_name: str, version: str)
     return _get_variant_dir(package_path, generator_name, variant_name, version)
 
 
+def iter_registered_variants():
+    """Iterate over all variants in the registry."""
+    package_path = importlib.resources.files("blue_cwl")
+    root_dir = _check_directory_exists(package_path / "generators")
+
+    for generator_dir in filter(lambda o: o.is_dir(), root_dir.iterdir()):
+        for variant_dir in filter(lambda o: o.is_dir(), generator_dir.iterdir()):
+            for version_dir in filter(lambda o: o.is_dir(), variant_dir.iterdir()):
+                yield Variant.from_registry(generator_dir.name, variant_dir.name, version_dir.name)
+
+
 def _get_variant_file(generator_name: str, variant_name: str, version: str) -> Path:
     variant_dir = _get_variant_directory(generator_name, variant_name, version)
 
