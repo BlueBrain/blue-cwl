@@ -7,4 +7,4 @@ Registry
 connectome_filtering|synapses|v2
 ********************************
 
-.. image:: graphs/connectome_filtering__synapses__v2.svg
+.. image:: generated/connectome_filtering__synapses__v2.svg
