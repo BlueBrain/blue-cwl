@@ -73,7 +73,7 @@ from blue_cwl.variant import iter_registered_variants
 from blue_cwl.core import cwl
 from blue_cwl.utils import create_dir
 
-graph_dir = create_dir("./graphs")
+graph_dir = create_dir("./generated")
 
 for variant in iter_registered_variants():
     tool = variant.tool_definition
