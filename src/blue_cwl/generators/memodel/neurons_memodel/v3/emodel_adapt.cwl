@@ -5,8 +5,10 @@ id: emodel_adapt
 label: emodel-adapt
 
 environment:
-  env_type: VENV
-  path: /gpfs/bbp.cscs.ch/project/proj134/scratch/zisis/sub-workflows/venv311
+  env_type: MODULE
+  modules:
+    - unstable
+    - py-emodel-generalisation
 
 executor:
   type: slurm
