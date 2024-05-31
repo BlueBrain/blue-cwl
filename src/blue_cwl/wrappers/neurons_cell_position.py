@@ -52,6 +52,133 @@ def app():
     """Cell placement."""
 
 
+@app.command(name="stage")
+@click.option("--region-id", required=True, help="Region NEXUS ID")
+@click.option("--cell-composition-id", required=True, help="CellComposition entity id to stage.")
+@click.option("--staging-dir", required=True, help="Staging directory to use.")
+def stage_cli(**kwargs):
+    stage(**kwargs)
+
+
+def stage(*, region_id, cell_composition_id, staging_dir):
+    """Stage entities."""
+    create_dir(staging_dir)
+
+    region_acronym = nexus.get_region_acronym(region_id)
+    region_file = Path(staging_dir, "region.txt")
+    region_file.write_text(region_acronym)
+    L.debug("Region %s acronym '%s' written at %s", region_id, region_acronym, region_file)
+
+    cell_composition = get_entity(resource_id=cell_composition_id, cls=CellComposition)
+
+    atlas = cell_composition.atlasRelease
+    atlas_dir = create_dir(Path(staging_dir, "atlas"))
+    atlas_file = Path(staging_dir, "atlas.json")
+    staging.stage_atlas(
+        atlas,
+        output_dir=atlas_dir,
+        output_file=atlas_file,
+    )
+    L.debug(f"Atlas %s staged at %s.", atlas.get_id(), atlas_file)
+
+    cell_composition_volume = cell_composition.cellCompositionVolume
+    cell_composition_volume_file = Path(staging_dir, "densities.parquet")
+    staging.materialize_cell_composition_volume(
+        cell_composition_volume,
+        output_file=cell_composition_volume_file,
+    )
+    L.debug(
+        f"Cell composition's %s volume %s staged at %s.",
+        cell_composition.get_id(),
+        cell_composition_volume.get_id(),
+        cell_composition_volume_file,
+    )
+
+
+@app.command(name="transform")
+@click.option("--region-file", required=True)
+@click.option("--densities-file", required=True)
+@click.option("--transform-dir", required=True)
+def transform_cli(**kwargs)
+    transform(**kwargs)
+
+
+def transform(*, region_file: str, densities_file: StrOrPath, transform_dir: StrOrPath):
+    """Create cell composition and taxonomy files."""
+    create_dir(transform_dir)
+
+    region_acronym = Path(region_file).read_text()
+
+    me_type_densities = pd.read_parquet(densities_file)
+    composition_file = output_dir / "mtype_composition.yml"
+    composition = recipes.build_cell_composition_from_me_densities(region_acronym, me_type_densities)
+    utils.write_yaml(composition_file, composition)
+    L.debug("Cell composition recipe written at %s", composition_file)
+
+    mtypes = me_type_densities["mtype"].drop_duplicates().values.tolist()
+
+    mtype_taxonomy_file = output_dir / "mtype_taxonomy.tsv"
+    mtype_taxonomy = recipes.build_mtype_taxonomy(mtypes)
+    mtype_taxonomy.to_csv(mtype_taxonomy_file, sep=" ", index=False)
+    L.debug("MType taxonomy file written at %s", mtype_taxonomy_file)
+
+
+@app.command(name="init-cells")
+@click.option("--region", required=True)
+@click.option("--output-dir", required=True)
+def init_cells_cli(**kwargs):
+    init_cells(**kwargs)
+
+
+def init_cells(*, region: str, output_dir: StrOrPath):
+    """Initialize cells node population."""
+
+    node_population_name = f"{region}__neurons"
+
+    init_cells_file = Path(output_dir, "init_nodes.h5")
+    cells = voxcell.CellCollection(node_population_name)
+    cells.save(init_cells_file)
+    L.debug("Initializied node population '%s' at %s", node_population_name, init_cells_file)
+
+
+@app.command(name="register")
+@click.option("--region-id", required=True)
+@click.option("--atlas-id", required=True)
+@click.option("--circuit-file", required=True)
+@click.option("--summary-file", required=True)
+@click.option("--output-dir", required=True)
+def register_cli(**kwargs):
+    register(**kwargs)
+
+
+def register(*, region_id, atlas_id, region_id, circuit_file, summary_file, output_dir: StrOrPath):
+    """Register outputs to nexus."""
+    output_circuit_resource_file = Path(output_dir. "circuit_resource.json")
+    circuit = registering.register_partial_circuit(
+        name="Cell properties partial circuit",
+        brain_region_id=region_id,
+        atlas_release_id=atlas_id,
+        description="Partial circuit built with cell positions and me properties.",
+        sonata_config_path=circuit_file,
+    )
+    jsonld_resource = load_by_id(circuit.get_id())
+    utils.write_json(filepath=output_circuit_resource_file, data=jsonld_resource)
+    L.debug("Circuit jsonld resource written at %s", output_circuit_resource_file)
+
+    output_summary_resource_file = Path(output_dir, "summary_resource.json")
+    # pylint: disable=no-member
+    summary = registering.register_cell_composition_summary(
+        name="Cell composition summary",
+        summary_file=summary_file,
+        atlas_release_id=atlas_id,
+        derivation_entity_id=circuit.get_id(),
+    )
+    jsonld_resource = load_by_id(summary.get_id())
+    utils.write_json(filepath=output_summary_resource_file, data=jsonld_resource)
+    L.debug("Summary jsonld resource written at %s", output_summary_resource_file)
+
+
+
 @app.command(name="mono-execution")
 @click.option("--region", required=True)
 @click.option("--variant-id", required=False)
