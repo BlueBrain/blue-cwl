@@ -28,8 +28,6 @@ dependencies = [
   "morph-tool",
   "jsonschema",
   "luigi",
-  "pydot",
-  "matplotlib",
 ]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
@@ -46,6 +44,12 @@ dynamic = ["version"]
 [project.optional-dependencies]
 docs = [
   "sphinx-bluebrain-theme",
+  "pydot",
+  "matplotlib",
+]
+viz = [
+  "pydot",
+  "matplotlib",
 ]
 
 [project.urls]
