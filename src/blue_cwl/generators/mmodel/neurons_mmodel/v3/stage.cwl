@@ -64,9 +64,9 @@ outputs:
   - id: canonical_config_file
     type: File
     outputBinding:
-      glob: $(inputs.stage_dir.path)/canonical.json
+      glob: $(inputs.stage_dir.path)/canonical_config.json
 
   - id: placeholder_config_file
     type: File
     outputBinding:
-      glob: $(inputs.stage_dir.path)/placeholder.json
+      glob: $(inputs.stage_dir.path)/placeholder_config.json
