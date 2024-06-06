@@ -19,6 +19,7 @@ from blue_cwl.constants import MorphologyProducer
 from blue_cwl.exceptions import CWLWorkflowError
 from blue_cwl.mmodel import recipe
 from blue_cwl.mmodel.entity import MorphologyAssignmentConfig
+from blue_cwl.typing import StrOrPath
 from blue_cwl.utils import (
     bisect_cell_collection_by_properties,
     get_partial_circuit_region_id,
@@ -67,40 +68,55 @@ def setup_cli(output_dir):
 
 
 @app.command(name="stage")
-@click.option("--configuration-id", required=True, help="me-model configuration id.")
-@click.option("--circuit-id", required=True, help="Circuit id.")
-@click.option("--stage-dir", required=True, help="Stagind directory")
+@click.option("--configuration-id", required=True, help="me-model configuration NEXUS id.")
+@click.option("--circuit-id", required=True, help="Circuit NEXUS id.")
+@click.option("--stage-dir", required=True, help="Staging directory to output staged data.")
 def stage_cli(**kwargs):
     """Mmodel staging cli."""
     stage(**kwargs)
 
 
-def stage(*, configuration_id, circuit_id, stage_dir):
-    """Stage mmodel entities."""
+def stage(*, configuration_id: str, circuit_id: str, stage_dir: StrOrPath) -> None:
+    """Stage NEXUS entities into local files.
+
+    Args:
+        configuration_id: mmodel configuration NEXUS id.
+        circuit_id: DetailedCircuit NEXUS id.
+        stage_dir: Output directory for staging data.
+
+    Entities required to be staged for mmodel:
+        - circuit config
+        - nodes file
+        - atlas directory
+        - atlas info file
+        - mmodel configuration split in canonical/placeholder
+    """
     circuit = _stage_circuit(circuit_id, stage_dir)
 
-    atlas_dir = utils.create_dir(Path(stage_dir, "atlas"))
-    atlas_file = Path(stage_dir, "atlas.json")
     staging.stage_atlas(
         circuit.atlasRelease,
-        output_dir=atlas_dir,
-        output_file=atlas_file,
+        output_dir=Path(stage_dir, "atlas"),
+        output_file=Path(stage_dir, "atlas.json"),
     )
 
-    canonical_file = Path(stage_dir, "canonical_config.json")
-    placeholder_file = Path(stage_dir, "placeholder_config.json")
     _stage_configuration(
         configuration_id=configuration_id,
-        output_canonicals_file=canonical_file,
-        output_placeholders_file=placeholder_file,
+        output_dir=stage_dir,
     )
 
 
-def _stage_circuit(circuit_id, stage_dir):
+def _stage_circuit(circuit_id: str, stage_dir: StrOrPath):
+    """Stage NEXUS circuit id into local components.
+
+    Stages the following circuit components:
+        - circuit config -> stage_dir/circuit_config.json
+        - nodes file -> stage_dir/nodes.h5
+
+    Note: Before staging the nodes are validated wrt to the expected columns.
+    """
     entity = get_entity(resource_id=circuit_id, cls=DetailedCircuit)
 
     circuit_config_file = entity.circuitConfigPath.get_url_as_path()
-
     circuit_config = utils.load_json(circuit_config_file)
 
     nodes_file, population_name = utils.get_biophysical_partial_population_from_config(
@@ -118,24 +134,33 @@ def _stage_circuit(circuit_id, stage_dir):
     return entity
 
 
-def _stage_configuration(configuration_id, output_canonicals_file, output_placeholders_file):
-    raw_config = get_entity(resource_id=configuration_id, cls=MorphologyAssignmentConfig).to_model()
+def _stage_configuration(configuration_id: str, output_dir: StrOrPath) -> None:
+    """Stage mmodel configuration.
 
+    Configuration is staged and split into two configs:
+        - output_dir/canonical_config.json
+        - output_dir/placeholder_config.json
+
+    Each config contains configuration of synthesis and placeholder assignment respectively.
+    """
+    raw_config = get_entity(resource_id=configuration_id, cls=MorphologyAssignmentConfig).to_model()
     placeholders, canonicals = raw_config.expand().split()
 
+    canonical_file = Path(output_dir, "canonical_config.json")
     L.info("Materializing canonical morphology configuration...")
     canonicals.materialize(
-        output_file=output_canonicals_file,
+        output_file=canonical_file,
         labels_only=True,
     )
-    L.debug("Staged synthesis config at %s", output_canonicals_file)
+    L.debug("Staged synthesis config at %s", canonical_file)
 
+    placeholder_file = Path(output_dir, "placeholder_config.json")
     L.info("Materializing placeholder morphology configuration...")
     placeholders.materialize(
-        output_file=output_placeholders_file,
+        output_file=placeholder_file,
         labels_only=True,
     )
-    L.debug("Staged placeholder config at %s", output_placeholders_file)
+    L.debug("Staged placeholder config at %s", placeholder_file)
 
 
 @app.command(name="split")
@@ -147,8 +172,21 @@ def split_cli(**kwargs):
     split(**kwargs)
 
 
-def split(*, canonical_config_file, nodes_file, output_dir):
-    """Split population in two."""
+def split(
+    *,
+    canonical_config_file: StrOrPath,
+    nodes_file: StrOrPath,
+    output_dir: StrOrPath,
+) -> None:
+    """Split node population in two.
+
+    Two node files are created:
+        - output_dir/canonicals.h5
+        - output_dir/palceholders.h5
+
+    where the canonical_config_file determines the region/mtype entries that are part of canonical
+    population. The rest are automatically moved into the placeholder population.
+    """
     canonicals = utils.load_json(canonical_config_file)
 
     pairs = pd.DataFrame(
@@ -182,7 +220,7 @@ def split(*, canonical_config_file, nodes_file, output_dir):
         L.info("Cells to be assigned placeholders: %d", len(t2))
 
 
-def _empty_cell_collection(reference):
+def _empty_cell_collection(reference: voxcell.CellCollection) -> voxcell.CellCollection:
     """Create an empty CellCollection that conforms to the attributes of the reference one."""
     cells = voxcell.CellCollection(population_name=reference.population_name)
 
@@ -205,8 +243,20 @@ def transform_cli(**kwargs):
     transform(**kwargs)
 
 
-def transform(*, atlas_file, canonical_config_file, transform_dir):
-    """Transform."""
+def transform(
+    *,
+    atlas_file: StrOrPath,
+    canonical_config_file: StrOrPath,
+    transform_dir: StrOrPath,
+) -> None:
+    """Transform input datasets to files needed for topological synthesis.
+
+    Files created:
+        - atlas_dir/orientation.nrrd is replaced with all orientations
+        - transform_dir/tmd_parameters.json
+        - transform_dir/tmd_distributions.json
+        - transform_dir/region_structure.yml
+    """
     atlas_info = staging.AtlasInfo.from_file(atlas_file)
 
     _generate_cell_orientations(atlas_info)
@@ -235,13 +285,26 @@ def assign_placeholders_cli(**kwargs):
     assign_placeholders(**kwargs)
 
 
-def assign_placeholders(*, nodes_file, config_file, out_morphologies_dir, out_nodes_file):
-    """Assign placeholders."""
+def assign_placeholders(
+    *,
+    nodes_file: StrOrPath,
+    config_file: StrOrPath,
+    out_morphologies_dir: StrOrPath,
+    out_nodes_file: StrOrPath,
+) -> None:
+    """Assign placeholder morphologies to node population.
+
+    Args:
+        nodes_file: nodes file with a single node population.
+        config_file: placeholder configuration for the morphology assignment.
+        out_morphologies_dir: Output morphologies directory.
+        out_nodes_file: Output nodes file.
+    """
     cells = voxcell.CellCollection.load_sonata(nodes_file)
 
     if len(cells) == 0:
         L.warning("No cells to assign placeholders.")
-        staging.stage_file(source=nodes_file, target=out_nodes_file)
+        staging.stage_file(source=Path(nodes_file), target=Path(out_nodes_file))
         return
 
     placeholders = utils.load_json(config_file)
@@ -311,8 +374,13 @@ def merge_cli(**kwargs):
     merge(**kwargs)
 
 
-def merge(*, synthesized_nodes_file, placeholder_nodes_file, out_nodes_file):
-    """Merge."""
+def merge(
+    *,
+    synthesized_nodes_file: StrOrPath,
+    placeholder_nodes_file: StrOrPath,
+    out_nodes_file: StrOrPath,
+) -> None:
+    """Merge synthesized and placeholder node populations."""
     pairs = []
 
     for nodes_file in [synthesized_nodes_file, placeholder_nodes_file]:
@@ -323,7 +391,7 @@ def merge(*, synthesized_nodes_file, placeholder_nodes_file, out_nodes_file):
 
     if len(pairs) == 1:
         output_file = pairs[0][0]
-        staging.stage_file(output_file, out_nodes_file)
+        staging.stage_file(source=Path(output_file), target=Path(out_nodes_file))
         L.debug(
             "A single population is built. Copied %s -> %s",
             output_file,
@@ -351,8 +419,10 @@ def register_cli(**kwargs):
     register(**kwargs)
 
 
-def register(*, output_dir, circuit_id, nodes_file, morphologies_dir):
-    """Register."""
+def register(
+    *, output_dir: StrOrPath, circuit_id: str, nodes_file: StrOrPath, morphologies_dir: StrOrPath
+) -> None:
+    """Register a new DetailedCircuit with the new nodes_file and morphologies_dir."""
     input_circuit = get_entity(resource_id=circuit_id, cls=DetailedCircuit)
 
     input_circuit_config = utils.load_json(input_circuit.circuitConfigPath.get_url_as_path())
@@ -448,7 +518,13 @@ def _generate_region_structure(ph_catalog: dict | None, output_file: Path) -> Pa
     return output_file
 
 
-def _write_partial_config(config, nodes_file, population_name, morphologies_dir, output_file):
+def _write_partial_config(
+    config: dict,
+    nodes_file: StrOrPath,
+    population_name: str,
+    morphologies_dir: StrOrPath,
+    output_file: StrOrPath,
+) -> None:
     """Update partial config with new nodes path and the morphology directory."""
     updated_config = utils.update_circuit_config_population(
         config=config,
