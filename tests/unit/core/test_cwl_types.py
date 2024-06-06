@@ -5,7 +5,6 @@ from blue_cwl.core import cwl_types as tested
 
 
 def test_File():
-
     res = tested.File(path="/gpfs/foo.txt")
     assert res.path == "/gpfs/foo.txt"
     assert res.basename == "foo.txt"
@@ -24,7 +23,6 @@ def test_File():
 
 
 def test_Directory():
-
     res = tested.Directory(path="/gpfs/foo")
     assert res.path == "/gpfs/foo"
     assert res.basename == "foo"

@@ -7,7 +7,6 @@ from blue_cwl.core.exceptions import CWLError
 
 
 def test_concretize_inputs__defaults():
-
     Par = cwl.WorkflowInputParameter
 
     inputs = {
@@ -53,7 +52,6 @@ def test_concretize_inputs__defaults():
 
 
 def test_concretize_inputs__nondefaults():
-
     cases = [
         ("int", 0, 0),
         ("int", 0.0, 0),
@@ -81,7 +79,6 @@ def test_concretize_inputs__nondefaults():
 
 
 def test_concretize_inputs__raises():
-
     inputs = {"a": cwl.WorkflowInputParameter(id="a", type="File")}
 
     with pytest.raises(CWLError):
@@ -89,7 +86,6 @@ def test_concretize_inputs__raises():
 
 
 def test_concretize_tool_outputs__raises():
-
     with pytest.raises(NotImplementedError):
         test_module._concretize_tool_outputs({"a": Mock(type="int")}, {})
 
@@ -148,7 +144,6 @@ def _array_type(type_):
     ],
 )
 def test_input_value_to_object(input_type, input_value, expected):
-
     res = test_module._input_value_to_object(input_type, input_value)
     assert res == expected
 
@@ -163,12 +158,10 @@ def test_input_value_to_object(input_type, input_value, expected):
     ],
 )
 def test_input_value_to_object__raises(input_type, input_value):
-
     with pytest.raises(ValueError):
         test_module._input_value_to_object(input_type, input_value)
 
 
 def test_cmd_elements__raises():
-
     with pytest.raises(NotImplementedError):
         test_module._cmd_elements("Foo", None, None)

@@ -4,7 +4,6 @@ from blue_cwl.core.exceptions import CWLError
 
 
 def test_config__update():
-
     c1 = test_module.RemoteConfig(host="foo")
     c2 = test_module.RemoteConfig(host="bar")
     c3 = c1.update(c2)

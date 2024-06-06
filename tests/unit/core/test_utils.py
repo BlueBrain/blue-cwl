@@ -18,7 +18,6 @@ def test_cwd():
 
 
 def test_create_dir(tmp_path):
-
     directory = Path(tmp_path / "sub")
 
     assert not directory.exists()
@@ -41,7 +40,6 @@ def test_create_dir(tmp_path):
 
 
 def test_load_json(tmp_path):
-
     file = Path(tmp_path / "file.json")
     file.write_text(json.dumps({"a": "b"}))
 
@@ -50,14 +48,12 @@ def test_load_json(tmp_path):
 
 
 def test_write_json(tmp_path):
-
     file = Path(tmp_path / "file.json")
     tested.write_json(data={"a": "b"}, filepath=file)
     assert tested.load_json(file) == {"a": "b"}
 
 
 def test_load_yaml(tmp_path):
-
     file = Path(tmp_path / "file.yml")
     file.write_text("a: b")
 
@@ -66,7 +62,6 @@ def test_load_yaml(tmp_path):
 
 
 def test_write_yaml(tmp_path):
-
     data = {"a": {"foo": "bar"}, "c": {"foo": "bar"}}
 
     file = Path(tmp_path / "file.json")

@@ -29,17 +29,9 @@ def _check_arg_consistency(cli_command, function):
 
 
 def test_setup_cli(tmp_path):
-
     output_dir = create_dir(Path(tmp_path, "out"))
 
-    result = CliRunner().invoke(
-        test_module.app,
-        [
-            "setup",
-            "--output-dir",
-            str(output_dir)
-        ]
-    )
+    result = CliRunner().invoke(test_module.app, ["setup", "--output-dir", str(output_dir)])
     assert result.exit_code == 0
     assert Path(output_dir / "build").is_dir()
     assert Path(output_dir / "stage").is_dir()
@@ -56,51 +48,70 @@ def test_split_cli():
     _check_arg_consistency(test_module.split_cli, test_module.split)
 
 
-
 @pytest.fixture
 def canonical_config():
     return {
-  "SSp-bfd2": {
-    "L2_TPC:B": {
-      "parameters": "mock-params",
-      "distributions": "mock-distrs",
-      "overrides": {
-        "apical_dendrite": {
-          "total_extent": None,
-          "randomness": 0.28,
-          "orientation": None,
-          "step_size": {
-            "norm": {
-              "mean": 1.9,
-              "std": 0.2
+        "SSp-bfd2": {
+            "L2_TPC:B": {
+                "parameters": "mock-params",
+                "distributions": "mock-distrs",
+                "overrides": {
+                    "apical_dendrite": {
+                        "total_extent": None,
+                        "randomness": 0.28,
+                        "orientation": None,
+                        "step_size": {"norm": {"mean": 1.9, "std": 0.2}},
+                        "radius": None,
+                    }
+                },
             }
-          },
-          "radius": None
         }
-      }
     }
-  }
-}
+
 
 COLS = [
-"region",
-"etype",
-"hemisphere",
-"subregion",
-"mtype",
-"morph_class",
-"synapse_class",
-"x",
-"y",
-"z",
+    "region",
+    "etype",
+    "hemisphere",
+    "subregion",
+    "mtype",
+    "morph_class",
+    "synapse_class",
+    "x",
+    "y",
+    "z",
 ]
+
 
 @pytest.fixture
 def one_region_cells():
-    df = pd.DataFrame.from_records([
-        ("SSp-bfd2", "cADpyr", "left", "SSp-bfd2", "L2_TPC:B", "PYR", "EXC", 6503., 1012., 2900.),
-        ("SSp-bfd2", "cADpyr", "right", "SSp-bfd2", "L2_TPC:B", "PYR", "EXC", 7697., 1306., 9391.),
-    ],
+    df = pd.DataFrame.from_records(
+        [
+            (
+                "SSp-bfd2",
+                "cADpyr",
+                "left",
+                "SSp-bfd2",
+                "L2_TPC:B",
+                "PYR",
+                "EXC",
+                6503.0,
+                1012.0,
+                2900.0,
+            ),
+            (
+                "SSp-bfd2",
+                "cADpyr",
+                "right",
+                "SSp-bfd2",
+                "L2_TPC:B",
+                "PYR",
+                "EXC",
+                7697.0,
+                1306.0,
+                9391.0,
+            ),
+        ],
         index=pd.RangeIndex(start=1, stop=3),
         columns=COLS,
     )
@@ -178,12 +189,57 @@ def test_split__only_placehoders(tmp_path, canonical_config, nodes_file_one_regi
 
 @pytest.fixture
 def two_region_cells():
-    df = pd.DataFrame.from_records([
-        ("SSp-bfd2", "cADpyr", "left", "SSp-bfd2", "L2_TPC:B", "PYR", "EXC", 6503., 1012., 2900.),
-        ("SSp-bfd2", "cADpyr", "left", "SSp-bfd2", "L2_TPC:B", "PYR", "EXC", 6503., 1012., 2900.),
-        ("SSp-bfd3", "cADpyr", "right", "SSp-bfd3", "L2_TPC:B", "PYR", "EXC", 7697., 1306., 9391.),
-        ("SSp-bfd3", "cADpyr", "right", "SSp-bfd3", "L2_TPC:B", "PYR", "EXC", 7697., 1306., 9391.),
-    ],
+    df = pd.DataFrame.from_records(
+        [
+            (
+                "SSp-bfd2",
+                "cADpyr",
+                "left",
+                "SSp-bfd2",
+                "L2_TPC:B",
+                "PYR",
+                "EXC",
+                6503.0,
+                1012.0,
+                2900.0,
+            ),
+            (
+                "SSp-bfd2",
+                "cADpyr",
+                "left",
+                "SSp-bfd2",
+                "L2_TPC:B",
+                "PYR",
+                "EXC",
+                6503.0,
+                1012.0,
+                2900.0,
+            ),
+            (
+                "SSp-bfd3",
+                "cADpyr",
+                "right",
+                "SSp-bfd3",
+                "L2_TPC:B",
+                "PYR",
+                "EXC",
+                7697.0,
+                1306.0,
+                9391.0,
+            ),
+            (
+                "SSp-bfd3",
+                "cADpyr",
+                "right",
+                "SSp-bfd3",
+                "L2_TPC:B",
+                "PYR",
+                "EXC",
+                7697.0,
+                1306.0,
+                9391.0,
+            ),
+        ],
         index=pd.RangeIndex(start=1, stop=5),
         columns=COLS,
     )
@@ -198,7 +254,6 @@ def nodes_file_two_regions(tmp_path, two_region_cells):
 
 
 def test_split__both_groups(tmp_path, canonical_config, nodes_file_two_regions):
-
     output_dir = create_dir(tmp_path / "out")
 
     canonical_config_file = Path(tmp_path / "canonical.json")

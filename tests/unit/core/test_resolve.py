@@ -98,16 +98,13 @@ def test_resolve_parameter_references(cfg, expected):
 
 
 def test_resolve_parameter_references__raises():
-
     with pytest.raises(ReferenceResolutionError):
-
         test_module.resolve_parameter_references(
             "$(inputs.bar)",
             inputs={"bar": File(path="foo.txt")},
         )
 
     with pytest.raises(ReferenceResolutionError):
-
         test_module.resolve_parameter_references(
             "$(self)",
             context=File(path="foo.txt"),

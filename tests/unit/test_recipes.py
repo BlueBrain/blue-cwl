@@ -587,7 +587,6 @@ def small_synapse_properties():
 def test_write_functionalizer_json_recipe(
     region_map, annotation, small_synapse_properties, synaptic_classification, populations, tmp_path
 ):
-
     tdir = tmp_path / "tmpdir"
     tdir.mkdir()
 

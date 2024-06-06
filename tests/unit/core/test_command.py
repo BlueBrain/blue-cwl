@@ -8,7 +8,6 @@ from blue_cwl.core.config import SlurmConfig
 
 
 def test_run_command(tmp_path):
-
     source_file = Path(tmp_path / "source.txt")
     target_file = Path(tmp_path / "target.txt")
 

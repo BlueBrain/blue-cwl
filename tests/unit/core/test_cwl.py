@@ -27,7 +27,6 @@ def _test_dataclass_instance(obj, expected_attributes):
 
 
 def test_workflow_step_output_parameter():
-
     p = tested.WorkflowOutputParameter(
         id="foo",
         type="File",
@@ -40,7 +39,6 @@ def test_workflow_step_output_parameter():
 
 
 def test_workflow_step_input():
-
     p = tested.WorkflowStepInput(
         id="foo",
         source="bar/out",
@@ -183,7 +181,6 @@ def test_Workflow__luigi_DictParameter(workflow):
 
 
 def test_Workflow__make_workflow_step(workflow):
-
     res = workflow.make_workflow_step("m0", {"msg0": "foo", "msg1": "bar", "msg2": "spam"}, {})
 
     assert res.base_command is not None
