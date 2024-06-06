@@ -4,6 +4,12 @@
 Registry
 ========
 
+mmodel|neurons_mmodel|v3
+************************
+
+.. image:: generated/mmodel__neurons_mmodel__v3.svg
+
+
 memodel|neurons_memodel|v3
 **************************
 
