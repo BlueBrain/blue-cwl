@@ -20,7 +20,7 @@ executor:
   remote_config:
     host: bbpv1.epfl.ch
 
-baseCommand: ["blue-cwl", "execute", "mmodel", "assign-placeholders"]
+baseCommand: ["blue-cwl", "execute", "mmodel-neurons", "assign-placeholders"]
 
 inputs:
 
@@ -43,11 +43,6 @@ inputs:
     type: string
     inputBinding:
       prefix: --out-morphologies-dir
-
-  - id: output_dir
-    type: Directory
-    inputBinding:
-      prefix: --output-dir
 
 outputs:
 

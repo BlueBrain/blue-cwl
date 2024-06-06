@@ -3,8 +3,6 @@
 """Placeholder emodel assignment."""
 
 import logging
-import shutil
-import subprocess
 from pathlib import Path
 
 import click
@@ -26,7 +24,6 @@ from blue_cwl.utils import (
     get_partial_circuit_region_id,
     merge_cell_collections,
 )
-from blue_cwl.variant import Variant
 from blue_cwl.wrappers import common
 
 SEED = 42
@@ -83,7 +80,7 @@ def stage(*, configuration_id, circuit_id, stage_dir):
     circuit = _stage_circuit(circuit_id, stage_dir)
 
     atlas_dir = utils.create_dir(Path(stage_dir, "atlas"))
-    atlas_file = Path(stage, "atlas.json")
+    atlas_file = Path(stage_dir, "atlas.json")
     staging.stage_atlas(
         circuit.atlasRelease,
         output_dir=atlas_dir,
@@ -192,7 +189,9 @@ def _empty_cell_collection(reference):
     cells.properties = pd.DataFrame(columns=reference.properties.columns)
 
     cells.positions = reference.positions[:0]
-    cells.orientations = reference.orientations[:0]
+
+    if cells.orientations is not None:
+        cells.orientations = reference.orientations[:0]
 
     return cells
 
@@ -200,13 +199,13 @@ def _empty_cell_collection(reference):
 @app.command(name="transform")
 @click.option("--atlas-file", required=True)
 @click.option("--canonical-config-file", required=True)
-@click.option("--output-dir", required=True)
+@click.option("--transform-dir", required=True)
 def transform_cli(**kwargs):
     """Transform."""
     transform(**kwargs)
 
 
-def transform(*, atlas_file, canonical_config_file, output_dir):
+def transform(*, atlas_file, canonical_config_file, transform_dir):
     """Transform."""
     atlas_info = staging.AtlasInfo.from_file(atlas_file)
 
@@ -217,12 +216,12 @@ def transform(*, atlas_file, canonical_config_file, output_dir):
     _generate_synthesis_inputs(
         canonicals,
         hierarchy_file=atlas_info.ontology_path,
-        output_dir=Path(output_dir),
+        output_dir=Path(transform_dir),
     )
 
     _generate_region_structure(
         ph_catalog=atlas_info.ph_catalog,
-        output_file=Path(output_dir, "region_structure.yml"),
+        output_file=Path(transform_dir, "region_structure.yml"),
     )
 
 
@@ -231,7 +230,6 @@ def transform(*, atlas_file, canonical_config_file, output_dir):
 @click.option("--config-file", required=True)
 @click.option("--out-nodes-file", required=True)
 @click.option("--out-morphologies-dir", required=True)
-@click.option("--output-dir", required=True)
 def assign_placeholders_cli(**kwargs):
     """Assign placeholders."""
     assign_placeholders(**kwargs)
@@ -310,7 +308,7 @@ def assign_placeholders(*, nodes_file, config_file, out_morphologies_dir, out_no
 @click.option("--out-nodes-file", required=True)
 def merge_cli(**kwargs):
     """Merge."""
-    transform(**kwargs)
+    merge(**kwargs)
 
 
 def merge(*, synthesized_nodes_file, placeholder_nodes_file, out_nodes_file):
@@ -324,7 +322,7 @@ def merge(*, synthesized_nodes_file, placeholder_nodes_file, out_nodes_file):
             pairs.append((nodes_file, cells))
 
     if len(pairs) == 1:
-        output_file = pairs[0][1]
+        output_file = pairs[0][0]
         staging.stage_file(output_file, out_nodes_file)
         L.debug(
             "A single population is built. Copied %s -> %s",
@@ -347,6 +345,7 @@ def merge(*, synthesized_nodes_file, placeholder_nodes_file, out_nodes_file):
 @click.option("--circuit-id", required=True)
 @click.option("--nodes-file", required=True)
 @click.option("--morphologies-dir", required=True)
+@click.option("--output-dir", required=True)
 def register_cli(**kwargs):
     """Register."""
     register(**kwargs)
@@ -359,7 +358,7 @@ def register(*, output_dir, circuit_id, nodes_file, morphologies_dir):
     input_circuit_config = utils.load_json(input_circuit.circuitConfigPath.get_url_as_path())
     _, population_name = utils.get_biophysical_partial_population_from_config(input_circuit_config)
 
-    sonata_config_file = output_dir / "circuit_config.json"
+    sonata_config_file = Path(output_dir, "circuit_config.json")
     _write_partial_config(
         config=input_circuit_config,
         nodes_file=nodes_file,
@@ -382,223 +381,6 @@ def register(*, output_dir, circuit_id, nodes_file, morphologies_dir):
     )
 
 
-@app.command(name="mono-execution")
-@click.option("--configuration-id", required=True)
-@click.option("--circuit-id", required=True)
-@click.option("--variant-id", required=True)
-@click.option("--output-dir", required=True)
-@click.option("--parallel", required=False, default=True)
-def mono_execution(
-    configuration_id,
-    circuit_id,
-    variant_id,
-    output_dir,
-    parallel,
-):
-    """Morphology synthesis of neuronal cells."""
-    return _app(configuration_id, circuit_id, variant_id, output_dir, parallel)
-
-
-def _app(configuration, partial_circuit, variant_config, output_dir, parallel):
-    output_dir = utils.create_dir(Path(output_dir).resolve())
-    staging_dir = utils.create_dir(output_dir / "stage")
-    build_dir = utils.create_dir(output_dir / "build")
-    atlas_dir = utils.create_dir(staging_dir / "atlas")
-    morphologies_dir = utils.create_dir(build_dir / "morphologies", clean_if_exists=True)
-
-    partial_circuit = get_entity(resource_id=partial_circuit, cls=DetailedCircuit)
-
-    atlas_info = staging.stage_atlas(
-        partial_circuit.atlasRelease,
-        output_dir=atlas_dir,
-        cell_orientation_field_basename="raw_orientation.nrrd",
-    )
-    raw_config = get_entity(resource_id=configuration, cls=MorphologyAssignmentConfig).to_model()
-    placeholders, canonicals = raw_config.expand().split()
-
-    L.info("Materializing canonical morphology configuration...")
-    canonicals = canonicals.materialize(
-        output_file=staging_dir / "materialize_canonical_config.json",
-        labels_only=True,
-    )
-    L.info("Materializing placeholder morphology configuration...")
-    placeholders = placeholders.materialize(
-        output_file=staging_dir / "materialize_placeholders_config.json",
-        labels_only=True,
-    )
-
-    circuit_config = utils.load_json(partial_circuit.circuitConfigPath.get_url_as_path())
-
-    nodes_file, population_name = utils.get_biophysical_partial_population_from_config(
-        circuit_config
-    )
-    validation.check_properties_in_population(population_name, nodes_file, INPUT_POPULATION_COLUMNS)
-
-    variant = get_entity(resource_id=variant_config, cls=Variant)
-
-    output_nodes_file = build_dir / "nodes.h5"
-    _assign_morphologies(
-        canonicals=canonicals,
-        placeholders=placeholders,
-        nodes_file=nodes_file,
-        population_name=population_name,
-        atlas_info=atlas_info,
-        output_dir=build_dir,
-        output_nodes_file=output_nodes_file,
-        output_morphologies_dir=morphologies_dir,
-        parallel=parallel,
-        variant=variant,
-        seed=SEED,
-    )
-    validation.check_properties_in_population(
-        population_name, output_nodes_file, OUTPUT_POPULATION_COLUMNS
-    )
-
-    sonata_config_file = build_dir / "circuit_config.json"
-    _write_partial_config(
-        config=circuit_config,
-        nodes_file=output_nodes_file,
-        population_name=population_name,
-        morphologies_dir=morphologies_dir,
-        output_file=sonata_config_file,
-    )
-    validation.check_population_name_in_config(population_name, sonata_config_file)
-
-    circuit = registering.register_partial_circuit(
-        name="Partial circuit with morphologies",
-        brain_region_id=get_partial_circuit_region_id(partial_circuit),
-        atlas_release_id=partial_circuit.atlasRelease.get_id(),
-        description="Partial circuit built with cell properties, and morphologies.",
-        sonata_config_path=sonata_config_file,
-    )
-    utils.write_resource_to_definition_output(
-        json_resource=load_by_id(circuit.get_id()),
-        variant=variant,
-        output_dir=output_dir,
-    )
-
-
-def _assign_morphologies(
-    canonicals,
-    placeholders,
-    nodes_file,
-    population_name,
-    atlas_info,
-    output_dir,
-    output_nodes_file,
-    output_morphologies_dir,
-    parallel,
-    seed,
-    variant,
-):
-    L.info("Splitting nodes into canonical and placeholders...")
-    synthesized_file, placeholder_file = _split_circuit(
-        canonicals=canonicals,
-        nodes_file=nodes_file,
-        population_name=population_name,
-        output_dir=output_dir,
-    )
-
-    built_groups = []
-
-    if synthesized_file:
-        L.info("Generating synthesized morphologies...")
-        canonical_output_nodes_file = output_dir / "canonicals.h5"
-        _run_topological_synthesis(
-            canonicals=canonicals,
-            input_nodes_file=synthesized_file,
-            atlas_info=atlas_info,
-            output_dir=output_dir,
-            output_nodes_file=canonical_output_nodes_file,
-            output_morphologies_dir=output_morphologies_dir,
-            seed=seed,
-            parallel=parallel,
-            variant=variant,
-        )
-        built_groups.append(canonical_output_nodes_file)
-
-    if placeholder_file:
-        L.info("Assigning placeholder morphologies...")
-        placeholder_output_nodes_file = output_dir / "placeholders.h5"
-        _run_placeholder_assignment(
-            placeholders=placeholders,
-            input_nodes_file=placeholder_file,
-            output_morphologies_dir=output_morphologies_dir,
-            output_nodes_file=placeholder_output_nodes_file,
-        )
-        built_groups.append(placeholder_output_nodes_file)
-
-    if len(built_groups) == 1:
-        output_file = built_groups[0]
-        shutil.move(output_file, output_nodes_file)
-        L.debug(
-            "A single population is built. Moved %s -> %s",
-            output_file,
-            output_nodes_file,
-        )
-    elif len(built_groups) == 2:
-        merge_cell_collections(
-            splits=[voxcell.CellCollection.load_sonata(p) for p in built_groups],
-            population_name=population_name,
-        ).save_sonata(output_nodes_file)
-        L.info("Final merged nodes written at %s", output_nodes_file)
-
-    else:
-        raise ValueError("Both canonical and placeholder nodes are empty.")
-
-
-def _run_topological_synthesis(
-    canonicals,
-    input_nodes_file,
-    atlas_info,
-    output_dir,
-    output_nodes_file,
-    output_morphologies_dir,
-    seed,
-    parallel,
-    variant,
-):
-    # create cell orientations in atlas directory
-    _generate_cell_orientations(atlas_info)
-
-    tmd_parameters_file, tmd_distributions_file = _generate_synthesis_inputs(
-        canonicals,
-        hierarchy_file=atlas_info.ontology_path,
-        output_dir=output_dir,
-    )
-    region_structure_file = _generate_region_structure(
-        ph_catalog=atlas_info.ph_catalog,
-        output_file=output_dir / "region_structure.yaml",
-    )
-    _execute_synthesis_command(
-        input_nodes_file=input_nodes_file,
-        tmd_parameters_file=tmd_parameters_file,
-        tmd_distributions_file=tmd_distributions_file,
-        region_structure_file=region_structure_file,
-        atlas_dir=atlas_info.directory,
-        output_dir=output_dir,
-        output_nodes_file=output_nodes_file,
-        output_morphologies_dir=output_morphologies_dir,
-        seed=seed,
-        parallel=parallel,
-        variant=variant,
-    )
-    cells = voxcell.CellCollection.load_sonata(output_nodes_file)
-    properties = cells.properties
-
-    # Add morphology_producer column if not existent
-    if SONATA_MORPHOLOGY_PRODUCER not in properties.columns:
-        properties[SONATA_MORPHOLOGY_PRODUCER] = MorphologyProducer.SYNTHESIS
-        cells.save_sonata(output_nodes_file)
-        L.warning("morphology_producer column did not exist and was added in synthesized nodes.")
-
-    L.info(
-        "%d synthesized nodes written at %s",
-        len(cells),
-        output_nodes_file,
-    )
-
-
 def _generate_cell_orientations(atlas_info):
     """Generate cell orientations from atlas information."""
     L.info("Generating cell orientation field...")
@@ -615,6 +397,10 @@ def _generate_cell_orientations(atlas_info):
     )
 
     output_orientations_file = atlas_info.directory / "orientation.nrrd"
+
+    if output_orientations_file.exists():
+        output_orientations_file.unlink()
+
     orientation_field.save_nrrd(output_orientations_file)
 
     L.info("Cell orientation field written at %s", output_orientations_file)
@@ -660,177 +446,6 @@ def _generate_region_structure(ph_catalog: dict | None, output_file: Path) -> Pa
     utils.write_yaml(filepath=output_file, data=region_structure)
 
     return output_file
-
-
-def _execute_synthesis_command(
-    input_nodes_file,
-    tmd_parameters_file,
-    tmd_distributions_file,
-    region_structure_file,
-    atlas_dir,
-    output_dir,
-    output_nodes_file,
-    output_morphologies_dir,
-    seed,
-    parallel,
-    variant,
-):
-    L.info("Running topological synthesis...")
-
-    arglist = [
-        "region-grower",
-        "synthesize-morphologies",
-        "--input-cells",
-        str(input_nodes_file),
-        "--tmd-parameters",
-        str(tmd_parameters_file),
-        "--tmd-distributions",
-        str(tmd_distributions_file),
-        "--atlas",
-        str(atlas_dir),
-        "--seed",
-        str(seed),
-        "--out-cells",
-        str(output_nodes_file),
-        "--out-morph-dir",
-        str(output_morphologies_dir),
-        "--out-morph-ext",
-        "h5",
-        "--out-morph-ext",
-        "asc",
-        "--max-files-per-dir",
-        "10000",
-        "--out-apical",
-        str(output_dir / "apical.yaml"),
-        "--max-drop-ratio",
-        "0.5",
-        "--scaling-jitter-std",
-        "0.5",
-        "--rotational-jitter-std",
-        "10",
-        "--region-structure",
-        str(region_structure_file),
-        "--hide-progress-bar",
-    ]
-
-    if parallel:
-        arglist.append("--with-mpi")
-
-    cmd = " ".join(arglist)
-    cmd = utils.build_variant_allocation_command(cmd, variant)
-
-    L.info("Tool full command: %s", cmd)
-
-    subprocess.run(cmd, check=True, shell=True)
-
-    L.info(
-        "Topological synthesis completed generating:\n\tNodes:%s\n\tMorphs:%s",
-        output_nodes_file,
-        output_morphologies_dir,
-    )
-
-
-def _split_circuit(
-    canonicals,
-    nodes_file,
-    population_name,
-    output_dir,
-):
-    pairs = pd.DataFrame(
-        [(region, mtype) for region, data in canonicals.items() for mtype in data],
-        columns=["region", "mtype"],
-    )
-
-    cell_collection = voxcell.CellCollection.load_sonata(
-        nodes_file,
-        population_name=population_name,
-    )
-
-    t1, t2 = bisect_cell_collection_by_properties(cell_collection=cell_collection, properties=pairs)
-
-    # switch to using files instead of the populations
-    if t1 and t2:
-        t1_path = output_dir / "canonicals.h5"
-        t1.save_sonata(t1_path)
-        L.info("Cells to be synthesized: %d", len(t1))
-
-        t2_path = output_dir / "placeholders.h5"
-        t2.save_sonata(t2_path)
-
-        L.info("Cells to be assigned placeholders: %d", len(t2))
-
-        return t1_path, t2_path
-
-    if t1 and not t2:
-        L.info("Cells to be synthesized: %d", len(cell_collection))
-        return nodes_file, None
-
-    if t2 and not t1:
-        L.info("Cells to be assigned placeholders: %d", len(cell_collection))
-        return None, nodes_file
-
-    raise ValueError("Both splits are empty.")
-
-
-def _run_placeholder_assignment(
-    placeholders, input_nodes_file, output_morphologies_dir, output_nodes_file=None
-):
-    cells = voxcell.CellCollection.load_sonata(input_nodes_file)
-
-    df_placeholders = pd.DataFrame(
-        [
-            (mtype, etype, etype_data[0])
-            for mtype, mtype_data in placeholders.items()
-            for etype, etype_data in mtype_data.items()
-        ],
-        columns=["region", "mtype", "path"],
-    )
-
-    # add morphology column from the path stems
-    df_placeholders[SONATA_MORPHOLOGY] = df_placeholders["path"].apply(lambda e: Path(e).stem)
-
-    # get unique values and remove from dataframe
-    unique_morphology_paths = df_placeholders["path"].unique()
-
-    # avoid adding the path to the properties df when merging below
-    df_placeholders.drop(columns="path", inplace=True)
-
-    if set(df_placeholders.columns) != {"region", "mtype", SONATA_MORPHOLOGY}:
-        raise CWLWorkflowError(
-            "Unexpected columns encountered:\n"
-            f"Expected   : (region, mtype, {SONATA_MORPHOLOGY})\n"
-            f"Encountered: {df_placeholders.columns}"
-        )
-
-    # add morphology column via merge with the placeholder entries
-    cells.properties = pd.merge(
-        cells.properties,
-        df_placeholders,
-        how="left",
-        on=["region", "mtype"],
-    )
-
-    if cells.properties[SONATA_MORPHOLOGY].isnull().any():
-        raise CWLWorkflowError("Null entries encountered in morphology column.")
-
-    cells.properties[SONATA_MORPHOLOGY_PRODUCER] = MorphologyProducer.PLACEHOLDER
-
-    # use morphology unique paths to copy the placeholder morphologies to the morphologies directory
-    for morphology_path in unique_morphology_paths:
-        morphology_name = Path(morphology_path).stem
-        convert(morphology_path, output_morphologies_dir / f"{morphology_name}.h5")
-        convert(morphology_path, output_morphologies_dir / f"{morphology_name}.asc")
-
-    # add unit orientations
-    cells.orientations = np.broadcast_to(np.identity(3), (len(cells.properties), 3, 3))
-
-    cells.save_sonata(output_nodes_file)
-
-    L.info(
-        "%d placeholder nodes written at %s",
-        len(cells),
-        output_nodes_file,
-    )
 
 
 def _write_partial_config(config, nodes_file, population_name, morphologies_dir, output_file):

@@ -5,8 +5,10 @@ id: assign_synthesized
 label: assign-synthesized
 
 environment:
-  env_type: VENV
-  path: /gpfs/bbp.cscs.ch/project/proj134/scratch/zisis/sub-workflows/venv311
+  env_type: MODULE
+  modules:
+    - unstable
+    - py-region-grower
 
 executor:
   type: slurm
@@ -14,8 +16,9 @@ executor:
     partition: prod
     account: proj134
     exclusive: true
-    time: '1:00:00'
-    nodes: 1
+    time: '12:00:00'
+    cpus_per_task: 2
+    ntasks: 20
     mem: 0
   remote_config:
     host: bbpv1.epfl.ch
@@ -26,11 +29,12 @@ baseCommand:
   - --out-morph-ext h5
   - --out-morph-ext asc
   - --max-files-per-dir 10000
-  - --max-drop-ration 0.5
-  - --rotation-jitter-std 10
+  - --max-drop-ratio 0.5
+  - --rotational-jitter-std 10
   - --seed 0
   - --hide-progress-bar
   - --overwrite
+  - --with-mpi
 
 inputs:
 

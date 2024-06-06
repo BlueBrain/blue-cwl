@@ -20,7 +20,7 @@ executor:
   remote_config:
     host: bbpv1.epfl.ch
 
-baseCommand: ["blue-cwl", "execute", "mmodel", "setup"]
+baseCommand: ["blue-cwl", "execute", "mmodel-neurons", "setup"]
 
 inputs:
 

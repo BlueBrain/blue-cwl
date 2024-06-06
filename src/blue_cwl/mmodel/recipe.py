@@ -15,24 +15,29 @@ from blue_cwl.utils import load_json
 
 
 def build_synthesis_inputs(
-    configuration: dict[str, dict[str, CanonicalMorphologyModel]], region_map
+    configuration: dict[str, dict[str, CanonicalMorphologyModel | dict]], region_map
 ) -> tuple[dict, dict]:
     """Build synthesis inputs."""
     parameters, distributions = {}, {}
     for region, region_data in configuration.items():
         param_mtypes, distr_mtypes = {}, {}
         for mtype, canonical_model in region_data.items():
-            params = load_json(canonical_model.parameters)
+            if isinstance(canonical_model, dict):
+                model = CanonicalMorphologyModel.from_dict(canonical_model)
+            else:
+                model = canonical_model
+
+            params = load_json(model.parameters)
 
             # Remove the constraints because we don't have ordered layer info to construct
             # the region structure and layer constraints.
             if "context_constraints" in params:
                 del params["context_constraints"]
 
-            distrs = load_json(canonical_model.distributions)
+            distrs = load_json(model.distributions)
 
-            if canonical_model.overrides:
-                params, distrs = apply_overrides(params, distrs, canonical_model.overrides)
+            if model.overrides:
+                params, distrs = apply_overrides(params, distrs, model.overrides)
 
             param_mtypes[mtype] = params
             distr_mtypes[mtype] = distrs

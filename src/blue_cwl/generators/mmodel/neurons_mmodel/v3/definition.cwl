@@ -79,7 +79,6 @@ steps:
         source: setup/build_dir
         valueFrom: $(self.path)/placeholders_with_morphs.h5
       out_morphologies_dir: setup/morphologies_dir
-      output_dir: setup/build_dir
     out:
       - nodes_file
 
@@ -93,7 +92,7 @@ steps:
         valueFrom: $(self.path)/synthesized_with_morphs.h5
       out_morphologies_dir: setup/morphologies_dir
       region_file: transform/region_file
-      parameteres_file: transform/parameters_file
+      parameters_file: transform/parameters_file
       distributions_file: transform/distributions_file
     out:
       - nodes_file
