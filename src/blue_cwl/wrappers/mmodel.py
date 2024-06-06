@@ -420,7 +420,11 @@ def register_cli(**kwargs):
 
 
 def register(
-    *, output_dir: StrOrPath, circuit_id: str, nodes_file: StrOrPath, morphologies_dir: StrOrPath
+    *,
+    output_dir: StrOrPath,
+    circuit_id: str,
+    nodes_file: StrOrPath,
+    morphologies_dir: StrOrPath,
 ) -> None:
     """Register a new DetailedCircuit with the new nodes_file and morphologies_dir."""
     input_circuit = get_entity(resource_id=circuit_id, cls=DetailedCircuit)
