@@ -550,6 +550,86 @@ def test_register_cli():
     _check_arg_consistency(test_module.register_cli, test_module.register)
 
 
+@pytest.fixture
+def circuit_config():
+    return {
+        "version": 2,
+        "manifest": {"$BASE_DIR": "."},
+        "node_sets_file": "node_sets.json",
+        "networks": {
+            "nodes": [
+                {
+                    "nodes_file": "nodes.h5",
+                    "populations": {
+                        "root__neurons": {"type": "biophysical", "partial": ["cell-properties"]}
+                    },
+                }
+            ],
+            "edges": [],
+        },
+        "metadata": {"status": "partial"},
+    }
+
+
+def test_register(tmp_path, circuit_config, placeholder_nodes_file):
+    output_dir = create_dir(tmp_path / "out")
+
+    circuit_config_file = tmp_path / "circuit_config.json"
+    write_json(data=circuit_config, filepath=circuit_config_file)
+
+    morphologies_dir = output_dir / "morphologies"
+    morphologies_dir.mkdir()
+
+    mock_entity = Mock()
+    mock_entity.circuitConfigPath.get_url_as_path = lambda: str(circuit_config_file)
+
+    mock_resource_jsonld = {"foo": "bar"}
+
+    with (
+        patch("blue_cwl.wrappers.mmodel.get_entity", return_value=mock_entity),
+        patch("blue_cwl.registering.register_partial_circuit"),
+        patch("blue_cwl.wrappers.mmodel.load_by_id", return_value=mock_resource_jsonld),
+    ):
+        test_module.register(
+            output_dir=output_dir,
+            circuit_id="circuit-id",
+            nodes_file=placeholder_nodes_file,
+            morphologies_dir=morphologies_dir,
+        )
+
+    expected_out_config_file = output_dir / "circuit_config.json"
+    new_config = load_json(expected_out_config_file)
+
+    assert new_config == {
+        "version": 2,
+        "manifest": {"$BASE_DIR": "."},
+        "node_sets_file": "node_sets.json",
+        "networks": {
+            "nodes": [
+                {
+                    "nodes_file": str(placeholder_nodes_file),
+                    "populations": {
+                        "root__neurons": {
+                            "type": "biophysical",
+                            "partial": ["cell-properties", "morphologies"],
+                            "alternate_morphologies": {
+                                "h5v1": str(morphologies_dir),
+                                "neurolucida-asc": str(morphologies_dir),
+                            },
+                        }
+                    },
+                }
+            ],
+            "edges": [],
+        },
+        "metadata": {"status": "partial"},
+    }
+
+    expected_resource_file = output_dir / "resource.json"
+    resource_data = load_json(expected_resource_file)
+    assert resource_data == mock_resource_jsonld
+
+
 def test_write_partial_config(tmp_path):
     config = {
         "version": 2,
