@@ -307,6 +307,8 @@ def assign_placeholders(
         staging.stage_file(source=Path(nodes_file), target=Path(out_nodes_file))
         return
 
+    utils.create_dir(out_morphologies_dir)
+
     placeholders = utils.load_json(config_file)
 
     df_placeholders = pd.DataFrame(
@@ -385,7 +387,6 @@ def merge(
 
     for nodes_file in [synthesized_nodes_file, placeholder_nodes_file]:
         cells = voxcell.CellCollection.load_sonata(nodes_file)
-
         if len(cells) > 0:
             pairs.append((nodes_file, cells))
 
@@ -398,15 +399,23 @@ def merge(
             out_nodes_file,
         )
     elif len(pairs) == 2:
-        population_name = pairs[0][1].population_name
+        (_, cells1), (_, cells2) = pairs  # pylint: disable=unbalanced-tuple-unpacking
+        population_name = cells1.population_name
+
+        if cells2.population_name != population_name:
+            raise CWLWorkflowError(
+                "Populations to merge have different names: "
+                f"'{cells1.population_name}' != '{cells2.population_name}'"
+            )
+
         merge_cell_collections(
-            splits=[cells for _, cells in pairs],
+            splits=[cells1, cells2],
             population_name=population_name,
         ).save_sonata(out_nodes_file)
         L.info("Final merged nodes written at %s", out_nodes_file)
 
     else:
-        raise ValueError("Both canonical and placeholder nodes are empty.")
+        raise CWLWorkflowError("Both canonical and placeholder nodes are empty.")
 
 
 @app.command(name="register")

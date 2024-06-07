@@ -1,18 +1,24 @@
 from unittest.mock import patch, Mock
 
+
+import filecmp
 import inspect
+import shutil
 from pathlib import Path
 import pytest
 
 import voxcell
+import numpy as np
 import pandas as pd
+import numpy.testing as npt
 import pandas.testing as pdt
 from blue_cwl.wrappers import mmodel as test_module
 from blue_cwl.utils import load_json, create_dir, write_json
+from blue_cwl.exceptions import CWLWorkflowError
 
 from click.testing import CliRunner
 
-DATA_DIR = Path(__file__).parent.parent / "data"
+DATA_DIR = Path(__file__).parent / "data"
 
 
 def _check_arg_consistency(cli_command, function):
@@ -84,44 +90,19 @@ COLS = [
 
 
 @pytest.fixture
-def one_region_cells():
+def nodes_file_one_region(tmp_path):
+    # fmt: off
     df = pd.DataFrame.from_records(
         [
-            (
-                "SSp-bfd2",
-                "cADpyr",
-                "left",
-                "SSp-bfd2",
-                "L2_TPC:B",
-                "PYR",
-                "EXC",
-                6503.0,
-                1012.0,
-                2900.0,
-            ),
-            (
-                "SSp-bfd2",
-                "cADpyr",
-                "right",
-                "SSp-bfd2",
-                "L2_TPC:B",
-                "PYR",
-                "EXC",
-                7697.0,
-                1306.0,
-                9391.0,
-            ),
+            ("SSp-bfd2", "cADpyr", "left", "SSp-bfd2", "L2_TPC:B", "PYR", "EXC", 6503.0, 1012.0, 2900.0),
+            ("SSp-bfd2", "cADpyr", "right", "SSp-bfd2", "L2_TPC:B", "PYR", "EXC", 7697.0, 1306.0, 9391.0),
         ],
         index=pd.RangeIndex(start=1, stop=3),
         columns=COLS,
     )
-    return voxcell.CellCollection.from_dataframe(df)
-
-
-@pytest.fixture
-def nodes_file_one_region(tmp_path, one_region_cells):
+    # fmt: on
     filepath = tmp_path / "nodes.h5"
-    one_region_cells.save_sonata(filepath)
+    voxcell.CellCollection.from_dataframe(df).save_sonata(filepath)
     return filepath
 
 
@@ -326,6 +307,245 @@ def test_assign_placeholders_cli():
     _check_arg_consistency(test_module.assign_placeholders_cli, test_module.assign_placeholders)
 
 
+def test_assign_placeholders(tmp_path, nodes_file_two_regions):
+    output_dir = create_dir(tmp_path / "out")
+
+    morph1_path = output_dir / "foo.swc"
+    morph2_path = output_dir / "bar.swc"
+    shutil.copy(DATA_DIR / "placeholder_morphology.swc", morph1_path)
+    shutil.copy(DATA_DIR / "placeholder_morphology.swc", morph2_path)
+
+    config = {
+        "SSp-bfd2": {"L2_TPC:B": [morph1_path]},
+        "SSp-bfd3": {"L2_TPC:B": [morph2_path]},
+    }
+    config_file = output_dir / "config.json"
+    write_json(data=config, filepath=config_file)
+
+    out_morphologies_dir = output_dir / "morphologies"
+    out_nodes_file = output_dir / "nodes.h5"
+
+    test_module.assign_placeholders(
+        nodes_file=nodes_file_two_regions,
+        config_file=config_file,
+        out_morphologies_dir=out_morphologies_dir,
+        out_nodes_file=out_nodes_file,
+    )
+
+    old_cells = voxcell.CellCollection.load_sonata(nodes_file_two_regions)
+    df_old_cells = old_cells.as_dataframe()
+
+    new_cells = voxcell.CellCollection.load_sonata(out_nodes_file)
+    df_new_cells = new_cells.as_dataframe()
+
+    assert old_cells.population_name == new_cells.population_name
+
+    # check output directory populated with both asc and h5 files
+    morphology_files = sorted(p.name for p in out_morphologies_dir.iterdir())
+    assert morphology_files == [
+        "bar.asc",
+        "bar.h5",
+        "foo.asc",
+        "foo.h5",
+    ], morphology_files
+
+    # assignment adds columns morphology, morphology_producer, and orientation
+    assert set(df_new_cells.columns) == set(df_old_cells.columns) | {
+        "morphology",
+        "morphology_producer",
+        "orientation",
+    }
+
+    # producer has to be 'placeholder'
+    assert all(df_new_cells.morphology_producer == "placeholder")
+
+    # check names of morphologies assigned
+    assert df_new_cells.morphology.tolist() == ["foo", "foo", "bar", "bar"]
+
+    # check unit orientations have been assigned
+    assert all(
+        new_cells.orientations == np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    )
+
+
+def _write_empty_nodes(ref_file, out_file):
+    old_cells = test_module._empty_cell_collection(voxcell.CellCollection.load_sonata(ref_file))
+    old_cells.save_sonata(out_file)
+    return old_cells
+
+
+def test_assign_placeholders(tmp_path, nodes_file_one_region):
+    output_dir = create_dir(tmp_path / "out")
+
+    # create empty nodes with realistic columns
+    nodes_file = Path(tmp_path / "empty.h5")
+    old_cells = _write_empty_nodes(nodes_file_one_region, nodes_file)
+
+    out_nodes_file = output_dir / "nodes.h5"
+
+    test_module.assign_placeholders(
+        nodes_file=nodes_file,
+        config_file=None,
+        out_morphologies_dir=None,
+        out_nodes_file=out_nodes_file,
+    )
+
+    df_old_cells = old_cells.as_dataframe()
+
+    new_cells = voxcell.CellCollection.load_sonata(out_nodes_file)
+    df_new_cells = new_cells.as_dataframe()
+
+    assert len(new_cells) == 0
+    assert set(df_new_cells.columns) == set(df_old_cells.columns)
+
+
+def test_merge_cli():
+    _check_arg_consistency(test_module.merge_cli, test_module.merge)
+
+
+TO_MERGE_COLS = []
+
+
+TO_MERGE_COLS = [
+    "morph_class",
+    "morphology",
+    "morphology_producer",
+    "synapse_class",
+    "mtype",
+    "subregion",
+    "etype",
+    "hemisphere",
+    "region",
+    "split_index",
+]
+
+
+@pytest.fixture
+def synthesized_nodes_file(tmp_path):
+    # fmt: off
+    df = pd.DataFrame.from_records(
+        [
+            ("P0", "e3e706", "synthesis", "EXC", "M0", "R0", "E0", "l", "R0", 0),
+            ("P2", "cd613e", "synthesis", "EXC", "M2", "R2", "E2", "r", "R2", 2),
+        ],
+        columns=TO_MERGE_COLS,
+        index=pd.RangeIndex(start=1, stop=3),
+    )
+    # fmt: on
+
+    cells = voxcell.CellCollection.from_dataframe(df)
+    cells.population_name = "foo"
+
+    cells.positions = np.array([[0.0, 0.0, 0.0], [2.0, 2.0, 2.0]])
+
+    I = np.identity(3)
+    cells.orientations = np.array([I, I])
+
+    nodes_file = tmp_path / "synthesized_nodes.h5"
+    cells.save_sonata(nodes_file)
+    return nodes_file
+
+
+@pytest.fixture
+def placeholder_nodes_file(tmp_path):
+    df = pd.DataFrame.from_records(
+        [
+            ("P3", "bar", "placeholder", "EXC", "M3", "R3", "E3", "l", "R3", 3),
+            ("P1", "foo", "placeholder", "EXC", "M1", "R1", "E1", "r", "R1", 1),
+        ],
+        columns=TO_MERGE_COLS,
+        index=pd.RangeIndex(start=1, stop=3),
+    )
+    # fmt: on
+
+    cells = voxcell.CellCollection.from_dataframe(df)
+    cells.population_name = "foo"
+
+    cells.positions = np.array([[3.0, 3.0, 3.0], [1.0, 1.0, 1.0]])
+
+    I = np.identity(3)
+    cells.orientations = np.array([I, I])
+
+    nodes_file = tmp_path / "placeholder_nodes.h5"
+    cells.save_sonata(nodes_file)
+    return nodes_file
+
+
+@pytest.fixture
+def empty_nodes_file(tmp_path, placeholder_nodes_file):
+    nodes_file = tmp_path / "empty_nodes.h5"
+    empty_nodes = _write_empty_nodes(placeholder_nodes_file, nodes_file)
+    empty_nodes.properties = empty_nodes.properties.drop(columns="split_index")
+    empty_nodes.save_sonata(nodes_file)
+
+    return nodes_file
+
+
+def test_merge__both_nonempty(tmp_path, synthesized_nodes_file, placeholder_nodes_file):
+    out_nodes_file = tmp_path / "nodes.h5"
+
+    test_module.merge(
+        synthesized_nodes_file=synthesized_nodes_file,
+        placeholder_nodes_file=placeholder_nodes_file,
+        out_nodes_file=out_nodes_file,
+    )
+
+    cells = voxcell.CellCollection.load_sonata(out_nodes_file)
+    assert cells.population_name == "foo", cells.population_name
+    assert len(cells) == 4
+
+    # split_index is removed after being used for merging
+    assert set(cells.properties.columns) == set(TO_MERGE_COLS) - {"split_index"}
+
+    npt.assert_allclose(
+        cells.positions,
+        [[0.0, 0.0, 0.0], [1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]],
+    )
+
+    assert cells.properties.etype.tolist() == ["E0", "E1", "E2", "E3"]
+    assert cells.properties.morph_class.tolist() == ["P0", "P1", "P2", "P3"]
+    assert cells.properties.hemisphere.tolist() == ["l", "r", "r", "l"]
+    assert cells.properties.morphology_producer.tolist() == [
+        "synthesis",
+        "placeholder",
+        "synthesis",
+        "placeholder",
+    ]
+    assert cells.properties.mtype.tolist() == ["M0", "M1", "M2", "M3"]
+    assert cells.properties.subregion.tolist() == ["R0", "R1", "R2", "R3"]
+    assert cells.properties.region.tolist() == ["R0", "R1", "R2", "R3"]
+    assert cells.properties.morphology.tolist() == ["e3e706", "foo", "cd613e", "bar"]
+
+
+def test_merge__one_empty(
+    tmp_path, synthesized_nodes_file, placeholder_nodes_file, empty_nodes_file
+):
+    out_nodes_file = tmp_path / "out_nodes.h5"
+
+    test_module.merge(
+        synthesized_nodes_file=empty_nodes_file,
+        placeholder_nodes_file=placeholder_nodes_file,
+        out_nodes_file=out_nodes_file,
+    )
+    assert filecmp.cmp(placeholder_nodes_file, out_nodes_file)
+
+    test_module.merge(
+        synthesized_nodes_file=synthesized_nodes_file,
+        placeholder_nodes_file=empty_nodes_file,
+        out_nodes_file=out_nodes_file,
+    )
+    assert filecmp.cmp(synthesized_nodes_file, out_nodes_file)
+
+
+def test_merge__both_empty_raises(tmp_path, empty_nodes_file):
+    with pytest.raises(CWLWorkflowError, match="Both canonical and placeholder nodes are empty."):
+        test_module.merge(
+            synthesized_nodes_file=empty_nodes_file,
+            placeholder_nodes_file=empty_nodes_file,
+            out_nodes_file=None,
+        )
+
+
 def test_write_partial_config(tmp_path):
     config = {
         "version": 2,
@@ -336,7 +556,10 @@ def test_write_partial_config(tmp_path):
                 {
                     "nodes_file": "old-nodes-file",
                     "populations": {
-                        "root__neurons": {"type": "biophysical", "partial": ["cell-properties"]}
+                        "root__neurons": {
+                            "type": "biophysical",
+                            "partial": ["cell-properties"],
+                        }
                     },
                 }
             ],
