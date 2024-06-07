@@ -2,7 +2,6 @@ from blue_cwl.core import environment as test_module
 
 
 def test_build_environment_command():
-
     cfg = {
         "env_type": "VENV",
         "path": "/foo",

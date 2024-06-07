@@ -498,6 +498,8 @@ def stage_atlas(
     Return:
         An AtlasInfo instance with the staged file paths.
     """
+    utils.create_dir(output_dir)
+
     atlas = get_obj(id_or_entity, cls=AtlasRelease, base=base, org=org, proj=proj, token=token)
 
     resource_id = atlas.get_id()

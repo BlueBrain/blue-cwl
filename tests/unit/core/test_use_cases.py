@@ -12,7 +12,6 @@ CWL_DIR = DATA_DIR / "use_cases"
 
 
 def test_tool_write():
-
     filepath = CWL_DIR / "write.cwl"
     input_values = {"message": "Lorem-Ipsum"}
 
@@ -37,7 +36,6 @@ def test_tool_write():
 
 
 def test_parameter_references__tool_outputs():
-
     input_values = {"indir": Directory(path="foo/bar")}
 
     tool = parse_cwl_file(DATA_DIR / "use_cases" / "file_param_ref.cwl")
@@ -54,7 +52,6 @@ def test_parameter_references__tool_outputs():
 
 
 def test_essential_parameters():
-
     tool = parse_cwl_file(DATA_DIR / "use_cases" / "essential_parameters.cwl")
 
     input_values = {
@@ -69,7 +66,6 @@ def test_essential_parameters():
 
 
 def test_array_types_tool():
-
     tool = parse_cwl_file(CWL_DIR / "array_types.cwl")
 
     input_values = {
@@ -83,7 +79,6 @@ def test_array_types_tool():
 
 
 def test_array_types_workflow():
-
     tool = parse_cwl_file(DATA_DIR / "use_cases" / "array_types_workflow.cwl")
 
     input_values = {
@@ -101,7 +96,6 @@ def test_array_types_workflow():
 
 
 def test_copy_file_tool(tmp_path):
-
     input_file = tmp_path / "copy_input_file.json"
     input_file.write_text("foo")
 
@@ -161,7 +155,6 @@ def test_copy_file_tool(tmp_path):
     ],
 )
 def test_copy_file_workflow(tmp_path, cwl_file):
-
     workflow = parse_cwl_file(CWL_DIR / cwl_file)
 
     input_file = tmp_path / "copy_chain_input_file.json"
@@ -225,7 +218,6 @@ def test_copy_file_workflow(tmp_path, cwl_file):
 
 
 def test_generator_tool():
-
     tool = parse_cwl_file(CWL_DIR / "generator_tool.cwl")
 
     input_values = {
@@ -308,7 +300,6 @@ def test_generator_tool():
 
 
 def test_generator_workflow():
-
     workflow = parse_cwl_file(CWL_DIR / "generator_workflow.cwl")
 
     input_values = {

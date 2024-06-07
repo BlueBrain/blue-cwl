@@ -6,6 +6,7 @@ from blue_cwl.core import parse_cwl_file
 
 DATA_DIR = Path(__file__).parent / "data/cat-echo"
 
+
 @pytest.fixture
 def workflow():
     return parse_cwl_file(DATA_DIR / "workflow-cat-echo.cwl")

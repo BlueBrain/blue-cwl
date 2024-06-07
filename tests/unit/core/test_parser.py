@@ -679,7 +679,6 @@ def test_workflow_embedded():
 
 
 def test_workflow_broken():
-
     expected_errors = {
         "s0": [
             {
@@ -713,7 +712,6 @@ def test_workflow_broken():
 
 
 def test_build_executor():
-
     data = {"executor": None}
 
     res = tested._build_executor(data)
@@ -750,7 +748,6 @@ def test_build_executor():
 
 
 def test_dict_to_list_entries():
-
     dataset = {"a": {"foo": "bar"}, "b": {"spam": "zee"}}
 
     res = tested._dict_to_list_entries(dataset)

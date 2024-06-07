@@ -5,14 +5,12 @@ from blue_cwl.core.exceptions import CWLError
 
 
 class TestModel(CustomBaseModel):
-
     a: str
     b: str | None = None
     c: list[str]
 
 
 def test_custom_base_model():
-
     model = TestModel(a="foo", c=["foo", "bar"])
 
     model_dict = model.to_dict()
