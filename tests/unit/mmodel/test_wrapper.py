@@ -546,6 +546,10 @@ def test_merge__both_empty_raises(tmp_path, empty_nodes_file):
         )
 
 
+def test_register_cli():
+    _check_arg_consistency(test_module.register_cli, test_module.register)
+
+
 def test_write_partial_config(tmp_path):
     config = {
         "version": 2,
