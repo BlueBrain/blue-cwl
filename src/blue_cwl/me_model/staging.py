@@ -419,17 +419,17 @@ def stage_emodel_configuration(
 
 
 def _stage_emodel_mechanisms(
-    dataset: dict,
+    dataset: list[dict],
     staging_dir: Path,
     base: str | None,
     org: str | None,
     proj: str | None,
     token: str | None,
-):
+) -> list[dict]:
     """Stage mod files from the dataset to the local staging_dir."""
-    result = deepcopy(dataset)
-    for i, mechanism_dict in enumerate(dataset):
-        if mechanism_id := mechanism_dict["id"]:
+    dataset = deepcopy(dataset)
+    for mechanism_dict in dataset:
+        if mechanism_id := mechanism_dict.pop("id", None):
             path = download_distribution(
                 mechanism_id,
                 output_dir=staging_dir,
@@ -438,12 +438,11 @@ def _stage_emodel_mechanisms(
                 proj=proj,
                 token=token,
             )
-            del result[i]["id"]
         else:
             L.warning("Skip mechanism without id: %s", mechanism_dict.get("name"))
             path = None
-        result[i]["path"] = path
-    return result
+        mechanism_dict["path"] = path
+    return dataset
 
 
 def _emodel_identifier(emodel_id: str) -> str:
