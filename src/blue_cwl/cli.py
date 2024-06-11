@@ -11,6 +11,7 @@ from blue_cwl import __version__ as VERSION
 from blue_cwl.wrappers import (
     cell_composition_manipulation,
     cell_composition_summary,
+    common,
     connectome_filtering_synapses,
     connectome_generation_placeholder,
     density_calculation,
@@ -58,12 +59,10 @@ execute.add_command(name="density-calculation", cmd=density_calculation.app)
 execute.add_command(name="cell-composition-summary", cmd=cell_composition_summary.app)
 execute.add_command(name="cell-composition-manipulation", cmd=cell_composition_manipulation.app)
 execute.add_command(name="mmodel-neurons", cmd=mmodel.app)
-execute.add_command(
-    name="connectome-generation-placeholder",
-    cmd=connectome_generation_placeholder.app,
-)
+execute.add_command(cmd=connectome_generation_placeholder.app)
 execute.add_command(name="connectome-filtering-synapses", cmd=connectome_filtering_synapses.app)
 execute.add_command(cmd=memodel.app)
+execute.add_command(cmd=common.app)
 
 if __name__ == "__main__":
     main(verbose=1)

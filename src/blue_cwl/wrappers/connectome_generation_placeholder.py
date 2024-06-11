@@ -4,7 +4,7 @@
 
 import copy
 import logging
-import subprocess
+from pathlib import Path
 
 import click
 import libsonata
@@ -14,9 +14,17 @@ from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
 from entity_management.util import get_entity
 
-from blue_cwl import brain_regions, connectome, recipes, registering, staging, utils, validation
-from blue_cwl.exceptions import CWLWorkflowError
-from blue_cwl.variant import Variant
+from blue_cwl import (
+    brain_regions,
+    connectome,
+    recipes,
+    registering,
+    staging,
+    utils,
+    validation,
+)
+from blue_cwl.typing import StrOrPath
+from blue_cwl.utils import create_dir
 
 L = logging.getLogger(__name__)
 
@@ -41,122 +49,133 @@ INPUT_NODE_POPULATION_COLUMNS = [
 ]
 
 
-@click.group()
+@click.group(name="connectome-generation-placeholder")
 def app():
     """Placeholder micro connectome generation."""
 
 
-@app.command(name="mono-execution")
-@click.option("--configuration-id", required=True)
-@click.option("--circuit-id", required=True)
+@app.command(name="stage")
+@click.option(
+    "--configuration-id", required=True, help="Connectome generation configuration NEXUS id."
+)
+@click.option("--circuit-id", required=True, help="Circuit NEXUS id.")
 @click.option("--macro-connectome-config-id", required=True)
-@click.option("--variant-id", required=True)
-@click.option("--output-dir", required=True)
-def mono_execution(
-    configuration_id, circuit_id, macro_connectome_config_id, variant_id, output_dir
-):
-    """Build micro connectome."""
-    output_dir = utils.create_dir(output_dir)
-    _app(configuration_id, circuit_id, macro_connectome_config_id, variant_id, output_dir)
+@click.option("--stage-dir", required=True, help="Staging directory to output staged data.")
+def stage_cli(**kwargs):
+    """Connectome generation staging cli."""
+    stage(**kwargs)
 
 
-def _app(configuration, partial_circuit, macro_connectome_config, variant_config, output_dir):
-    staging_dir = utils.create_dir(output_dir / "stage")
-    build_dir = utils.create_dir(output_dir / "build", clean_if_exists=True)
+def stage(
+    *,
+    configuration_id: str,
+    circuit_id: str,
+    macro_connectome_config_id: str,
+    stage_dir: StrOrPath,
+) -> None:
+    """Stage NEXUS entities into local files.
 
-    input_circuit_entity = get_entity(
-        resource_id=partial_circuit,
-        cls=DetailedCircuit,
+    Args:
+        configuration_id: mmodel configuration NEXUS id.
+        circuit_id: DetailedCircuit NEXUS id.
+        macro_connectome_config_id: Macro connectome confi NEXUS id.
+        stage_dir: Output directory for staging data.
+
+    Entities required to be staged for mmodel:
+        - circuit config
+        - atlas info file
+        - macro config file
+        - micro config file
+    """
+    circuit = _stage_circuit(circuit_id, stage_dir)
+
+    staging.stage_atlas(
+        circuit.atlasRelease,
+        output_dir=Path(stage_dir, "atlas"),
+        output_file=Path(stage_dir, "atlas.json"),
     )
-    input_circuit_config = utils.load_json(
-        filepath=input_circuit_entity.circuitConfigPath.get_url_as_path(),
+
+    _stage_configuration(
+        macro_config_id=macro_connectome_config_id,
+        micro_config_id=configuration_id,
+        output_dir=stage_dir,
     )
-    input_nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(
-        input_circuit_config
+
+
+def _stage_circuit(circuit_id: str, stage_dir: StrOrPath):
+    """Stage NEXUS circuit id into local components.
+
+    Stages the following circuit components:
+        - circuit config -> stage_dir/circuit_config.json
+        - nodes file -> stage_dir/nodes.h5
+
+    Note: Before staging the nodes are validated wrt to the expected columns.
+    """
+    entity = get_entity(resource_id=circuit_id, cls=DetailedCircuit)
+
+    circuit_config_file = entity.circuitConfigPath.get_url_as_path()
+    circuit_config = utils.load_json(circuit_config_file)
+
+    nodes_file, population_name = utils.get_biophysical_partial_population_from_config(
+        circuit_config
     )
     validation.check_properties_in_population(
-        node_population_name, input_nodes_file, INPUT_NODE_POPULATION_COLUMNS
+        population_name, nodes_file, INPUT_NODE_POPULATION_COLUMNS
     )
 
-    variant = get_entity(resource_id=variant_config, cls=Variant)
+    circuit_file = Path(stage_dir, "circuit_config.json")
+    staging.stage_file(source=circuit_config_file, target=circuit_file)
+    L.debug("Circuit %s staged at %s", circuit_id, circuit_file)
 
-    recipe_file = _create_recipe(
-        macro_config_id=macro_connectome_config,
-        micro_config_id=configuration,
-        circuit_id=partial_circuit,
-        atlas_release_id=input_circuit_entity.atlasRelease.get_id(),
-        staging_dir=staging_dir,
-        build_dir=build_dir,
-    )
-    L.info("Running connectome manipulator...")
-    edge_population_name = f"{node_population_name}__{node_population_name}__chemical"
-    edges_file = build_dir / "edges.h5"
-    _run_connectome_manipulator(
-        recipe_file=recipe_file,
-        output_dir=build_dir,
-        variant=variant,
-        output_edges_file=edges_file,
-        output_edge_population_name=edge_population_name,
-    )
-    L.info("Writing partial circuit config...")
-    sonata_config_file = build_dir / "circuit_config.json"
-    _write_partial_config(
-        config=input_circuit_config,
-        edges_file=edges_file,
-        population_name=edge_population_name,
-        output_file=sonata_config_file,
-    )
-
-    partial_circuit = get_entity(resource_id=partial_circuit, cls=DetailedCircuit)
-
-    # output circuit
-    L.info("Registering partial circuit...")
-    partial_circuit = registering.register_partial_circuit(
-        name="Partial circuit with connectivity",
-        brain_region_id=utils.get_partial_circuit_region_id(partial_circuit),
-        atlas_release_id=partial_circuit.atlasRelease.get_id(),
-        description="Partial circuit with cell properties, emodels, morphologies and connectivity.",
-        sonata_config_path=sonata_config_file,
-    )
-
-    utils.write_resource_to_definition_output(
-        json_resource=load_by_id(partial_circuit.get_id()),
-        variant=variant,
-        output_dir=output_dir,
-    )
+    return entity
 
 
-def _create_recipe(
-    macro_config_id, micro_config_id, circuit_id, atlas_release_id, staging_dir, build_dir
-):
-    L.debug("Materializing macro connectome dataset configuration...")
-    macro_config = staging.materialize_macro_connectome_config(
-        macro_config_id, output_file=staging_dir / "materialized_macro_config.json"
-    )
+def _stage_configuration(
+    *, macro_config_id: str, micro_config_id: str, output_dir: StrOrPath
+) -> None:
+    L.info("Materializing macro connectome dataset configuration...")
+    macro_file = Path(output_dir, "materialized_macro_config.json")
+    staging.materialize_macro_connectome_config(macro_config_id, output_file=macro_file)
+    L.info("Materialized macro connectome config %s -> %s", macro_config_id, macro_file)
 
-    L.debug("Materializing micro connectome dataset configuration...")
-    micro_config = staging.materialize_micro_connectome_config(
-        micro_config_id, output_file=staging_dir / "materialized_micro_config.json"
-    )
+    L.info("Materializing micro connectome dataset configuration...")
+    micro_file = Path(output_dir, "materialized_micro_config.json")
+    staging.materialize_micro_connectome_config(micro_config_id, output_file=micro_file)
+    L.info("Materialized micro connectome config %s -> %s", micro_config_id, micro_file)
+
+
+@app.command(name="transform")
+@click.option("--atlas-file", required=True)
+@click.option("--circuit-config-file", required=True)
+@click.option("--macro-config-file", required=True)
+@click.option("--micro-config-file", required=True)
+@click.option("--transform-dir", required=True)
+def transform_cli(**kwargs):
+    """Build connectome recipe."""
+    transform(**kwargs)
+
+
+def transform(
+    *,
+    atlas_file: StrOrPath,
+    circuit_config_file: StrOrPath,
+    macro_config_file: StrOrPath,
+    micro_config_file: StrOrPath,
+    transform_dir: StrOrPath,
+) -> None:
+    """Build connectome recipe."""
+    atlas_info = staging.AtlasInfo.from_file(atlas_file)
+    macro_config = utils.load_json(macro_config_file)
+    micro_config = utils.load_json(micro_config_file)
 
     L.debug("Assembling macro matrix...")
     macro_matrix = connectome.assemble_macro_matrix(macro_config)
 
-    config_path = get_entity(
-        resource_id=circuit_id, cls=DetailedCircuit
-    ).circuitConfigPath.get_url_as_path()
+    population = _get_node_population(circuit_config_file=circuit_config_file)
 
-    nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(
-        utils.load_json(config_path)
-    )
-
-    population = libsonata.NodeStorage(nodes_file).open_population(node_population_name)
-
-    atlas_info = staging.stage_atlas(atlas_release_id, output_dir=staging_dir / "atlas")
-
-    regions = np.unique(population.get_attribute("region", population.select_all())).tolist()
-    region_volumes = brain_regions.volumes(
-        voxcell.RegionMap.load_json(atlas_info.ontology_path), regions
+    region_volumes = _get_population_unique_region_volumes(
+        population=population,
+        ontology_file=atlas_info.ontology_path,
     )
 
     L.debug("Assembling micro datasets...")
@@ -167,69 +186,74 @@ def _create_recipe(
         region_volumes=region_volumes,
     )
 
+    recipe_dir = create_dir(transform_dir, "recipe")
+
     L.debug("Generating connectome recipe...")
-    recipe_file = build_dir / "manipulation-config.json"
-    recipe = recipes.build_connectome_manipulator_recipe(config_path, micro_matrices, build_dir)
+    recipe_file = Path(transform_dir, "recipe.json")
+    recipe = recipes.build_connectome_manipulator_recipe(
+        circuit_config_path=str(circuit_config_file),
+        micro_matrices=micro_matrices,
+        output_dir=recipe_dir,
+    )
     utils.write_json(data=recipe, filepath=recipe_file)
+    L.debug("Connectome manipulation recipe written at %s", recipe_file)
 
-    return recipe_file
+
+def _get_node_population(circuit_config_file) -> libsonata.NodePopulation:
+    (
+        nodes_file,
+        node_population_name,
+    ) = utils.get_biophysical_partial_population_from_config(utils.load_json(circuit_config_file))
+    population = libsonata.NodeStorage(nodes_file).open_population(node_population_name)
+    return population
 
 
-def _run_connectome_manipulator(
-    recipe_file, output_dir, variant, output_edges_file, output_edge_population_name
+def _get_population_unique_region_volumes(
+    population: libsonata.NodePopulation, ontology_file: StrOrPath
 ):
-    """Run connectome manipulator."""
-    _run_manipulator(recipe_file, output_dir, variant)
-
-    parquet_dir = output_dir / "parquet"
-
-    # Launch a second allocation to merge parquet edges into a SONATA edge population
-    _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_population_name, variant)
-
-    L.debug("Edge population %s generated at %s", output_edge_population_name, output_edges_file)
+    regions = np.unique(population.get_attribute("region", population.select_all())).tolist()
+    region_volumes = brain_regions.volumes(voxcell.RegionMap.load_json(ontology_file), regions)
+    return region_volumes
 
 
-def _run_manipulator(recipe_file, output_dir, variant):
-    base_command = [
-        "parallel-manipulator",
-        "-v",
-        "manipulate-connectome",
-        "--output-dir",
-        str(output_dir),
-        str(recipe_file),
-        "--parallel",
-        "--keep-parquet",
-        "--resume",
-    ]
-    str_base_command = " ".join(base_command)
-    str_command = utils.build_variant_allocation_command(
-        str_base_command, variant, sub_task_index=0
+@app.command(name="register")
+@click.option("--circuit-id", required=True)
+@click.option("--edges-file", required=True)
+@click.option("--output-dir", required=True)
+def register_cli(**kwargs):
+    """Register circuit resource."""
+    register(**kwargs)
+
+
+def register(*, circuit_id: str, edges_file: StrOrPath, output_dir: StrOrPath):
+    """Register circuit resource."""
+    input_circuit = get_entity(resource_id=circuit_id, cls=DetailedCircuit)
+
+    input_circuit_config = utils.load_json(input_circuit.circuitConfigPath.get_url_as_path())
+
+    edge_population_name = next(iter(libsonata.EdgeStorage(edges_file).population_names))
+
+    L.info("Writing partial circuit config...")
+    sonata_config_file = Path(output_dir, "circuit_config.json")
+    _write_partial_config(
+        config=input_circuit_config,
+        edges_file=edges_file,
+        population_name=edge_population_name,
+        output_file=sonata_config_file,
     )
 
-    L.info("Tool full command: %s", str_command)
-    subprocess.run(str_command, check=True, shell=True)
-
-
-def _run_parquet_conversion(parquet_dir, output_edges_file, output_edge_population_name, variant):
-    # Launch a second allocation to merge parquet edges into a SONATA edge population
-    base_command = [
-        "parquet2hdf5",
-        str(parquet_dir),
-        str(output_edges_file),
-        output_edge_population_name,
-        "--no-index",
-    ]
-    str_base_command = " ".join(base_command)
-
-    str_command = utils.build_variant_allocation_command(
-        str_base_command, variant, sub_task_index=1, srun="srun dplace"
+    L.info("Registering partial circuit...")
+    output_circuit = registering.register_partial_circuit(
+        name="Partial circuit with connectivity",
+        brain_region_id=utils.get_partial_circuit_region_id(input_circuit),
+        atlas_release_id=input_circuit.atlasRelease.get_id(),
+        description="Partial circuit with cell properties, emodels, morphologies and connectivity.",
+        sonata_config_path=sonata_config_file,
     )
-
-    L.info("Tool full command: %s", str_command)
-    subprocess.run(str_command, check=True, shell=True)
-
-    if not output_edges_file.exists():
-        raise CWLWorkflowError(f"Edges file has failed to be generated at {output_edges_file}")
+    utils.write_json(
+        data=load_by_id(output_circuit.get_id()),
+        filepath=Path(output_dir, "resource.json"),
+    )
 
 
 def _write_partial_config(config, edges_file, population_name, output_file):
