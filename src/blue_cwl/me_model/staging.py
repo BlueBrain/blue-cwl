@@ -2,6 +2,7 @@
 
 """Staging module."""
 
+import logging
 from copy import deepcopy
 from functools import partial
 from pathlib import Path
@@ -14,6 +15,8 @@ from blue_cwl.nexus import download_distribution, get_distribution, get_distribu
 from blue_cwl.staging import get_entry_id, transform_cached, transform_nested_dataset
 from blue_cwl.typing import StrOrPath
 from blue_cwl.utils import create_dir, get_obj, load_json, url_without_revision, write_json
+
+L = logging.getLogger(__name__)
 
 OPTIONAL_WORKFLOW_DATASETS = {
     "ExtractionTargetsConfiguration": {
@@ -382,17 +385,22 @@ def stage_emodel_configuration(
     mechanisms_dir = create_dir(Path(staging_dir, "mechanisms"))
     morphologies_dir = create_dir(Path(staging_dir, "morphology"))
 
-    # stage swc morphology path
-    staged_dataset["morphology"]["path"] = download_distribution(
-        dataset["morphology"]["id"],
-        output_dir=morphologies_dir,
-        encoding_format="application/swc",
-        base=base,
-        org=org,
-        proj=proj,
-        token=token,
-    )
-    del staged_dataset["morphology"]["id"]
+    if morphology_id := staged_dataset["morphology"].pop("id", None):
+        # stage swc morphology path
+        staged_dataset["morphology"]["path"] = download_distribution(
+            morphology_id,
+            output_dir=morphologies_dir,
+            encoding_format="application/swc",
+            base=base,
+            org=org,
+            proj=proj,
+            token=token,
+        )
+    else:
+        raise CWLWorkflowError(
+            f"EModelConfiguration {entity_id} requires the morphology id. "
+            f"Morphology: {dataset['morphology']}"
+        )
 
     # stage mod file path
     staged_dataset["mechanisms"] = _stage_emodel_mechanisms(
@@ -411,17 +419,17 @@ def stage_emodel_configuration(
 
 
 def _stage_emodel_mechanisms(
-    dataset: dict,
+    dataset: list[dict],
     staging_dir: Path,
     base: str | None,
     org: str | None,
     proj: str | None,
     token: str | None,
-):
+) -> list[dict]:
     """Stage mod files from the dataset to the local staging_dir."""
-    result = deepcopy(dataset)
-    for i, mechanism_dict in enumerate(dataset):
-        if mechanism_id := mechanism_dict["id"]:
+    dataset = deepcopy(dataset)
+    for mechanism_dict in dataset:
+        if mechanism_id := mechanism_dict.pop("id", None):
             path = download_distribution(
                 mechanism_id,
                 output_dir=staging_dir,
@@ -430,11 +438,11 @@ def _stage_emodel_mechanisms(
                 proj=proj,
                 token=token,
             )
-            del result[i]["id"]
         else:
+            L.warning("Skip mechanism without id: %s", mechanism_dict.get("name"))
             path = None
-        result[i]["path"] = path
-    return result
+        mechanism_dict["path"] = path
+    return dataset
 
 
 def _emodel_identifier(emodel_id: str) -> str:

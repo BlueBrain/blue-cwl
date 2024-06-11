@@ -17,5 +17,4 @@ Bug Fixes
 
 Improvements
 ~~~~~~~~~~~~
-- Describe Improvements here
-- Remove this subsection if there are no Improvements
+- Improve logs in case of error when staging emodels
