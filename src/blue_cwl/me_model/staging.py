@@ -397,7 +397,10 @@ def stage_emodel_configuration(
             token=token,
         )
     else:
-        raise CWLWorkflowError(f"No morphology id in: {dataset['morphology']}")
+        raise CWLWorkflowError(
+            f"EModelConfiguration {entity_id} requires the morphology id. "
+            f"Morphology: {dataset['morphology']}"
+        )
 
     # stage mod file path
     staged_dataset["mechanisms"] = _stage_emodel_mechanisms(
