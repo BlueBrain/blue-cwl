@@ -110,7 +110,7 @@ def load_json(filepath: StrOrPath) -> dict:
     return json.loads(Path(filepath).read_bytes())
 
 
-def write_json(filepath: StrOrPath, data: dict) -> None:
+def write_json(filepath: StrOrPath, data: Any) -> None:
     """Write json file."""
 
     def serializer(obj):

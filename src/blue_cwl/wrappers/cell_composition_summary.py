@@ -6,6 +6,8 @@ import logging
 from pathlib import Path
 
 import click
+from entity_management.atlas import AtlasRelease, CellCompositionVolume
+from entity_management.util import get_entity
 from voxcell.nexus.voxelbrain import LocalAtlas
 
 from blue_cwl import registering, staging, statistics, utils
@@ -41,8 +43,10 @@ def from_density_distribution(
 
     density_distribution_file = Path(output_dir / "density_distribution.parquet")
 
+    cell_composition_volume = get_entity(density_distribution, cls=CellCompositionVolume)
+
     densities = staging.materialize_cell_composition_volume(
-        density_distribution,
+        cell_composition_volume,
         output_file=density_distribution_file,
     )
 
@@ -56,9 +60,9 @@ def from_density_distribution(
     # pylint: disable=no-member
     registering.register_cell_composition_summary(
         name="Cell composition summary",
-        summary_file=composition_summary_file,
-        atlas_release_id=atlas_release,
-        derivation_entity_id=density_distribution,
+        distribution_file=composition_summary_file,
+        atlas_release=get_entity(atlas_release, cls=AtlasRelease),
+        derivation_entity=cell_composition_volume,
     )
 
 
