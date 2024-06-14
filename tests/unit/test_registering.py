@@ -149,7 +149,7 @@ def test_register_cell_composition_summary():
         ):
             res = test_module.register_cell_composition_summary(
                 name="my-summary",
-                summary_file=summary_file,
+                distribution_file=summary_file,
                 atlas_release_id="atlas-release-id",
                 derivation_entity_id="circuit-id",
             )

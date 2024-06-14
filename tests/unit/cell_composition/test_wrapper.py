@@ -21,7 +21,9 @@ def test_stage_cli():
 
 
 def test_manipulate_cell_composition_cli():
-    _check_arg_consistency(test_module.manipulate_cell_composition_cli, test_module.manipulate_cell_composition)
+    _check_arg_consistency(
+        test_module.manipulate_cell_composition_cli, test_module.manipulate_cell_composition
+    )
 
 
 def test_register_cli():
