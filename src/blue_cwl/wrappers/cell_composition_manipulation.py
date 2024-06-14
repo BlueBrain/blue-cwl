@@ -48,7 +48,25 @@ def stage(
     brain_region_selector_config_id: str | None = None,
     stage_dir: StrOrPath,
 ) -> None:
-    """Stage cell composition entities."""
+    """Stage cell composition entities.
+
+    Args:
+        configuration_id: The CellComposition manipulation recipe.
+        base_cell_composition_id: Reference CellComposition to manipulate.
+        brain_region_selector_config_id: Optional region selector config.
+        stage_dir: Output directory for staged entities.
+
+    Entities staged:
+        - base cell composition_id
+            * CellCompositionVolume distribution -> stage_dir/cell_composition_volume.json
+            * Materialized CellCompositionVolume -> stage_dir/cell_composition_volume.parquet
+        - atlas (from base_cell_composition) -> stage_dir/atlas.json
+        - configuration_id (manipulation recipe) -> stage_dir/recipe.parquet
+        - brain_region_selector_config_id -> stage_dir/region_selection.json
+
+    Note:
+        region_selection.json will be created empty if a resource is not provided.
+    """
     base_composition = _stage_base_cell_composition(
         entity_id=base_cell_composition_id,
         output_dir=stage_dir,
@@ -140,7 +158,24 @@ def manipulate_cell_composition(
     materialized_cell_composition_volume_file: StrOrPath,
     output_dir: StrOrPath,
 ) -> None:
-    """Manipulate CellComposition datasets."""
+    """Manipulate CellComposition datasets.
+
+    Args:
+        atlas_file: Atlas information json file.
+        manipulation_file: Configuration manipulation recipe parquet file.
+        region_selection_file: JSON file with a list of region ids. The list can be empty.
+        cell_composition_volume_file: JSON file with nrrd volumes for me type combinations.
+        materialized_cell_composition_volume_file: Parquet file with materialized nrrd densities.
+        output_dir: Output directory.
+
+    Created the following files:
+        - Updated CellCompositionVolume file -> output_dir/cell_composition_volume.json
+        - Updated CellCompositionSummary file -> output_dir/cell_composition_summary.json
+
+    Note:
+        The CellCompositionVolume file may have mixed unchanged (id) and local updated (path)
+        entries. The local paths need to be registered afterwards so that only ids are present.
+    """
     atlas_info = staging.AtlasInfo.from_file(atlas_file)
 
     region_map = voxcell.RegionMap.load_json(atlas_info.ontology_path)
@@ -205,8 +240,22 @@ def register(
     cell_composition_volume_file: StrOrPath,
     cell_composition_summary_file: StrOrPath,
     output_dir: StrOrPath,
-):
-    """Register new cell composition."""
+) -> None:
+    """Register new cell composition.
+
+    Registers a new CellComposition using the volume and summary files. The CellCompositionVolume
+    file may have mixed local paths with unchanged original resources (id). The local entries will
+    be registered as METypeDensity resources and the final CellCompositionVolume will be linked to
+    the new CellComposition.
+
+    The registered CellComposition resource jsonld is written as output_dir/resource.json.
+
+    Args:
+        base_cell_composition_id: Base CellComposition id.
+        cell_composition_volume_file: Volume file to create the new CellComposition from.
+        cell_composition_summary_file: Summary file to create the new CellComposition from.
+        output_dir: Output directory to write outputs.
+    """
     base_cell_composition = get_entity(
         base_cell_composition_id, cls=CellComposition, resolve_context=True
     )
