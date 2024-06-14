@@ -59,7 +59,8 @@ def from_density_distribution(
 
     # pylint: disable=no-member
     registering.register_cell_composition_summary(
-        name="Cell composition summary",
+        name="Cell Composition Summary",
+        description="Cell Composition Summary from density distribution",
         distribution_file=composition_summary_file,
         atlas_release=get_entity(atlas_release, cls=AtlasRelease),
         derivation_entity=cell_composition_volume,

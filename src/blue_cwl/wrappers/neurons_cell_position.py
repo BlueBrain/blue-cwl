@@ -347,7 +347,8 @@ def _register(
     )
     # pylint: disable=no-member
     registering.register_cell_composition_summary(
-        name="Cell composition summary",
+        name="Cell Composition Summary",
+        description="Cell Composition Summary of Node Population",
         distribution_file=generated_data["composition-summary-file"],
         atlas_release=get_entity(generated_data["atlas-id"], cls=AtlasRelease),
         derivation_entity=circuit_resource,

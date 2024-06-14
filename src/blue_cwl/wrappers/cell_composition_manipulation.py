@@ -267,10 +267,12 @@ def register(
     )
     registering.register_densities(
         atlas_release=atlas_release,
-        cell_composition_volume_file=cell_composition_volume_file,
+        distribution_file=cell_composition_volume_file,
         output_file=registered_cell_composition_volume_file,
     )
     cell_composition = registering.register_cell_composition(
+        name="Cell Composition",
+        description="Manipulated Cell Composition",
         atlas_release=atlas_release,
         cell_composition_volume_file=registered_cell_composition_volume_file,
         cell_composition_summary_file=cell_composition_summary_file,

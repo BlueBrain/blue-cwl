@@ -14,7 +14,7 @@ from entity_management.atlas import (
     METypeDensity,
 )
 from entity_management.base import BrainLocation, Derivation, OntologyTerm
-from entity_management.core import DataDownload, Subject
+from entity_management.core import DataDownload, Entity, Subject
 from entity_management.simulation import DetailedCircuit
 from entity_management.util import get_entity
 
@@ -62,11 +62,12 @@ def register_partial_circuit(
 
 
 def register_cell_composition_summary(
-    name: str,
-    distribution_file: StrOrPath,
-    atlas_release,
-    derivation_entity,
     *,
+    name: str,
+    description: str,
+    distribution_file: StrOrPath,
+    atlas_release: AtlasRelease,
+    derivation_entity: Entity,
     base=None,
     org=None,
     proj=None,
@@ -84,8 +85,8 @@ def register_cell_composition_summary(
     derivation = Derivation(entity=derivation_entity)
     summary = CellCompositionSummary(
         name=name,
+        description=description,
         about=["nsg:Neuron", "nsg:Glia"],
-        description="Statistical summary of the model cell composition.",
         atlasRelease=atlas_release,
         brainLocation=atlas_release.brainLocation,
         distribution=distribution,
@@ -96,11 +97,12 @@ def register_cell_composition_summary(
 
 
 def register_cell_composition_volume(
-    name: str,
-    distribution_file: StrOrPath,
-    atlas_release,
-    derivation_entity,
     *,
+    name: str,
+    description: str,
+    distribution_file: StrOrPath,
+    atlas_release: AtlasRelease,
+    derivation_entity: Entity,
     base=None,
     org=None,
     proj=None,
@@ -118,8 +120,8 @@ def register_cell_composition_volume(
     derivation = Derivation(entity=derivation_entity)
     volume = CellCompositionVolume(
         name=name,
+        description=description,
         about=["nsg:Neuron", "nsg:Glia"],
-        description="NRRD volume distribution of the cell composition.",
         atlasRelease=atlas_release,
         brainLocation=atlas_release.brainLocation,
         distribution=distribution,
@@ -129,9 +131,18 @@ def register_cell_composition_volume(
     return volume.publish(base=base, org=org, proj=proj, use_auth=token)
 
 
-def register_densities(atlas_release, cell_composition_volume_file, output_file=None):
+def register_densities(
+    *,
+    atlas_release: AtlasRelease,
+    distribution_file: StrOrPath,
+    output_file: StrOrPath | None = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
+) -> dict:
     """Register METypeDensity volumes."""
-    volumes_dict = load_json(cell_composition_volume_file)
+    volumes_dict = load_json(distribution_file)
 
     derivation = Derivation(entity=atlas_release)
     subject = atlas_release.subject
@@ -147,6 +158,10 @@ def register_densities(atlas_release, cell_composition_volume_file, output_file=
                         brain_location=brain_location,
                         derivation=derivation,
                         subject=subject,
+                        base=base,
+                        org=org,
+                        proj=proj,
+                        token=token,
                     )
 
                     nrrd_data["@id"] = me_density.get_id()
@@ -161,14 +176,16 @@ def register_densities(atlas_release, cell_composition_volume_file, output_file=
     if output_file is not None:
         write_json(data=volumes_dict, filepath=output_file)
 
+    return volumes_dict
+
 
 def _register_me_density(
-    distribution_file: StrOrPath,
-    atlas_release,
-    brain_location,
-    derivation,
-    subject,
     *,
+    distribution_file: StrOrPath,
+    atlas_release: AtlasRelease,
+    brain_location: BrainLocation,
+    derivation: Derivation,
+    subject: Subject,
     base=None,
     org=None,
     proj=None,
@@ -195,10 +212,12 @@ def _register_me_density(
 
 
 def register_cell_composition(
-    atlas_release,
+    *,
+    name: str,
+    description: str,
+    atlas_release: AtlasRelease,
     cell_composition_volume_file: StrOrPath,
     cell_composition_summary_file: StrOrPath,
-    *,
     base=None,
     org=None,
     proj=None,
@@ -207,6 +226,7 @@ def register_cell_composition(
     """Register CellComposition."""
     summary = register_cell_composition_summary(
         name="Cell Composition Summary",
+        description="Cell Composition Summary Distribution",
         distribution_file=cell_composition_summary_file,
         atlas_release=atlas_release,
         derivation_entity=atlas_release,
@@ -217,6 +237,7 @@ def register_cell_composition(
     )
     volume = register_cell_composition_volume(
         name="Cell Composition Volume",
+        description="Cell Composition Volume Distribution",
         distribution_file=cell_composition_volume_file,
         atlas_release=atlas_release,
         derivation_entity=atlas_release,
@@ -226,7 +247,8 @@ def register_cell_composition(
         token=token,
     )
     cell_composition = CellComposition(
-        name="Cell Composition",
+        name=name,
+        description=description,
         about=["nsg:Neuron", "nsg:Glia"],
         atlasRelease=atlas_release,
         atlasSpatialReferenceSystem=atlas_release.spatialReferenceSystem,
