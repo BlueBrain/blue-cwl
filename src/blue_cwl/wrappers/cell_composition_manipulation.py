@@ -8,12 +8,12 @@ from pathlib import Path
 import click
 import pandas as pd
 import voxcell
+from entity_management import nexus
 from entity_management.atlas import CellComposition
 from entity_management.config import BrainRegionSelectorConfig, CellCompositionConfig
 
 # pylint: disable=no-name-in-module
 from entity_management.core import Entity
-from entity_management.nexus import load_by_id
 from entity_management.util import get_entity
 
 from blue_cwl import density_manipulation, registering, staging, statistics, utils
@@ -256,9 +256,7 @@ def register(
         cell_composition_summary_file: Summary file to create the new CellComposition from.
         output_dir: Output directory to write outputs.
     """
-    base_cell_composition = get_entity(
-        base_cell_composition_id, cls=CellComposition, resolve_context=True
-    )
+    base_cell_composition = get_entity(base_cell_composition_id, cls=CellComposition)
 
     atlas_release = base_cell_composition.atlasRelease
 
@@ -281,7 +279,7 @@ def register(
     _validate_cell_composition_schemas(cell_composition)
 
     utils.write_json(
-        data=load_by_id(cell_composition.get_id()),
+        data=nexus.load_by_id(cell_composition.get_id()),
         filepath=Path(output_dir, "resource.json"),
     )
 

@@ -1,0 +1,32 @@
+{
+  "hasPart": [
+    {
+      "@id": "http://uri.interlex.org/base/ilx_0381367",
+      "label": "L2_TPC:B",
+      "about": [
+        "https://neuroshapes.org/MType"
+      ],
+      "hasPart": [
+        {
+          "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr",
+          "label": "cADpyr",
+          "about": [
+            "https://neuroshapes.org/EType"
+          ],
+          "hasPart": [
+            {
+              "@id": "nrrd-id",
+              "@type": [
+                "METypeDensity",
+                "NeuronDensity",
+                "VolumetricDataLayer",
+                "CellDensityDataLayer"
+              ],
+              "_rev": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

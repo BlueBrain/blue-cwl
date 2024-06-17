@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "unitCode": {
+    "density": "mm^-3"
+  },
+  "overrides": {
+    "http://api.brain-map.org/api/v2/data/Structure/614454292": {
+      "label": "Primary somatosensory area, barrel field, layer 2",
+      "about": "BrainRegion",
+      "hasPart": {
+        "http://uri.interlex.org/base/ilx_0381367": {
+          "label": "L2_TPC:B",
+          "about": "MType",
+          "hasPart": {
+            "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/cADpyr": {
+              "label": "cADpyr",
+              "about": "EType",
+              "composition": {
+                "neuron": {
+                  "density": 203.9132207910741,
+                  "count": 8059
+                }
+              },
+              "density": 203.9132207910741
+            }
+          },
+          "composition": {
+            "neuron": {
+              "density": 203.91322079107408
+            },
+            "glia": {
+              "density": 0
+            }
+          }
+        }
+      },
+      "composition": {
+        "neuron": {
+          "density": 203.91322079107408
+        },
+        "glia": {
+          "density": 0
+        }
+      }
+    }
+  }
+}
