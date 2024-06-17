@@ -3,27 +3,25 @@
 """Composition manipulation."""
 
 import logging
-import os
-import subprocess
 from pathlib import Path
 
 import click
 import pandas as pd
 import voxcell
-from entity_management import state
-
-# pylint: disable=no-name-in-module
+from entity_management import nexus
 from entity_management.atlas import CellComposition
 from entity_management.config import BrainRegionSelectorConfig, CellCompositionConfig
-from entity_management.nexus import load_by_id
+
+# pylint: disable=no-name-in-module
+from entity_management.core import Entity
 from entity_management.util import get_entity
 
-from blue_cwl import density_manipulation, staging, statistics, utils
+from blue_cwl import density_manipulation, registering, staging, statistics, utils
 from blue_cwl.density_manipulation import read_density_manipulation_recipe
 from blue_cwl.exceptions import CWLRegistryError, CWLWorkflowError, SchemaValidationError
 from blue_cwl.nexus import get_distribution_as_dict
+from blue_cwl.typing import StrOrPath
 from blue_cwl.validation import validate_schema
-from blue_cwl.variant import Variant
 
 L = logging.getLogger(__name__)
 
@@ -33,64 +31,91 @@ def app():
     """Cell composition manipulation."""
 
 
-@app.command(name="mono-execution")
-@click.option("--region", required=True)
-@click.option("--brain-region-selector-config-id", required=False)
+@app.command(name="stage")
+@click.option("--configuration-id", required=True)
 @click.option("--base-cell-composition-id", required=True)
-@click.option("--configuration-id", help="Recipe for manipulations")
-@click.option("--variant-id", required=True)
-@click.option("--output-dir", required=True)
-def mono_execution(  # pylint: disable=too-many-arguments
-    region,  # pylint: disable=unused-argument
-    brain_region_selector_config_id,
-    base_cell_composition_id,
-    configuration_id,
-    variant_id,
-    output_dir,
-):
-    """Density Manipulation CLI."""
-    output_dir = utils.create_dir(Path(output_dir).resolve())
-    staging_dir = utils.create_dir(output_dir / "stage")
-    atlas_dir = utils.create_dir(staging_dir / "atlas")
-    build_dir = utils.create_dir(output_dir / "build")
+@click.option("--brain-region-selector-config-id", required=False)
+@click.option("--stage-dir", required=True)
+def stage_cli(**kwargs):
+    """Stage cell composition entities."""
+    stage(**kwargs)
 
-    cell_composition = get_entity(base_cell_composition_id, cls=CellComposition)
-    _validate_cell_composition_schemas(cell_composition)
 
-    # the materialized version that has gpfs paths instead of ids
-    original_densities = staging.materialize_cell_composition_volume(
-        cell_composition.cellCompositionVolume,
-        output_file=staging_dir / "original_cell_composition_volume.parquet",
+def stage(
+    *,
+    configuration_id: str,
+    base_cell_composition_id: str,
+    brain_region_selector_config_id: str | None = None,
+    stage_dir: StrOrPath,
+) -> None:
+    """Stage cell composition entities.
+
+    Args:
+        configuration_id: The CellComposition manipulation recipe.
+        base_cell_composition_id: Reference CellComposition to manipulate.
+        brain_region_selector_config_id: Optional region selector config.
+        stage_dir: Output directory for staged entities.
+
+    Entities staged:
+        - base cell composition_id
+            * CellCompositionVolume distribution -> stage_dir/cell_composition_volume.json
+            * Materialized CellCompositionVolume -> stage_dir/cell_composition_volume.parquet
+        - atlas (from base_cell_composition) -> stage_dir/atlas.json
+        - configuration_id (manipulation recipe) -> stage_dir/recipe.parquet
+        - brain_region_selector_config_id -> stage_dir/region_selection.json
+
+    Note:
+        region_selection.json will be created empty if a resource is not provided.
+    """
+    base_composition = _stage_base_cell_composition(
+        entity_id=base_cell_composition_id,
+        output_dir=stage_dir,
+    )
+    staging.stage_atlas(
+        base_composition.atlasRelease,
+        output_dir=Path(stage_dir, "atlas"),
+        output_file=Path(stage_dir, "atlas.json"),
+    )
+    _stage_manipulation_config(
+        entity_id=configuration_id,
+        output_file=Path(stage_dir, "recipe.parquet"),
+    )
+    _stage_region_selector_config(
+        entity_id=brain_region_selector_config_id,
+        output_file=Path(stage_dir, "region_selection.json"),
     )
 
-    L.info("Staging atlas to  %s", atlas_dir)
-    atlas_info = staging.stage_atlas(
-        cell_composition.atlasRelease,
-        output_dir=atlas_dir,
+
+def _stage_base_cell_composition(entity_id: str, output_dir: StrOrPath) -> Entity:
+    base_composition = get_entity(entity_id, cls=CellComposition)
+    _validate_cell_composition_schemas(base_composition)
+
+    composition_volume = base_composition.cellCompositionVolume
+
+    # stage first original file
+    staging.stage_distribution_file(
+        composition_volume,
+        output_dir=output_dir,
+        filename="cell_composition_volume.json",
+        encoding_format="application/json",
     )
 
-    manipulation_recipe = read_density_manipulation_recipe(
-        get_distribution_as_dict(configuration_id, cls=CellCompositionConfig)
+    # then materialize with paths instead of ids
+    output_file = Path(output_dir, "cell_composition_volume.parquet")
+    staging.materialize_cell_composition_volume(
+        composition_volume,
+        output_file=output_file,
     )
-    manipulation_recipe.to_parquet(path=staging_dir / "manipulation_recipe.parquet")
+    L.debug("Base CellCompositionVolume materialized at %s", output_file)
 
-    _check_recipe_compatibility_with_density_distribution(original_densities, manipulation_recipe)
+    return base_composition
 
-    # the original registered version
-    original_density_release = cell_composition.cellCompositionVolume.distribution.as_dict()
-    utils.write_json(
-        data=original_density_release,
-        filepath=staging_dir / "original_density_release.json",
-    )
 
-    region_map = voxcell.RegionMap.load_json(atlas_info.ontology_path)
-    brain_regions = voxcell.VoxelData.load_nrrd(atlas_info.annotation_path)
-
-    L.info("Updating density distribution...")
-    if brain_region_selector_config_id:
-        distribution_payload = BrainRegionSelectorConfig.from_id(
-            brain_region_selector_config_id, cross_bucket=True
-        ).distribution.as_dict()
+def _stage_region_selector_config(entity_id: str | None, output_file: StrOrPath) -> None:
+    if entity_id is None:
+        region_selection = []
+    else:
+        distribution_payload = get_distribution_as_dict(entity_id, cls=BrainRegionSelectorConfig)
 
         validate_schema(
             distribution_payload, schema_name="brain_region_selector_config_distribution.yml"
@@ -100,11 +125,72 @@ def mono_execution(  # pylint: disable=too-many-arguments
             int(e["@id"].removeprefix("http://api.brain-map.org/api/v2/data/Structure/"))
             for e in distribution_payload["selection"]
         ]
-    else:
-        region_selection = None
 
-    L.info("Manipulation densities...")
-    updated_densities_dir = utils.create_dir(build_dir / "updated_densities_dir")
+    utils.write_json(data=region_selection, filepath=output_file)
+    L.debug("Region selection written at %s", output_file)
+
+
+def _stage_manipulation_config(entity_id: str, output_file: StrOrPath) -> None:
+    manipulation_recipe = read_density_manipulation_recipe(
+        get_distribution_as_dict(entity_id, cls=CellCompositionConfig)
+    )
+    manipulation_recipe.to_parquet(path=output_file)
+
+
+@app.command("manipulate-cell-composition")
+@click.option("--atlas-file", required=True)
+@click.option("--manipulation-file", required=True)
+@click.option("--region-selection-file", required=True)
+@click.option("--cell-composition-volume-file", required=True)
+@click.option("--materialized-cell-composition-volume-file", required=True)
+@click.option("--output-dir", required=True)
+def manipulate_cell_composition_cli(**kwargs):
+    """Manipulate CellComposition datasets."""
+    manipulate_cell_composition(**kwargs)
+
+
+def manipulate_cell_composition(
+    *,
+    atlas_file: StrOrPath,
+    manipulation_file: StrOrPath,
+    region_selection_file: StrOrPath,
+    cell_composition_volume_file: StrOrPath,
+    materialized_cell_composition_volume_file: StrOrPath,
+    output_dir: StrOrPath,
+) -> None:
+    """Manipulate CellComposition datasets.
+
+    Args:
+        atlas_file: Atlas information json file.
+        manipulation_file: Configuration manipulation recipe parquet file.
+        region_selection_file: JSON file with a list of region ids. The list can be empty.
+        cell_composition_volume_file: JSON file with nrrd volumes for me type combinations.
+        materialized_cell_composition_volume_file: Parquet file with materialized nrrd densities.
+        output_dir: Output directory.
+
+    Created the following files:
+        - Updated CellCompositionVolume file -> output_dir/cell_composition_volume.json
+        - Updated CellCompositionSummary file -> output_dir/cell_composition_summary.json
+
+    Note:
+        The CellCompositionVolume file may have mixed unchanged (id) and local updated (path)
+        entries. The local paths need to be registered afterwards so that only ids are present.
+    """
+    atlas_info = staging.AtlasInfo.from_file(atlas_file)
+
+    region_map = voxcell.RegionMap.load_json(atlas_info.ontology_path)
+    brain_regions = voxcell.VoxelData.load_nrrd(atlas_info.annotation_path)
+
+    manipulation_recipe = pd.read_parquet(manipulation_file)
+
+    original_densities = pd.read_parquet(materialized_cell_composition_volume_file)
+    original_density_release = utils.load_json(cell_composition_volume_file)
+
+    _check_recipe_compatibility_with_density_distribution(original_densities, manipulation_recipe)
+
+    region_selection = utils.load_json(region_selection_file) or None
+
+    updated_densities_dir = utils.create_dir(Path(output_dir, "nrrds"))
     updated_densities, updated_density_release = density_manipulation.density_manipulation(
         updated_densities_dir,
         brain_regions,
@@ -113,20 +199,12 @@ def mono_execution(  # pylint: disable=too-many-arguments
         original_density_release,
         region_selection,
     )
-    updated_density_release_path = build_dir / "updated_density_release.json"
+    updated_density_release_path = Path(output_dir, "cell_composition_volume.json")
     utils.write_json(
         data=updated_density_release,
         filepath=updated_density_release_path,
     )
-    L.info("Updated CellCompositionVolume release written at %s", updated_density_release_path)
-
-    updated_density_release_path = output_dir / "updated_density_release.json"
-    utils.write_json(
-        data=updated_density_release,
-        filepath=updated_density_release_path,
-    )
-
-    L.info("Updating cell composition summary statistics...")
+    L.debug("Updated CellCompositionVolume payload written at %s", updated_density_release_path)
 
     cell_composition_summary = statistics.atlas_densities_composition_summary(
         density_distribution=updated_densities,
@@ -135,134 +213,75 @@ def mono_execution(  # pylint: disable=too-many-arguments
         map_function="auto",
     )
 
-    updated_cell_composition_summary_path = build_dir / "updated_cell_composition_summary.json"
+    updated_cell_composition_summary_path = Path(output_dir, "cell_composition_summary.json")
     utils.write_json(
         data=cell_composition_summary,
         filepath=updated_cell_composition_summary_path,
     )
-
-    cell_composition_id = _register_cell_composition(
-        volume_path=updated_density_release_path,
-        summary_path=updated_cell_composition_summary_path,
-        base_cell_composition=cell_composition,
-        hierarchy_path=atlas_info.ontology_path,
-        output_dir=build_dir,
-    )
-
-    cell_composition = get_entity(cell_composition_id, cls=CellComposition)
-    _validate_cell_composition_schemas(cell_composition)
-
-    utils.write_resource_to_definition_output(
-        json_resource=load_by_id(cell_composition_id),
-        variant=get_entity(variant_id, cls=Variant),
-        output_dir=output_dir,
+    L.debug(
+        "Updated CellCompositionSummary payload written at %s",
+        updated_cell_composition_summary_path,
     )
 
 
-def _register_cell_composition(
-    volume_path, summary_path, hierarchy_path, base_cell_composition, output_dir
-):
+@app.command(name="register")
+@click.option("--base-cell-composition-id", required=True)
+@click.option("--cell-composition-volume-file", required=True)
+@click.option("--cell-composition-summary-file", required=True)
+@click.option("--output-dir", required=True)
+def register_cli(**kwargs):
+    """Register new cell composition."""
+    register(**kwargs)
+
+
+def register(
+    *,
+    base_cell_composition_id: str,
+    cell_composition_volume_file: StrOrPath,
+    cell_composition_summary_file: StrOrPath,
+    output_dir: StrOrPath,
+) -> None:
+    """Register new cell composition.
+
+    Registers a new CellComposition using the volume and summary files. The CellCompositionVolume
+    file may have mixed local paths with unchanged original resources (id). The local entries will
+    be registered as METypeDensity resources and the final CellCompositionVolume will be linked to
+    the new CellComposition.
+
+    The registered CellComposition resource jsonld is written as output_dir/resource.json.
+
+    Args:
+        base_cell_composition_id: Base CellComposition id.
+        cell_composition_volume_file: Volume file to create the new CellComposition from.
+        cell_composition_summary_file: Summary file to create the new CellComposition from.
+        output_dir: Output directory to write outputs.
+    """
+    base_cell_composition = get_entity(base_cell_composition_id, cls=CellComposition)
+
     atlas_release = base_cell_composition.atlasRelease
 
-    atlas_release_id = atlas_release.get_id()
-    atlas_release_rev = atlas_release.get_rev()
-    reference_system_id = atlas_release.spatialReferenceSystem.get_id()
-
-    species_id = atlas_release.subject.species.url.replace(
-        "NCBITaxon:", "http://purl.obolibrary.org/obo/NCBITaxon_"
+    registered_cell_composition_volume_file = Path(
+        output_dir, "registered_cell_composition_volume.json"
     )
-    brain_region_id = base_cell_composition.brainLocation.brainRegion.url.replace(
-        "mba:", "http://api.brain-map.org/api/v2/data/Structure/"
+    registering.register_densities(
+        atlas_release=atlas_release,
+        distribution_file=cell_composition_volume_file,
+        output_file=registered_cell_composition_volume_file,
+    )
+    cell_composition = registering.register_cell_composition(
+        name="Cell Composition",
+        description="Manipulated Cell Composition",
+        atlas_release=atlas_release,
+        cell_composition_volume_file=registered_cell_composition_volume_file,
+        cell_composition_summary_file=cell_composition_summary_file,
     )
 
-    output_volume_path = output_dir / "density_release.json"
+    _validate_cell_composition_schemas(cell_composition)
 
-    arglist = [
-        "bba-data-push",
-        "--nexus-env",
-        state.get_base(),
-        "--nexus-org",
-        state.get_org(),
-        "--nexus-proj",
-        state.get_proj(),
-        "register-cell-composition-volume-distribution",
-        "--input-distribution-file",
-        str(volume_path),
-        "--output-distribution-file",
-        str(output_volume_path),
-        "--atlas-release-id",
-        atlas_release_id,
-        "--atlas-release-rev",
-        str(atlas_release_rev),
-        "--hierarchy-path",
-        str(hierarchy_path),
-        "--species",
-        species_id,
-        "--brain-region",
-        brain_region_id,
-        "--reference-system-id",
-        reference_system_id,
-    ]
-    env = os.environ | {"NEXUS_TOKEN": state.refresh_token()}
-
-    L.info("Tool full command: %s", " ".join(arglist))
-
-    subprocess.run(arglist, env=env, check=True)
-
-    output_cell_composition_file = output_dir / "cell_composition.json"
-
-    arglist = [
-        "bba-data-push",
-        "--nexus-env",
-        state.get_base(),
-        "--nexus-org",
-        state.get_org(),
-        "--nexus-proj",
-        state.get_proj(),
-        "push-cellcomposition",
-        "--atlas-release-id",
-        atlas_release_id,
-        "--atlas-release-rev",
-        str(atlas_release_rev),
-        "--hierarchy-path",
-        str(hierarchy_path),
-        "--species",
-        species_id,
-        "--brain-region",
-        brain_region_id,
-        "--reference-system-id",
-        reference_system_id,
-        "--volume-path",
-        str(output_volume_path),
-        "--summary-path",
-        str(summary_path),
-        "--name",
-        "CellComposition",
-        "CellCompositionSummary",
-        "CellCompositionVolume",
-        "--description",
-        "Cell Composition",
-        "--log-dir",
-        str(output_dir),
-        "--force-registration",
-        "--output-resource-file",
-        str(output_cell_composition_file),
-    ]
-    env = os.environ | {"NEXUS_TOKEN": state.refresh_token()}
-
-    L.info("Tool full command: %s", " ".join(arglist))
-
-    subprocess.run(arglist, env=env, check=True)
-
-    return utils.load_json(output_cell_composition_file)["@id"]
-
-
-def _get_summary_id(entry):
-    """Handle the summary being a list or a single entry dict."""
-    if isinstance(entry, list):
-        return entry[0].id
-
-    return entry.id
+    utils.write_json(
+        data=nexus.load_by_id(cell_composition.get_id()),
+        filepath=Path(output_dir, "resource.json"),
+    )
 
 
 def _validate_cell_composition_schemas(cell_composition):

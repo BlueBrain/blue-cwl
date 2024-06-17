@@ -12,7 +12,7 @@ import click
 import libsonata
 import pandas as pd
 import voxcell
-from entity_management.atlas import CellComposition
+from entity_management.atlas import AtlasRelease, CellComposition
 from entity_management.nexus import load_by_id
 from entity_management.util import get_entity
 from voxcell.nexus.voxelbrain import Atlas
@@ -347,8 +347,9 @@ def _register(
     )
     # pylint: disable=no-member
     registering.register_cell_composition_summary(
-        name="Cell composition summary",
-        summary_file=generated_data["composition-summary-file"],
-        atlas_release_id=generated_data["atlas-id"],
-        derivation_entity_id=circuit_resource.get_id(),
+        name="Cell Composition Summary",
+        description="Cell Composition Summary of Node Population",
+        distribution_file=generated_data["composition-summary-file"],
+        atlas_release=get_entity(generated_data["atlas-id"], cls=AtlasRelease),
+        derivation_entity=circuit_resource,
     )
