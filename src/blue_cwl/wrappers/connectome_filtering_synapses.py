@@ -286,7 +286,7 @@ def register(
     partial_circuit = registering.register_partial_circuit(
         name="Partial circuit with functional connectivity",
         brain_region_id=utils.get_partial_circuit_region_id(partial_circuit),
-        atlas_release_id=partial_circuit.atlasRelease.get_id(),
+        atlas_release=partial_circuit.atlasRelease,
         description="Circuit with nodes and functionalized synapses.",
         sonata_config_path=output_config_file,
     )

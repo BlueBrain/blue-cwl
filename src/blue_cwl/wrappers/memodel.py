@@ -237,7 +237,7 @@ def _register_circuit(partial_circuit, output_circuit_config_file):
     circuit = registering.register_partial_circuit(
         name="Partial circuit with biohysical emodel properties",
         brain_region_id=get_partial_circuit_region_id(partial_circuit),
-        atlas_release_id=partial_circuit.atlasRelease.get_id(),
+        atlas_release=partial_circuit.atlasRelease,
         description="Partial circuit with cell properties, morphologies, and biophysical models.",
         sonata_config_path=output_circuit_config_file,
     )

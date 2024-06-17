@@ -16,7 +16,6 @@ from entity_management.atlas import (
 from entity_management.base import BrainLocation, Derivation, OntologyTerm
 from entity_management.core import DataDownload, Entity, Subject
 from entity_management.simulation import DetailedCircuit
-from entity_management.util import get_entity
 
 from blue_cwl.typing import StrOrPath
 from blue_cwl.utils import load_json, write_json
@@ -39,16 +38,19 @@ def _brain_location(brain_region_id: str) -> BrainLocation:
 
 
 def register_partial_circuit(
+    *,
     name: str,
     brain_region_id: str,
-    atlas_release_id: str,
+    atlas_release: AtlasRelease,
     sonata_config_path: StrOrPath,
     description: str = "",
     species_id: str | None = None,
+    base: str | None = None,
+    org: str | None = None,
+    proj: str | None = None,
+    token: str | None = None,
 ) -> DetailedCircuit:
     """Register a partial circuit."""
-    atlas_release = get_entity(resource_id=atlas_release_id, cls=AtlasRelease)
-
     circuit_config_path = DataDownload(url=f"file://{Path(sonata_config_path).resolve()}")
 
     return DetailedCircuit(
@@ -58,7 +60,7 @@ def register_partial_circuit(
         brainLocation=_brain_location(brain_region_id),
         atlasRelease=atlas_release,
         circuitConfigPath=circuit_config_path,
-    ).publish()
+    ).publish(include_rev=True, base=base, org=org, proj=proj, use_auth=token)
 
 
 def register_cell_composition_summary(
