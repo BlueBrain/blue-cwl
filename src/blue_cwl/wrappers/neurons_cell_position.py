@@ -99,7 +99,7 @@ def stage(*, region_id, cell_composition_id, staging_dir):
 @click.option("--region-file", required=True)
 @click.option("--densities-file", required=True)
 @click.option("--transform-dir", required=True)
-def transform_cli(**kwargs)
+def transform_cli(**kwargs):
     transform(**kwargs)
 
 
@@ -151,7 +151,7 @@ def register_cli(**kwargs):
     register(**kwargs)
 
 
-def register(*, region_id, atlas_id, region_id, circuit_file, summary_file, output_dir: StrOrPath):
+def register(*, region_id, atlas_id, circuit_file, summary_file, output_dir: StrOrPath):
     """Register outputs to nexus."""
     output_circuit_resource_file = Path(output_dir. "circuit_resource.json")
     circuit = registering.register_partial_circuit(
