@@ -454,7 +454,7 @@ def register(
     output_circuit = registering.register_partial_circuit(
         name="Partial circuit with morphologies",
         brain_region_id=get_partial_circuit_region_id(input_circuit),
-        atlas_release_id=input_circuit.atlasRelease.get_id(),
+        atlas_release=input_circuit.atlasRelease,
         description="Partial circuit built with cell properties, and morphologies.",
         sonata_config_path=sonata_config_file,
     )

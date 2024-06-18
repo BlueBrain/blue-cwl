@@ -23,11 +23,18 @@ def atlas_release():
         "@type": "AtlasRelease",
         "label": "my-atlas",
         "name": "foo",
-        "brainTemplateDataLayer": {"@id": "template-id", "@type": "braintemplatedatalayer"},
+        "brainTemplateDataLayer": {
+            "@id": "template-id",
+            "@type": "braintemplatedatalayer",
+        },
         "parcellationOntology": {"@id": "ontology-id", "@type": "parcellationontology"},
         "parcellationVolume": {"@id": "volume-id", "@type": "parcellationvolume"},
         "subject": {"@type": "subject"},
-        "spatialReferenceSystem": {"@id": "ref-id", "@type": "spatialreferencesystem", "_rev": 1},
+        "spatialReferenceSystem": {
+            "@id": "ref-id",
+            "@type": "spatialreferencesystem",
+            "_rev": 1,
+        },
         "brainLocation": {"brainRegion": {"@id": "mba:997", "label": "root"}},
     }
 
@@ -51,7 +58,9 @@ def test_brain_location(monkeypatch):
     mock_region.get_id.return_value = "foo"
     mock_region.label = "bar"
 
-    monkeypatch.setattr(AtlasBrainRegion, "from_id", lambda *args, **kwargs: mock_region)
+    monkeypatch.setattr(
+        AtlasBrainRegion, "from_id", lambda *args, **kwargs: mock_region
+    )
 
     payload = {
         "@id": "foo",
@@ -70,7 +79,7 @@ def test_brain_location(monkeypatch):
     assert res.brainRegion.label == "bar"
 
 
-def test_register_partial_circuit():
+def test_register_partial_circuit(atlas_release):
     def load_by_url(url, *args, **kwargs):
         if "brain-region-id" in url:
             return {
@@ -87,11 +96,23 @@ def test_register_partial_circuit():
                 "@type": "AtlasRelease",
                 "label": "my-atlas",
                 "name": "foo",
-                "brainTemplateDataLayer": {"@id": "template-id", "@type": "braintemplatedatalayer"},
-                "parcellationOntology": {"@id": "ontology-id", "@type": "parcellationontology"},
-                "parcellationVolume": {"@id": "volume-id", "@type": "parcellationvolume"},
+                "brainTemplateDataLayer": {
+                    "@id": "template-id",
+                    "@type": "braintemplatedatalayer",
+                },
+                "parcellationOntology": {
+                    "@id": "ontology-id",
+                    "@type": "parcellationontology",
+                },
+                "parcellationVolume": {
+                    "@id": "volume-id",
+                    "@type": "parcellationvolume",
+                },
                 "subject": {"@type": "subject"},
-                "spatialReferenceSystem": {"@id": "ref-id", "@type": "spatialreferencesystem"},
+                "spatialReferenceSystem": {
+                    "@id": "ref-id",
+                    "@type": "spatialreferencesystem",
+                },
             }
         raise
 
@@ -105,7 +126,7 @@ def test_register_partial_circuit():
         res = test_module.register_partial_circuit(
             name="my-circuit",
             brain_region_id="brain-region-id",
-            atlas_release_id="atlas-release-id",
+            atlas_release=atlas_release,
             sonata_config_path="my-sonata-path",
             description="my-description",
         )
@@ -403,13 +424,17 @@ def test_regigster_densities(tmp_path, mixed_densities_file, atlas_release):
                         "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/Foo",
                         "label": "Foo",
                         "about": ["https://neuroshapes.org/EType"],
-                        "hasPart": [{"@type": "METypeDensity", "@id": "foo-id", "_rev": 2}],
+                        "hasPart": [
+                            {"@type": "METypeDensity", "@id": "foo-id", "_rev": 2}
+                        ],
                     },
                     {
                         "@id": "http://bbp.epfl.ch/neurosciencegraph/ontologies/etypes/Bar",
                         "label": "Bar",
                         "about": ["https://neuroshapes.org/EType"],
-                        "hasPart": [{"@id": "bar-id", "_rev": 1, "@type": "METypeDensity"}],
+                        "hasPart": [
+                            {"@id": "bar-id", "_rev": 1, "@type": "METypeDensity"}
+                        ],
                     },
                 ],
             }

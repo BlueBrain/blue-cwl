@@ -246,7 +246,7 @@ def register(*, circuit_id: str, edges_file: StrOrPath, output_dir: StrOrPath):
     output_circuit = registering.register_partial_circuit(
         name="Partial circuit with connectivity",
         brain_region_id=utils.get_partial_circuit_region_id(input_circuit),
-        atlas_release_id=input_circuit.atlasRelease.get_id(),
+        atlas_release=input_circuit.atlasRelease,
         description="Partial circuit with cell properties, emodels, morphologies and connectivity.",
         sonata_config_path=sonata_config_file,
     )

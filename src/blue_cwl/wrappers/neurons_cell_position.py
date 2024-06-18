@@ -18,7 +18,10 @@ from entity_management.util import get_entity
 from voxcell.nexus.voxelbrain import Atlas
 
 from blue_cwl import Variant, nexus, recipes, registering, staging, utils, validation
-from blue_cwl.statistics import mtype_etype_url_mapping, node_population_composition_summary
+from blue_cwl.statistics import (
+    mtype_etype_url_mapping,
+    node_population_composition_summary,
+)
 from blue_cwl.typing import StrOrPath
 
 SEED = 42
@@ -106,8 +109,12 @@ def _extract(
         output_file=me_type_densities_file,
     )
 
+    atlas_release = cell_composition.atlasRelease
+
+    full_atlas_id = utils.url_with_revision(url=atlas_release.get_id(), rev=atlas_release.get_rev())
+
     return {
-        "atlas-id": cell_composition.atlasRelease.get_id(),
+        "atlas-id": full_atlas_id,
         "region": region,
         "atlas-dir": atlas_dir,
         "me-type-densities-file": me_type_densities_file,
@@ -315,7 +322,12 @@ def _generate_circuit_config(
 
 
 def _generate_cell_composition_summary(
-    nodes_file, node_population_name, atlas_dir, mtype_urls, etype_urls, output_file: Path
+    nodes_file,
+    node_population_name,
+    atlas_dir,
+    mtype_urls,
+    etype_urls,
+    output_file: Path,
 ):
     atlas = Atlas.open(str(atlas_dir))
     population = libsonata.NodeStorage(nodes_file).open_population(node_population_name)
@@ -332,10 +344,12 @@ def _register(
     output_dir,
 ):
     """Register outputs to nexus."""
+    atlas_release = get_entity(generated_data["atlas-id"], cls=AtlasRelease)
+
     circuit_resource = registering.register_partial_circuit(
         name="Cell properties partial circuit",
         brain_region_id=region_id,
-        atlas_release_id=generated_data["atlas-id"],
+        atlas_release=atlas_release,
         description="Partial circuit built with cell positions and me properties.",
         sonata_config_path=generated_data["partial-circuit"],
     )
@@ -350,6 +364,6 @@ def _register(
         name="Cell Composition Summary",
         description="Cell Composition Summary of Node Population",
         distribution_file=generated_data["composition-summary-file"],
-        atlas_release=get_entity(generated_data["atlas-id"], cls=AtlasRelease),
+        atlas_release=atlas_release,
         derivation_entity=circuit_resource,
     )
