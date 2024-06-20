@@ -13,7 +13,7 @@ from blue_cwl.core import cwl as tested
 from blue_cwl.core.cwl_types import File, Directory, CWLType
 from blue_cwl.core.exceptions import CWLError
 
-from blue_cwl.core import utils
+from blue_cwl import utils
 from blue_cwl.core import parse_cwl_file
 
 DATA_DIR = Path(__file__).parent / "data"

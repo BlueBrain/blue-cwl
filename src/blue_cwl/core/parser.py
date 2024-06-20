@@ -11,8 +11,8 @@ from blue_cwl.core import config, cwl
 from blue_cwl.core.exceptions import CWLError
 from blue_cwl.core.executor import LocalExecutor, SallocExecutor
 from blue_cwl.core.types import PathLike
-from blue_cwl.core.utils import load_yaml, resolve_path
 from blue_cwl.core.validate import validate_workflow
+from blue_cwl.utils import load_yaml, resolve_path
 
 L = logging.getLogger(__name__)
 
