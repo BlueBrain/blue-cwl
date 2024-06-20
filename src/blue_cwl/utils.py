@@ -626,3 +626,11 @@ def get_obj(
     if isinstance(obj, str):
         return get_entity(resource_id=obj, cls=cls, base=base, org=org, proj=proj, token=token)
     return obj
+
+
+def resolve_path(path: StrOrPath, base_dir: StrOrPath | None = None) -> Path:
+    """Resolve path if it's relative wrt base_dir if given."""
+    if base_dir is not None:
+        return Path(base_dir, path).resolve()
+
+    return Path(path).resolve()

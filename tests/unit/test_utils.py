@@ -41,7 +41,11 @@ def io_data():
             {
                 "density": 100000,
                 "region": "@3$",
-                "traits": {"layer": 3, "mtype": "L23_MC", "etype": {"bAC": 0.7, "bNAC": 0.3}},
+                "traits": {
+                    "layer": 3,
+                    "mtype": "L23_MC",
+                    "etype": {"bAC": 0.7, "bNAC": 0.3},
+                },
             },
             {
                 "density": 100000,
@@ -50,6 +54,28 @@ def io_data():
             },
         ],
     }
+
+
+def test_create_dir(tmp_path):
+    directory = Path(tmp_path / "sub")
+
+    assert not directory.exists()
+
+    path = tested.create_dir(directory)
+    assert path == directory
+    assert path.exists()
+
+    file = path / "file.txt"
+    file.write_text("foo")
+
+    # already exists
+    path = tested.create_dir(directory)
+    assert path == directory
+    assert path.exists()
+
+    # check that the directory is not cleaned
+    assert file.exists()
+    assert file.read_text() == "foo"
 
 
 def test_load_yaml(io_data):
@@ -310,7 +336,9 @@ def test_update_circuit_config_population__node_population__add_morphologies_dir
     )
 
 
-def test_update_circuit_config_population__node_population__add_emodels__1(config_nodes_1):
+def test_update_circuit_config_population__node_population__add_emodels__1(
+    config_nodes_1,
+):
     res = tested.update_circuit_config_population(
         config_nodes_1,
         population_name="a-pop",
@@ -332,7 +360,9 @@ def test_update_circuit_config_population__node_population__add_emodels__1(confi
     )
 
 
-def test_update_circuit_config_population__node_population__add_emodels_2(config_nodes_2):
+def test_update_circuit_config_population__node_population__add_emodels_2(
+    config_nodes_2,
+):
     res = tested.update_circuit_config_population(
         config_nodes_2,
         population_name="b-pop",
@@ -354,7 +384,9 @@ def test_update_circuit_config_population__node_population__add_emodels_2(config
     )
 
 
-def test_update_circuit_config_population__node_population__add_emodels__3(config_nodes_2):
+def test_update_circuit_config_population__node_population__add_emodels__3(
+    config_nodes_2,
+):
     res = tested.update_circuit_config_population(
         config_nodes_2,
         population_name="a-pop",

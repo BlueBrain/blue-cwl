@@ -7,7 +7,7 @@ from blue_cwl.core import parser as tested
 from blue_cwl.core import cwl
 from blue_cwl.core.exceptions import CWLError, CWLValidationError
 from blue_cwl.core.executor import LocalExecutor, SallocExecutor
-from blue_cwl.core import utils
+from blue_cwl import utils
 
 
 TESTS_DIR = Path(__file__).parent
