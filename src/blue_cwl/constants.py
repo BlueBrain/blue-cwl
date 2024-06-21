@@ -2,6 +2,8 @@
 
 """Constants."""
 
+DEFAULT_CIRCUIT_CONFIG_FILENAME = "circuit_config.json"
+
 DEFAULT_CIRCUIT_BUILD_PARAMETERS = {
     "place_cells": {
         "soma_placement": "basic",

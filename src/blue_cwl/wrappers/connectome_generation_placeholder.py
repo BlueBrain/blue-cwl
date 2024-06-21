@@ -10,7 +10,6 @@ import click
 import libsonata
 import numpy as np
 import voxcell
-from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
 from entity_management.util import get_entity
 
@@ -25,6 +24,7 @@ from blue_cwl import (
 )
 from blue_cwl.typing import StrOrPath
 from blue_cwl.utils import create_dir
+from blue_cwl.wrappers import common
 
 L = logging.getLogger(__name__)
 
@@ -56,7 +56,9 @@ def app():
 
 @app.command(name="stage")
 @click.option(
-    "--configuration-id", required=True, help="Connectome generation configuration NEXUS id."
+    "--configuration-id",
+    required=True,
+    help="Connectome generation configuration NEXUS id.",
 )
 @click.option("--circuit-id", required=True, help="Circuit NEXUS id.")
 @click.option("--macro-connectome-config-id", required=True)
@@ -220,12 +222,19 @@ def _get_population_unique_region_volumes(
 @click.option("--circuit-id", required=True)
 @click.option("--edges-file", required=True)
 @click.option("--output-dir", required=True)
+@click.option("--output-resource-file", required=True)
 def register_cli(**kwargs):
     """Register circuit resource."""
     register(**kwargs)
 
 
-def register(*, circuit_id: str, edges_file: StrOrPath, output_dir: StrOrPath):
+def register(
+    *,
+    circuit_id: str,
+    edges_file: StrOrPath,
+    output_dir: StrOrPath,
+    output_resource_file: StrOrPath,
+):
     """Register circuit resource."""
     input_circuit = get_entity(resource_id=circuit_id, cls=DetailedCircuit)
 
@@ -250,9 +259,11 @@ def register(*, circuit_id: str, edges_file: StrOrPath, output_dir: StrOrPath):
         description="Partial circuit with cell properties, emodels, morphologies and connectivity.",
         sonata_config_path=sonata_config_file,
     )
-    utils.write_json(
-        data=load_by_id(output_circuit.get_id()),
-        filepath=Path(output_dir, "resource.json"),
+
+    L.info("Writing circuit id to file...")
+    common.write_entity_id_to_file(
+        entity=output_circuit,
+        output_file=output_resource_file,
     )
 
 

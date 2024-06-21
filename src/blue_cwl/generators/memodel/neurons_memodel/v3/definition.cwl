@@ -130,5 +130,8 @@ steps:
       hoc_dir: emodel_adapt/hoc_dir
       nodes_file: emodel_currents/nodes_file
       output_dir: output_dir
+      output_resource_file:
+        source: output_dir
+        valueFrom: $(self.path)/resource.json
     out:
       - circuit

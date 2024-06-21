@@ -95,10 +95,11 @@ def test_register(tmp_path, circuit_config_file, circuit_config, detailed_circui
 
     mock_circuit = Mock()
     mock_circuit.brainLocation.brainRegion.id = "foo"
+    mock_circuit.__name__ = "DetailedCircuit"
+    mock_circuit.get_id.return_value = "circuit-id"
 
     with (
-        patch("blue_cwl.wrappers.memodel._register_circuit"),
-        patch("blue_cwl.wrappers.memodel.load_by_id", return_value=detailed_circuit_metadata),
+        patch("blue_cwl.wrappers.memodel._register_circuit", return_value=mock_circuit),
     ):
         test_module._register(
             partial_circuit=partial_circuit,

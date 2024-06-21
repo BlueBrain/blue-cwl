@@ -66,5 +66,8 @@ steps:
       cell_composition_volume_file: manipulate_cell_composition/cell_composition_volume_file
       cell_composition_summary_file: manipulate_cell_composition/cell_composition_summary_file
       output_dir: output_dir
+      output_resource_file:
+        source: output_dir
+        valueFrom: $(self.path)/resource.json
     out:
       - cell_composition

@@ -62,10 +62,7 @@ def test_essential_parameters():
         "example_float": 3.2,
     }
     res = tool.make(input_values=input_values)
-    assert (
-        res.build_command()
-        == "echo -f -i42 -d3.2 --file=whale.txt --example-string hello"
-    )
+    assert res.build_command() == "echo -f -i42 -d3.2 --file=whale.txt --example-string hello"
 
 
 def test_array_types_tool():
@@ -217,9 +214,7 @@ def test_copy_file_workflow(tmp_path, cwl_file):
     )
     s3.run()
 
-    assert (
-        Path(process.outputs["output_file"].path).read_text() == input_file.read_text()
-    )
+    assert Path(process.outputs["output_file"].path).read_text() == input_file.read_text()
 
 
 def test_generator_tool():
@@ -322,9 +317,7 @@ def test_generator_workflow():
         "cell_composition": NexusResource(id="my-composition-id"),
         "output_dir": Directory(path="my-output-dir"),
     }
-    assert s1.outputs == {
-        "staged_resource": File(path="my-output-dir/staged_resource.json")
-    }
+    assert s1.outputs == {"staged_resource": File(path="my-output-dir/staged_resource.json")}
     assert s1.base_command == [
         "blue-cwl",
         "stage",
@@ -371,9 +364,7 @@ def test_generator_workflow():
         "variant_config": NexusResource(id="my-config-id"),
         "output_dir": Directory(path="my-output-dir"),
     }
-    assert s2.outputs == {
-        "staged_resource": File(path="my-output-dir/staged_resource.json")
-    }
+    assert s2.outputs == {"staged_resource": File(path="my-output-dir/staged_resource.json")}
     assert s2.environment == {
         "env_type": "MODULE",
         "modules": ["unstable", "py-blue-cwl"],

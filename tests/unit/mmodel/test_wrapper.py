@@ -582,19 +582,21 @@ def test_register(tmp_path, circuit_config, placeholder_nodes_file):
 
     mock_entity = Mock()
     mock_entity.circuitConfigPath.get_url_as_path = lambda: str(circuit_config_file)
+    mock_entity.__name__ = "DetailedCircuit"
+    mock_entity.get_id.return_value = "circuit-id"
 
-    mock_resource_jsonld = {"foo": "bar"}
+    out_resource_file = output_dir / "resource.json"
 
     with (
         patch("blue_cwl.wrappers.mmodel.get_entity", return_value=mock_entity),
-        patch("blue_cwl.registering.register_partial_circuit"),
-        patch("blue_cwl.wrappers.mmodel.load_by_id", return_value=mock_resource_jsonld),
+        patch("blue_cwl.registering.register_partial_circuit", return_value=mock_entity),
     ):
         test_module.register(
             output_dir=output_dir,
             circuit_id="circuit-id",
             nodes_file=placeholder_nodes_file,
             morphologies_dir=morphologies_dir,
+            output_resource_file=out_resource_file,
         )
 
     expected_out_config_file = output_dir / "circuit_config.json"
@@ -625,65 +627,5 @@ def test_register(tmp_path, circuit_config, placeholder_nodes_file):
         "metadata": {"status": "partial"},
     }
 
-    expected_resource_file = output_dir / "resource.json"
-    resource_data = load_json(expected_resource_file)
-    assert resource_data == mock_resource_jsonld
-
-
-def test_write_partial_config(tmp_path):
-    config = {
-        "version": 2,
-        "manifest": {"$BASE_DIR": "."},
-        "node_sets_file": "node_sets.json",
-        "networks": {
-            "nodes": [
-                {
-                    "nodes_file": "old-nodes-file",
-                    "populations": {
-                        "root__neurons": {
-                            "type": "biophysical",
-                            "partial": ["cell-properties"],
-                        }
-                    },
-                }
-            ],
-            "edges": [],
-        },
-        "metadata": {"status": "partial"},
-    }
-
-    output_file = tmp_path / "config.json"
-    population_name = "root__neurons"
-    morphologies_dir = "path-to-morphs"
-    nodes_file = "path-to-nodes-file"
-
-    test_module._write_partial_config(
-        config, nodes_file, population_name, morphologies_dir, output_file
-    )
-
-    res = load_json(output_file)
-
-    assert res == {
-        "version": 2,
-        "manifest": {"$BASE_DIR": "."},
-        "node_sets_file": "node_sets.json",
-        "networks": {
-            "nodes": [
-                {
-                    "nodes_file": "path-to-nodes-file",
-                    "populations": {
-                        "root__neurons": {
-                            "type": "biophysical",
-                            "partial": ["cell-properties", "morphologies"],
-                            "alternate_morphologies": {
-                                "h5v1": "path-to-morphs",
-                                "neurolucida-asc": "path-to-morphs",
-                            },
-                        }
-                    },
-                }
-            ],
-            "edges": [],
-        },
-        "metadata": {"status": "partial"},
-    }
+    resource_data = load_json(out_resource_file)
+    assert resource_data == {"@id": "circuit-id", "@type": "DetailedCircuit"}

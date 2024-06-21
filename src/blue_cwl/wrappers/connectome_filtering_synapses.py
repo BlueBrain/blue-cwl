@@ -4,21 +4,19 @@
 
 import copy
 import logging
-import os
-import subprocess
 from pathlib import Path
 
 import click
 import fz_td_recipe
 import libsonata
 import voxcell
-from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
 from entity_management.util import get_entity
 
-from blue_cwl import Variant, recipes, registering, staging, utils, validation
+from blue_cwl import recipes, registering, staging, utils
 from blue_cwl.exceptions import CWLWorkflowError
 from blue_cwl.typing import StrOrPath
+from blue_cwl.wrappers import common
 
 L = logging.getLogger(__name__)
 
@@ -48,24 +46,6 @@ INPUT_NODE_POPULATION_COLUMNS = [
 @click.group
 def app():
     """Synapse filtering."""
-
-
-@app.command(name="mono-execution")
-@click.option(
-    "--configuration-id",
-    required=True,
-    help="Nexus ID of the configuration resource.",
-)
-@click.option(
-    "--variant-id",
-    required=False,
-    help="Nexus ID of the variant definition resource.",
-)
-@click.option("--circuit-id", required=True, help="DetailedCircuit resource Nexus ID.")
-@click.option("--output-dir", required=True)
-def mono_execution_cli(**options):
-    """Synapse filtering."""
-    mono_execution(**options)
 
 
 @app.command(name="dirs")
@@ -271,7 +251,7 @@ def register(
         output_dir: The output directory to write the generated data.
         output_resource_file: The file path to write the registered in Nexus resource jsonld.
     """
-    L.info("Registering partial circuit with functioanal connectome...")
+    L.info("Registering partial circuit with functional connectome...")
 
     partial_circuit = get_entity(resource_id=circuit_id, cls=DetailedCircuit)
     circuit_config_path = partial_circuit.circuitConfigPath.get_url_as_path()
@@ -281,187 +261,16 @@ def register(
     _write_partial_config(config, edges_file, output_config_file)
     L.info("Circuit config written at %s", output_config_file)
 
-    # output circuit
-    L.info("Registering partial circuit...")
-    partial_circuit = registering.register_partial_circuit(
+    L.info("Registering DetailedCircuit entity...")
+    circuit = registering.register_partial_circuit(
         name="Partial circuit with functional connectivity",
         brain_region_id=utils.get_partial_circuit_region_id(partial_circuit),
         atlas_release=partial_circuit.atlasRelease,
         description="Circuit with nodes and functionalized synapses.",
         sonata_config_path=output_config_file,
     )
-    jsonld_resource = load_by_id(partial_circuit.get_id())
-    utils.write_json(filepath=output_resource_file, data=jsonld_resource)
-    L.info("Circuit jsonld resource written at %s", jsonld_resource)
 
-
-def mono_execution(
-    configuration_id: str, variant_id: str, circuit_id: str, output_dir: StrOrPath
-) -> None:
-    """Synapse connectome filtering using spykfunc.
-
-    Args:
-        configuration_id: The Nexus id of the configuration resource.
-        variant_id: The Nexus id of the variant resource.
-        circuit_id: The Nexus id of the partial input circuit.
-        output_dir: The output directory to write the generated data.
-    """
-    output_dir = utils.create_dir(Path(output_dir).resolve())
-
-    build_dir = Path(output_dir, "build")
-    staging_dir = Path(output_dir, "stage")
-
-    # create directories
-    dirs(output_stage_dir=staging_dir, output_build_dir=build_dir)
-
-    variant = get_entity(resource_id=variant_id, cls=Variant)
-    partial_circuit = get_entity(resource_id=circuit_id, cls=DetailedCircuit)
-    circuit_config_path = partial_circuit.circuitConfigPath.get_url_as_path()
-    config = utils.load_json(circuit_config_path)
-
-    nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(config)
-    _, edge_population_name = utils.get_first_edge_population_from_config(config)
-
-    # staged output files
-    staged_configuration_file = Path(staging_dir, "staged_configuration_file.json")
-    staged_circuit_file = Path(staging_dir, "circuit_config.json")
-    staged_atlas_file = Path(staging_dir, "atlas.json")
-    staged_variant_file = Path(staging_dir, "variant.cwl")
-    staged_edges_file = Path(staging_dir, "edges.h5")
-
-    # parquet2hdf5 output edges file
-    output_edges_file = Path(build_dir, "edges.h5")
-
-    # functionalizer's recipe output json file
-    recipe_file = Path(build_dir, "recipe.json")
-
-    # functionalizer output parquet dir
-    parquet_dir = Path(build_dir, "circuit.parquet")
-
-    # nexus jsonld resource output file
-    resource_file = Path(output_dir, "resource.json")
-
-    stage(
-        configuration_id=configuration_id,
-        variant_id=variant_id,
-        circuit_id=circuit_id,
-        staging_dir=staging_dir,
-        output_configuration_file=staged_configuration_file,
-        output_circuit_file=staged_circuit_file,
-        output_atlas_file=staged_atlas_file,
-        output_variant_file=staged_variant_file,
-        output_edges_file=staged_edges_file,
-    )
-    recipe(
-        atlas_file=staged_atlas_file,
-        circuit_file=staged_circuit_file,
-        source_node_population_name=node_population_name,
-        target_node_population_name=node_population_name,
-        configuration_file=staged_configuration_file,
-        output_recipe_file=recipe_file,
-    )
-    validation.check_properties_in_population(
-        population_name=node_population_name,
-        nodes_file=nodes_file,
-        property_names=INPUT_NODE_POPULATION_COLUMNS,
-    )
-    _run_functionalizer(
-        circuit_config_path=circuit_config_path,
-        node_population_name=node_population_name,
-        edges_file=staged_edges_file,
-        recipe_file=recipe_file,
-        output_dir=build_dir,
-        parquet_dir=parquet_dir,
-        variant=variant,
-    )
-    _run_parquet_conversion(
-        parquet_dir=parquet_dir,
-        output_edges_file=output_edges_file,
-        output_edge_population_name=edge_population_name,
-        variant=variant,
-    )
-    register(
-        circuit_id=circuit_id,
-        edges_file=output_edges_file,
-        output_dir=build_dir,
-        output_resource_file=resource_file,
-    )
-
-
-def _run_functionalizer(
-    *,
-    circuit_config_path: StrOrPath,
-    node_population_name: str,
-    edges_file: StrOrPath,
-    recipe_file: StrOrPath,
-    output_dir: StrOrPath,
-    parquet_dir: StrOrPath,
-    variant: Variant,
-) -> None:
-    L.info("Running functionalizer...")
-
-    work_dir = utils.create_dir(Path(output_dir, "workdir"), clean_if_exists=True)
-
-    base_command = [
-        "env",
-        f"SPARK_USER={os.environ['USER']}",
-        "dplace",
-        "functionalizer",
-        str(edges_file),
-        "--circuit-config",
-        str(circuit_config_path),
-        "--work-dir",
-        str(work_dir),
-        "--output-dir",
-        str(output_dir),
-        "--from",
-        node_population_name,
-        "--to",
-        node_population_name,
-        "--filters",
-        "SynapseProperties",
-        "--recipe",
-        str(recipe_file),
-    ]
-    str_base_command = " ".join(base_command)
-    str_command = utils.build_variant_allocation_command(
-        str_base_command, variant, sub_task_index=0
-    )
-
-    L.info("Tool full command: %s", str_command)
-    subprocess.run(str_command, check=True, shell=True)
-
-    if not Path(parquet_dir).exists():
-        raise CWLWorkflowError(f"Parquet dir at {parquet_dir} does not exist.")
-
-    L.info("Parquet files generated in %s", parquet_dir)
-
-
-def _run_parquet_conversion(
-    parquet_dir: StrOrPath, output_edges_file: StrOrPath, output_edge_population_name, variant
-) -> None:
-    L.info("Running parquet conversion to sonata...")
-
-    # Launch a second allocation to merge parquet edges into a SONATA edge population
-    base_command = [
-        "parquet2hdf5",
-        str(parquet_dir),
-        str(output_edges_file),
-        output_edge_population_name,
-    ]
-    str_base_command = " ".join(base_command)
-
-    str_command = utils.build_variant_allocation_command(
-        str_base_command, variant, sub_task_index=1, srun="srun dplace"
-    )
-
-    L.info("Tool full command: %s", str_command)
-    subprocess.run(str_command, check=True, shell=True)
-
-    if not Path(output_edges_file).exists():
-        raise CWLWorkflowError(f"Edges file has failed to be generated at {output_edges_file}")
-
-    L.info("Functionalized edges generated at %s", output_edges_file)
+    common.write_entity_id_to_file(entity=circuit, output_file=output_resource_file)
 
 
 def _write_partial_config(config: dict, edges_file: StrOrPath, output_file: StrOrPath) -> None:

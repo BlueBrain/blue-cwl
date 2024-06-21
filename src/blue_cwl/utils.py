@@ -342,6 +342,20 @@ def update_circuit_config_population(
     raise CWLWorkflowError(f"Population name {population_name} not in config.")
 
 
+def write_circuit_config_with_data(
+    config: dict[str, Any],
+    population_name: str,
+    population_data: dict[str, Any],
+    filepath: StrOrPath,
+    output_config_file: StrOrPath,
+):
+    """Write a new config from an existing one with updated population data."""
+    new_config = update_circuit_config_population(
+        config, population_name, population_data, filepath
+    )
+    write_json(data=new_config, filepath=output_config_file)
+
+
 def write_node_population_with_properties(
     nodes_file: StrOrPath,
     population_name: str,

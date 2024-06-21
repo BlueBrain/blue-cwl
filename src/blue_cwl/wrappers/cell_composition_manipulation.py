@@ -8,7 +8,6 @@ from pathlib import Path
 import click
 import pandas as pd
 import voxcell
-from entity_management import nexus
 from entity_management.atlas import CellComposition
 from entity_management.config import BrainRegionSelectorConfig, CellCompositionConfig
 
@@ -22,6 +21,7 @@ from blue_cwl.exceptions import CWLRegistryError, CWLWorkflowError, SchemaValida
 from blue_cwl.nexus import get_distribution_as_dict
 from blue_cwl.typing import StrOrPath
 from blue_cwl.validation import validate_schema
+from blue_cwl.wrappers import common
 
 L = logging.getLogger(__name__)
 
@@ -229,6 +229,7 @@ def manipulate_cell_composition(
 @click.option("--cell-composition-volume-file", required=True)
 @click.option("--cell-composition-summary-file", required=True)
 @click.option("--output-dir", required=True)
+@click.option("--output-resource-file", required=True)
 def register_cli(**kwargs):
     """Register new cell composition."""
     register(**kwargs)
@@ -240,6 +241,7 @@ def register(
     cell_composition_volume_file: StrOrPath,
     cell_composition_summary_file: StrOrPath,
     output_dir: StrOrPath,
+    output_resource_file: StrOrPath,
 ) -> None:
     """Register new cell composition.
 
@@ -255,11 +257,13 @@ def register(
         cell_composition_volume_file: Volume file to create the new CellComposition from.
         cell_composition_summary_file: Summary file to create the new CellComposition from.
         output_dir: Output directory to write outputs.
+        output_resource_file: Output resource file to write the entity id.
     """
     base_cell_composition = get_entity(base_cell_composition_id, cls=CellComposition)
 
     atlas_release = base_cell_composition.atlasRelease
 
+    L.info("Registering local CellCompositionVolume densities...")
     registered_cell_composition_volume_file = Path(
         output_dir, "registered_cell_composition_volume.json"
     )
@@ -268,6 +272,8 @@ def register(
         distribution_file=cell_composition_volume_file,
         output_file=registered_cell_composition_volume_file,
     )
+
+    L.info("Registering CellComposition...")
     cell_composition = registering.register_cell_composition(
         name="Cell Composition",
         description="Manipulated Cell Composition",
@@ -278,17 +284,18 @@ def register(
 
     _validate_cell_composition_schemas(cell_composition)
 
-    utils.write_json(
-        data=nexus.load_by_id(cell_composition.get_id()),
-        filepath=Path(output_dir, "resource.json"),
-    )
+    common.write_entity_id_to_file(entity=cell_composition, output_file=output_resource_file)
 
 
 def _validate_cell_composition_schemas(cell_composition):
     volume_id = cell_composition.cellCompositionVolume.get_id()
+
+    L.info("Validating CellCompositionVolume distribution schema: %s", volume_id)
     _validate_cell_composition_volume_schema(volume_id)
 
     summary_id = cell_composition.cellCompositionSummary.get_id()
+
+    L.info("Validating CellCompositionSummary distribution schema %s", summary_id)
     _validate_cell_composition_summary_schema(summary_id)
 
 
