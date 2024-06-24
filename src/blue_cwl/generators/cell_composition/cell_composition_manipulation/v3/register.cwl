@@ -44,9 +44,14 @@ inputs:
     inputBinding:
       prefix: --output-dir
 
+  - id: output_resource_file
+    type: string
+    inputBinding:
+      prefix: --output-resource-file
+
 outputs:
 
   - id: cell_composition
     type: NexusType
     outputBinding:
-      glob: $(inputs.output_dir.path)/resource.json
+      glob: $(inputs.output_resource_file)

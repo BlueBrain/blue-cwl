@@ -555,6 +555,8 @@ def _file_resp(filepath):
 def test_register(
     build_dir, manipulated_volume_file, manipulated_summary_file, load_by_id, updated_density_file
 ):
+    out_resource_file = build_dir / "resource.json"
+
     def create(base_url, payload, *args, **kwargs):
         if payload["@type"] == "METypeDensity":
             return payload | {"@id": "updated-density-id", "_rev": 2}
@@ -584,6 +586,7 @@ def test_register(
             cell_composition_volume_file=manipulated_volume_file,
             cell_composition_summary_file=manipulated_summary_file,
             output_dir=build_dir,
+            output_resource_file=out_resource_file,
         )
 
     # check registered file has only ids
@@ -620,5 +623,6 @@ def test_register(
         ]
     }
 
-    res_resource_file = build_dir / "resource.json"
-    assert res_resource_file.exists()
+    assert out_resource_file.exists()
+    res_resource = load_json(out_resource_file)
+    assert res_resource == {"@id": "updated-cell-composition-id", "@type": "CellComposition"}

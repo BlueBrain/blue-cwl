@@ -408,6 +408,17 @@ def test_update_circuit_config_population__node_population__add_emodels__3(
     )
 
 
+def test_write_circuit_config_with_data(tmp_path):
+    out_file = Path(tmp_path, "circuit_config.json")
+
+    mock_config = {"foo": "bar"}
+    with patch("blue_cwl.utils.update_circuit_config_population", return_value=mock_config):
+        tested.write_circuit_config_with_data(None, None, None, None, output_config_file=out_file)
+
+    res = tested.load_json(out_file)
+    assert res == mock_config
+
+
 def test_arrow_io():
     df = pd.DataFrame({"a": [1, 2, 3], "b": pd.Categorical(["a", "b", "b"]), "c": [0.1, 0.2, 0.3]})
     with tempfile.NamedTemporaryFile(suffix=".arrow") as tfile:

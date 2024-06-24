@@ -115,5 +115,8 @@ steps:
       nodes_file: merge/nodes_file
       morphologies_dir: setup/morphologies_dir
       output_dir: output_dir
+      output_resource_file:
+        source: output_dir
+        valueFrom: $(self.path)/resource.json
     out:
       - circuit

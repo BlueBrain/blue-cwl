@@ -3,20 +3,20 @@
 """me-model wrapper."""
 
 import logging
-import shutil
 from pathlib import Path
 
 import click
-from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
 from entity_management.util import get_entity, unquote_uri_path
 
 from blue_cwl import registering, utils, validation
+from blue_cwl.constants import DEFAULT_CIRCUIT_CONFIG_FILENAME
 from blue_cwl.me_model.entity import MEModelConfig
 from blue_cwl.me_model.recipe import build_me_model_recipe
 from blue_cwl.me_model.staging import stage_me_model_config
 from blue_cwl.nexus import get_distribution_as_dict
 from blue_cwl.staging import stage_file
+from blue_cwl.typing import StrOrPath
 from blue_cwl.utils import get_partial_circuit_region_id
 from blue_cwl.wrappers import common
 
@@ -78,10 +78,10 @@ def stage(*, configuration_id, circuit_id, stage_dir):
     )
     L.debug("me-model config %s materialized at %s", configuration_id, config_file)
 
-    circuit_file = Path(stage_dir, "circuit_config.json")
+    circuit_file = Path(stage_dir, DEFAULT_CIRCUIT_CONFIG_FILENAME)
     _stage_circuit(
         partial_circuit=circuit_id,
-        output_file=Path(stage_dir, "circuit_config.json"),
+        output_file=circuit_file,
     )
     L.debug("Circuit %s staged at %s", circuit_id, circuit_file)
 
@@ -120,6 +120,7 @@ def recipe(*, config_file, output_file):
 @click.option("--nodes-file", required=True)
 @click.option("--hoc-dir", required=True)
 @click.option("--output-dir", required=True)
+@click.option("--output-resource-file", required=True)
 def register_cli(**kwargs):
     """Register cli."""
     register(**kwargs)
@@ -127,18 +128,27 @@ def register_cli(**kwargs):
 
 def register(
     *,
-    circuit_id,
-    circuit_file,
-    nodes_file,
-    hoc_dir,
-    output_dir,
-):
-    """Register new circuit with generated nodes and hoc directory."""
-    config = utils.load_json(circuit_file)
+    circuit_id: str,
+    circuit_file: StrOrPath,
+    nodes_file: StrOrPath,
+    hoc_dir: StrOrPath,
+    output_dir: StrOrPath,
+    output_resource_file: StrOrPath,
+) -> None:
+    """Register new circuit with generated nodes and hoc directory.
 
+    Args:
+        circuit_id: The NEXUS resource id of the input DetailedCircuit.
+        circuit_file: Staged circuit config file.
+        nodes_file: Updated nodes file.
+        hoc_dir: Biophysical models directory.
+        output_dir: Output directory to use.
+        output_resource_file: Optional output resource file to write the registered entity id.
+    """
+    config = utils.load_json(circuit_file)
     _, population_name = utils.get_biophysical_partial_population_from_config(config)
 
-    L.info("Validating odes file...")
+    L.info("Validating input nodes file...")
     validation.check_properties_in_population(
         population_name=population_name,
         nodes_file=nodes_file,
@@ -148,32 +158,26 @@ def register(
         + CURRENTS_PROPERTIES,
     )
 
-    updated_config = utils.update_circuit_config_population(
+    L.info("Generating updated circuit config...")
+    output_circuit_config_file = Path(output_dir, DEFAULT_CIRCUIT_CONFIG_FILENAME)
+
+    utils.write_circuit_config_with_data(
         config=config,
         population_name=population_name,
         population_data={
             "biophysical_neuron_models_dir": str(hoc_dir),
         },
         filepath=str(nodes_file),
+        output_config_file=output_circuit_config_file,
     )
-    output_circuit_config_file = Path(output_dir, "circuit_config.json")
-    utils.write_json(filepath=output_circuit_config_file, data=updated_config)
-    L.info("Created circuit config file at %s", output_circuit_config_file)
 
     validation.check_population_name_in_config(population_name, output_circuit_config_file)
 
+    L.info("Registering DetailedCircuit...")
     circuit = _register_circuit(circuit_id, output_circuit_config_file)
 
-    utils.write_json(
-        data=load_by_id(circuit.get_id()),
-        filepath=Path(output_dir, "resource.json"),
-    )
-
-
-def _rmdir_if_exists(path: Path) -> Path:
-    if path.exists():
-        shutil.rmtree(path)
-    return path
+    L.info("Writing circuit id to output resource file...")
+    common.write_entity_id_to_file(entity=circuit, output_file=output_resource_file)
 
 
 def _stage_circuit(partial_circuit, output_file):
@@ -187,48 +191,16 @@ def _stage_circuit(partial_circuit, output_file):
 
 def _get_biophysical_population_info(circuit_config_file, ext):
     config = utils.load_json(circuit_config_file)
-    nodes_file, node_population_name = utils.get_biophysical_partial_population_from_config(config)
+    (
+        nodes_file,
+        node_population_name,
+    ) = utils.get_biophysical_partial_population_from_config(config)
     morphologies_dir = utils.get_morphologies_dir(
         circuit_config=config,
         population_name=node_population_name,
         ext=ext,
     )
     return nodes_file, node_population_name, morphologies_dir
-
-
-def _register(
-    partial_circuit,
-    variant,
-    circuit_config_file,
-    nodes_file,
-    biophysical_neuron_models_dir,
-    output_dir,
-):
-    config = utils.load_json(circuit_config_file)
-
-    _, population_name = utils.get_biophysical_partial_population_from_config(config)
-
-    updated_config = utils.update_circuit_config_population(
-        config=config,
-        population_name=population_name,
-        population_data={
-            "biophysical_neuron_models_dir": str(biophysical_neuron_models_dir),
-        },
-        filepath=str(nodes_file),
-    )
-    output_circuit_config_file = output_dir / "circuit_config.json"
-    utils.write_json(filepath=output_circuit_config_file, data=updated_config)
-    L.info("Created circuit config file at %s", output_circuit_config_file)
-
-    validation.check_population_name_in_config(population_name, output_circuit_config_file)
-
-    circuit = _register_circuit(partial_circuit, output_circuit_config_file)
-
-    utils.write_resource_to_definition_output(
-        json_resource=load_by_id(circuit.get_id()),
-        variant=variant,
-        output_dir=output_dir,
-    )
 
 
 def _register_circuit(partial_circuit, output_circuit_config_file):

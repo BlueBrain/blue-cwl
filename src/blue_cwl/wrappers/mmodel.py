@@ -9,7 +9,6 @@ import click
 import numpy as np
 import pandas as pd
 import voxcell
-from entity_management.nexus import load_by_id
 from entity_management.simulation import DetailedCircuit
 from entity_management.util import get_entity
 from morph_tool.converter import convert
@@ -423,6 +422,7 @@ def merge(
 @click.option("--nodes-file", required=True)
 @click.option("--morphologies-dir", required=True)
 @click.option("--output-dir", required=True)
+@click.option("--output-resource-file", required=True)
 def register_cli(**kwargs):
     """Register."""
     register(**kwargs)
@@ -434,6 +434,7 @@ def register(
     circuit_id: str,
     nodes_file: StrOrPath,
     morphologies_dir: StrOrPath,
+    output_resource_file: StrOrPath,
 ) -> None:
     """Register a new DetailedCircuit with the new nodes_file and morphologies_dir."""
     input_circuit = get_entity(resource_id=circuit_id, cls=DetailedCircuit)
@@ -442,26 +443,32 @@ def register(
     _, population_name = utils.get_biophysical_partial_population_from_config(input_circuit_config)
 
     sonata_config_file = Path(output_dir, "circuit_config.json")
-    _write_partial_config(
+
+    utils.write_circuit_config_with_data(
         config=input_circuit_config,
-        nodes_file=nodes_file,
         population_name=population_name,
-        morphologies_dir=morphologies_dir,
-        output_file=sonata_config_file,
+        population_data={
+            "partial": ["morphologies"],
+            "alternate_morphologies": {
+                "h5v1": str(morphologies_dir),
+                "neurolucida-asc": str(morphologies_dir),
+            },
+        },
+        filepath=str(nodes_file),
+        output_config_file=sonata_config_file,
     )
+
     validation.check_population_name_in_config(population_name, sonata_config_file)
 
-    output_circuit = registering.register_partial_circuit(
+    circuit = registering.register_partial_circuit(
         name="Partial circuit with morphologies",
         brain_region_id=get_partial_circuit_region_id(input_circuit),
         atlas_release=input_circuit.atlasRelease,
         description="Partial circuit built with cell properties, and morphologies.",
         sonata_config_path=sonata_config_file,
     )
-    utils.write_json(
-        data=load_by_id(output_circuit.get_id()),
-        filepath=Path(output_dir, "resource.json"),
-    )
+
+    common.write_entity_id_to_file(entity=circuit, output_file=output_resource_file)
 
 
 def _generate_cell_orientations(atlas_info):
@@ -529,26 +536,3 @@ def _generate_region_structure(ph_catalog: dict | None, output_file: Path) -> Pa
     utils.write_yaml(filepath=output_file, data=region_structure)
 
     return output_file
-
-
-def _write_partial_config(
-    config: dict,
-    nodes_file: StrOrPath,
-    population_name: str,
-    morphologies_dir: StrOrPath,
-    output_file: StrOrPath,
-) -> None:
-    """Update partial config with new nodes path and the morphology directory."""
-    updated_config = utils.update_circuit_config_population(
-        config=config,
-        population_name=population_name,
-        population_data={
-            "partial": ["morphologies"],
-            "alternate_morphologies": {
-                "h5v1": str(morphologies_dir),
-                "neurolucida-asc": str(morphologies_dir),
-            },
-        },
-        filepath=str(nodes_file),
-    )
-    utils.write_json(filepath=output_file, data=updated_config)

@@ -87,5 +87,8 @@ steps:
       output_dir: output_dir
       circuit_id: circuit_id
       edges_file: parquet_to_sonata/edges_file
+      output_resource_file:
+        source: output_dir
+        valueFrom: $(self.path)/resource.json
     out:
       - circuit

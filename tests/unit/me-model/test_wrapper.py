@@ -8,6 +8,9 @@ from blue_cwl.utils import load_json
 from blue_cwl.testing import patchenv
 
 
+DATA_DIR = Path(__file__).parent / "data"
+
+
 def test_get_biophysical_population_info(circuit_config_file):
     res = test_module._get_biophysical_population_info(circuit_config_file, ext="h5")
 
@@ -81,12 +84,12 @@ def test_register(tmp_path, circuit_config_file, circuit_config, detailed_circui
     output_dir = tmp_path / "out"
     output_dir.mkdir()
 
-    output_cicuit_config_file = tmp_path / "circuit_config.json"
+    hoc_dir = output_dir / "hoc"
+    hoc_dir.mkdir()
 
-    partial_circuit = Mock()
-    partial_circuit.brainLocation.brainRegion.id = "foo"
-    partial_circuit.atlasRelease.id = "bar"
-    partial_circuit.get_id.return_value = "zoo"
+    nodes_file = Path(DATA_DIR / "nodes.h5")
+
+    output_resource_file = output_dir / "resource.json"
 
     variant = Mock()
     mock = Mock()
@@ -95,30 +98,31 @@ def test_register(tmp_path, circuit_config_file, circuit_config, detailed_circui
 
     mock_circuit = Mock()
     mock_circuit.brainLocation.brainRegion.id = "foo"
+    mock_circuit.__class__.__name__ = "DetailedCircuit"
+    mock_circuit.get_id.return_value = "circuit-id"
 
     with (
-        patch("blue_cwl.wrappers.memodel._register_circuit"),
-        patch("blue_cwl.wrappers.memodel.load_by_id", return_value=detailed_circuit_metadata),
+        patch("blue_cwl.wrappers.memodel._register_circuit", return_value=mock_circuit),
     ):
-        test_module._register(
-            partial_circuit=partial_circuit,
-            variant=variant,
-            circuit_config_file=circuit_config_file,
-            nodes_file="new-nodes-file",
-            biophysical_neuron_models_dir="hoc-dir",
+        test_module.register(
+            circuit_id="circuit-id",
+            nodes_file=nodes_file,
+            circuit_file=circuit_config_file,
+            hoc_dir=hoc_dir,
             output_dir=output_dir,
+            output_resource_file=output_resource_file,
         )
 
-    res1 = load_json(output_dir / "circuit_config.json")
+    res_circuit = load_json(output_dir / "circuit_config.json")
 
-    assert res1 == {
+    assert res_circuit == {
         "version": 2,
         "manifest": {"$BASE_DIR": "."},
         "node_sets_file": "node_sets.json",
         "networks": {
             "nodes": [
                 {
-                    "nodes_file": "new-nodes-file",
+                    "nodes_file": str(nodes_file),
                     "populations": {
                         "root__neurons": {
                             "type": "biophysical",
@@ -127,7 +131,7 @@ def test_register(tmp_path, circuit_config_file, circuit_config, detailed_circui
                                 "h5v1": "morphologies",
                                 "neurolucida-asc": "morphologies",
                             },
-                            "biophysical_neuron_models_dir": "hoc-dir",
+                            "biophysical_neuron_models_dir": str(hoc_dir),
                         }
                     },
                 }
@@ -137,6 +141,6 @@ def test_register(tmp_path, circuit_config_file, circuit_config, detailed_circui
         "metadata": {"status": "partial"},
     }
 
-    res2 = load_json(output_dir / "bar.json")
-
-    assert res2 == detailed_circuit_metadata
+    assert output_resource_file.exists()
+    res_resource = load_json(output_resource_file)
+    assert res_resource == {"@id": "circuit-id", "@type": "DetailedCircuit"}
