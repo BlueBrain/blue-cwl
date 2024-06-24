@@ -582,7 +582,7 @@ def test_register(tmp_path, circuit_config, placeholder_nodes_file):
 
     mock_entity = Mock()
     mock_entity.circuitConfigPath.get_url_as_path = lambda: str(circuit_config_file)
-    mock_entity.__name__ = "DetailedCircuit"
+    mock_entity.__class__.__name__ = "DetailedCircuit"
     mock_entity.get_id.return_value = "circuit-id"
 
     out_resource_file = output_dir / "resource.json"

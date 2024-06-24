@@ -37,7 +37,7 @@ def setup_directories(output_dir: StrOrPath, sub_directories=_SUB_DIRECTORIES) -
 def write_entity_id_to_file(entity: Entity, output_file: StrOrPath) -> None:
     """Write entity id to json file."""
     entity_id = entity.get_id()
-    entity_type = entity.__name__
+    entity_type = type(entity).__name__
 
     if entity_id is None:
         raise CWLWorkflowError(f"Entity '{entity_type}' has no id.")
