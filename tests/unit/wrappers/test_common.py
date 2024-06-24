@@ -11,7 +11,7 @@ def test_write_entity_id_to_file(tmp_path):
     out_file = tmp_path / "response.json"
 
     mock = Mock()
-    mock.__name__ = "Entity"
+    mock.__class__.__name__ = "Entity"
     mock.get_id.return_value = "entity-id"
 
     test_module.write_entity_id_to_file(entity=mock, output_file=out_file)
