@@ -7,7 +7,7 @@ label: workflow-neurons-cell-position
 inputs:
 
   - id: region_id
-    type: string
+    type: NexusType
 
   - id: cell_composition_id
     type: NexusType
@@ -46,6 +46,7 @@ steps:
       - atlas_file
       - region_file
       - densities_file
+      - configuration_file
 
   - id: transform
     run: ./transform.cwl
@@ -57,16 +58,30 @@ steps:
       - mtype_taxonomy_file
       - mtype_composition_file
 
-  - id: init_cells
-    run: ./init_cells
+  - id: build
+    run: ./build.cwl
     in:
-      region: stage/region_file
+      atlas_file: stage/atlas_file
+      build_dir: setup/build_dir
+      region_file: stage/region_file
+      densities_file: stage/densities_file
+      configuration_file: stage/configuration_file
+      composition_file: transform/mtype_composition_file
+      mtype_taxonomy_file: transform/mtype_taxonomy_file
     out:
-      - nodes_file
+      - circuit_file
+      - summary_file
 
-  - id: place_cells
-    run: ./place_cells.cwl
+  - id: register
+    run: ./register.cwl
     in:
+      region_id: region_id
+      cell_composition_id: cell_composition_id
+      circuit_file: build/circuit_file
+      summary_file: build/summary_file
+      output_dir: output_dir
+      output_resource_file:
+        source: output_dir
+        valueFrom: $(self.path)/resource.json
     out:
-      - nodes_file
-
+      - circuit

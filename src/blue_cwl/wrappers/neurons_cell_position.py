@@ -10,8 +10,10 @@ from typing import Any
 
 import click
 import libsonata
+import numpy as np
 import pandas as pd
 import voxcell
+from brainbuilder.app.cells import _place as place
 from entity_management.atlas import AtlasRelease, CellComposition
 from entity_management.nexus import load_by_id
 from entity_management.util import get_entity
@@ -23,6 +25,7 @@ from blue_cwl.statistics import (
     node_population_composition_summary,
 )
 from blue_cwl.typing import StrOrPath
+from blue_cwl.wrappers import common
 
 SEED = 42
 STAGE_DIR_NAME = "stage"
@@ -55,31 +58,39 @@ def app():
 @app.command(name="stage")
 @click.option("--region-id", required=True, help="Region NEXUS ID")
 @click.option("--cell-composition-id", required=True, help="CellComposition entity id to stage.")
+@click.option("--configuration-id", required=True)
 @click.option("--staging-dir", required=True, help="Staging directory to use.")
 def stage_cli(**kwargs):
+    """Stage placement entities."""
     stage(**kwargs)
 
 
-def stage(*, region_id, cell_composition_id, staging_dir):
+def stage(
+    *,
+    region_id: str,
+    cell_composition_id: str,
+    configuration_id: str,
+    staging_dir: StrOrPath,
+) -> None:
     """Stage entities."""
-    create_dir(staging_dir)
+    utils.create_dir(staging_dir)
 
     region_acronym = nexus.get_region_acronym(region_id)
     region_file = Path(staging_dir, "region.txt")
-    region_file.write_text(region_acronym)
+    utils.write_text(text=region_acronym, filepath=region_file)
     L.debug("Region %s acronym '%s' written at %s", region_id, region_acronym, region_file)
 
     cell_composition = get_entity(resource_id=cell_composition_id, cls=CellComposition)
 
     atlas = cell_composition.atlasRelease
-    atlas_dir = create_dir(Path(staging_dir, "atlas"))
+    atlas_dir = utils.create_dir(Path(staging_dir, "atlas"))
     atlas_file = Path(staging_dir, "atlas.json")
     staging.stage_atlas(
         atlas,
         output_dir=atlas_dir,
         output_file=atlas_file,
     )
-    L.debug(f"Atlas %s staged at %s.", atlas.get_id(), atlas_file)
+    L.debug("Atlas %s staged at %s.", atlas.get_id(), atlas_file)
 
     cell_composition_volume = cell_composition.cellCompositionVolume
     cell_composition_volume_file = Path(staging_dir, "densities.parquet")
@@ -88,11 +99,19 @@ def stage(*, region_id, cell_composition_id, staging_dir):
         output_file=cell_composition_volume_file,
     )
     L.debug(
-        f"Cell composition's %s volume %s staged at %s.",
+        "Cell composition's %s volume %s staged at %s.",
         cell_composition.get_id(),
         cell_composition_volume.get_id(),
         cell_composition_volume_file,
     )
+
+    config_file = Path(staging_dir, "config.json")
+    staging.stage_distribution_file(
+        configuration_id,
+        output_dir=staging_dir,
+        filename=config_file.name,
+    )
+    L.debug("Configuration staged at %s", config_file)
 
 
 @app.command(name="transform")
@@ -100,83 +119,208 @@ def stage(*, region_id, cell_composition_id, staging_dir):
 @click.option("--densities-file", required=True)
 @click.option("--transform-dir", required=True)
 def transform_cli(**kwargs):
+    """Transform CLI."""
     transform(**kwargs)
 
 
 def transform(*, region_file: str, densities_file: StrOrPath, transform_dir: StrOrPath):
     """Create cell composition and taxonomy files."""
-    create_dir(transform_dir)
+    utils.create_dir(transform_dir)
 
-    region_acronym = Path(region_file).read_text()
+    region_acronym = utils.load_text(region_file)
 
     me_type_densities = pd.read_parquet(densities_file)
-    composition_file = output_dir / "mtype_composition.yml"
-    composition = recipes.build_cell_composition_from_me_densities(region_acronym, me_type_densities)
+    composition_file = Path(transform_dir, "mtype_composition.yml")
+    composition = recipes.build_cell_composition_from_me_densities(
+        region_acronym, me_type_densities
+    )
     utils.write_yaml(composition_file, composition)
     L.debug("Cell composition recipe written at %s", composition_file)
 
     mtypes = me_type_densities["mtype"].drop_duplicates().values.tolist()
 
-    mtype_taxonomy_file = output_dir / "mtype_taxonomy.tsv"
+    mtype_taxonomy_file = Path(transform_dir, "mtype_taxonomy.tsv")
     mtype_taxonomy = recipes.build_mtype_taxonomy(mtypes)
     mtype_taxonomy.to_csv(mtype_taxonomy_file, sep=" ", index=False)
     L.debug("MType taxonomy file written at %s", mtype_taxonomy_file)
 
 
-@app.command(name="init-cells")
-@click.option("--region", required=True)
-@click.option("--output-dir", required=True)
-def init_cells_cli(**kwargs):
-    init_cells(**kwargs)
+@app.command(name="generate")
+@click.option("--build-dir", required=True)
+def build_cli(**kwargs):
+    """Place cells CLI."""
+    build(**kwargs)
 
 
-def init_cells(*, region: str, output_dir: StrOrPath):
-    """Initialize cells node population."""
+def build(
+    *,
+    build_dir: StrOrPath,
+    atlas_file: StrOrPath,
+    region_file: StrOrPath,
+    composition_file: StrOrPath,
+    mtype_taxonomy_file: StrOrPath,
+    densities_file: StrOrPath,
+) -> None:
+    """Place cells."""
+    utils.create_dir(build_dir)
 
+    atlas_info = staging.AtlasInfo.from_file(atlas_file)
+
+    region = utils.load_text(region_file)
     node_population_name = f"{region}__neurons"
+    L.info("Region: %s Population Name: %s", region, node_population_name)
 
+    L.info("Initializing cell population...")
+    init_cells_file = _init_cells(output_dir=build_dir, node_population_name=node_population_name)
+
+    L.info("Placing cell population...")
+    nodes_file = _place_cells(
+        region=region,
+        atlas_dir=atlas_info.directory,
+        init_cells_file=init_cells_file,
+        composition_file=composition_file,
+        mtype_taxonomy_file=mtype_taxonomy_file,
+        output_dir=build_dir,
+    )
+
+    L.info("Validating nodes at %s", nodes_file)
+    validation.check_population_name_in_nodes(node_population_name, nodes_file)
+    validation.check_properties_in_population(
+        node_population_name, nodes_file, OUTPUT_POPULATION_COLUMNS
+    )
+
+    L.info("Generating node sets...")
+    node_sets_file = _generate_node_sets(
+        nodes_file=nodes_file,
+        population_name=node_population_name,
+        atlas_dir=atlas_info.directory,
+        output_dir=build_dir,
+    )
+
+    L.info("Generating circuit config...")
+    sonata_config_file = Path(build_dir, "circuit_config.json")
+    _generate_circuit_config(
+        node_sets_file=node_sets_file,
+        node_population_name=node_population_name,
+        nodes_file=nodes_file,
+        output_file=sonata_config_file,
+    )
+
+    L.info("Validating circuit config at %s", sonata_config_file)
+    validation.check_population_name_in_config(node_population_name, sonata_config_file)
+
+    L.info("Generating cell composition summary...")
+    mtype_urls, etype_urls = mtype_etype_url_mapping(pd.read_parquet(densities_file))
+
+    composition_summary_file = Path(build_dir, "cell_composition_summary.json")
+    _generate_cell_composition_summary(
+        nodes_file=nodes_file,
+        node_population_name=node_population_name,
+        atlas_dir=atlas_info.directory,
+        mtype_urls=mtype_urls,
+        etype_urls=etype_urls,
+        output_file=composition_summary_file,
+    )
+
+
+def _init_cells(output_dir: StrOrPath, node_population_name: str):
     init_cells_file = Path(output_dir, "init_nodes.h5")
     cells = voxcell.CellCollection(node_population_name)
     cells.save(init_cells_file)
-    L.debug("Initializied node population '%s' at %s", node_population_name, init_cells_file)
+
+    L.debug("Initialized node population '%s' at %s", node_population_name, init_cells_file)
+
+    return init_cells_file
+
+
+def _place_cells(
+    *,
+    region: str,
+    atlas_dir: StrOrPath,
+    init_cells_file: StrOrPath,
+    composition_file: StrOrPath,
+    mtype_taxonomy_file: StrOrPath,
+    output_dir: StrOrPath,
+):
+    nodes_file = Path(output_dir, "nodes.h5")
+
+    np.random.seed(SEED)
+
+    cells = place(
+        input_path=init_cells_file,
+        composition_path=composition_file,
+        mtype_taxonomy_path=mtype_taxonomy_file,
+        mini_frequencies_path=None,
+        atlas_url=atlas_dir,
+        atlas_cache=Path(output_dir, ".atlas"),
+        region=region,
+        mask_dset=None,
+        soma_placement="basic",
+        density_factor=1.0,
+        atlas_properties=[
+            ("region", "~brain_regions"),
+            ("hemisphere", "hemisphere"),
+        ],
+        sort_by=["region", "mtype"],
+    )
+    cells.save(nodes_file)
+
+    L.debug("Placed cell population at %s", nodes_file)
+
+    return nodes_file
 
 
 @app.command(name="register")
 @click.option("--region-id", required=True)
-@click.option("--atlas-id", required=True)
+@click.option("--cell-composition-id", required=True)
 @click.option("--circuit-file", required=True)
 @click.option("--summary-file", required=True)
 @click.option("--output-dir", required=True)
+@click.option("--output-resource-file", required=True)
 def register_cli(**kwargs):
+    """Register entities."""
     register(**kwargs)
 
 
-def register(*, region_id, atlas_id, circuit_file, summary_file, output_dir: StrOrPath):
+def register(
+    *,
+    region_id,
+    cell_composition_id,
+    circuit_file,
+    summary_file,
+    output_dir: StrOrPath,
+    output_resource_file,
+):
     """Register outputs to nexus."""
-    output_circuit_resource_file = Path(output_dir. "circuit_resource.json")
+    cell_composition = get_entity(cell_composition_id, cls=CellComposition)
+e   atlas_release = cell_composition.atlasRelease
+
     circuit = registering.register_partial_circuit(
         name="Cell properties partial circuit",
         brain_region_id=region_id,
-        atlas_release_id=atlas_id,
+        atlas_release=atlas_release,
         description="Partial circuit built with cell positions and me properties.",
         sonata_config_path=circuit_file,
     )
-    jsonld_resource = load_by_id(circuit.get_id())
-    utils.write_json(filepath=output_circuit_resource_file, data=jsonld_resource)
-    L.debug("Circuit jsonld resource written at %s", output_circuit_resource_file)
 
     output_summary_resource_file = Path(output_dir, "summary_resource.json")
     # pylint: disable=no-member
     summary = registering.register_cell_composition_summary(
         name="Cell composition summary",
-        summary_file=summary_file,
-        atlas_release_id=atlas_id,
-        derivation_entity_id=circuit.get_id(),
+        description="Cell composition summary",
+        distribution_file=summary_file,
+        atlas_release=atlas_release,
+        derivation_entity=circuit,
     )
-    jsonld_resource = load_by_id(summary.get_id())
-    utils.write_json(filepath=output_summary_resource_file, data=jsonld_resource)
+    common.write_entity_id_to_file(entity=summary, output_file=output_summary_resource_file)
     L.debug("Summary jsonld resource written at %s", output_summary_resource_file)
 
+    # this is the required workflow output resource.
+    common.write_entity_id_to_file(
+        entity=circuit,
+        output_file=output_resource_file,
+    )
+    L.debug("Circuit jsonld resource written at %s", output_resource_file)
 
 
 @app.command(name="mono-execution")
@@ -379,8 +523,10 @@ def _generate(transformed_data: dict[str, Any], output_dir: Path) -> dict[str, A
     return ret
 
 
-def _generate_node_sets(nodes_file: Path, population_name: str, atlas_dir: Path, output_dir: Path):
-    output_path = output_dir / "node_sets.json"
+def _generate_node_sets(
+    nodes_file: Path, population_name: str, atlas_dir: Path, output_dir: StrOrPath
+):
+    output_path = Path(output_dir, "node_sets.json")
 
     L.info("Generating node sets for the placed cells at %s", output_path)
 

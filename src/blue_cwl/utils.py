@@ -105,6 +105,16 @@ def create_dir(path: StrOrPath, clean_if_exists=False) -> Path:
     return path
 
 
+def load_text(filepath: StrOrPath) -> str:
+    """Load text from file."""
+    return Path(filepath).read_text(encoding="utf-8")
+
+
+def write_text(filepath: StrOrPath, text: str) -> None:
+    """Write text to file."""
+    Path(filepath).write_text(text, encoding="utf-8")
+
+
 def load_json(filepath: StrOrPath) -> dict:
     """Load from JSON file."""
     return json.loads(Path(filepath).read_bytes())

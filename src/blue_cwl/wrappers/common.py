@@ -1,8 +1,8 @@
 """Wrapper common utils."""
 
 import logging
-from pathlib import Path
 from collections.abc import Sequence
+from pathlib import Path
 
 import click
 from entity_management.core import Entity

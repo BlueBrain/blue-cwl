@@ -60,3 +60,9 @@ outputs:
     type: File
     outputBinding:
       glob: $(inputs.stage_dir.path)/densities.parquet
+
+  - id: configuration_file
+    type: File
+    outputBinding:
+      glob: $(inputs.stage_dir.path)/config.json
+
