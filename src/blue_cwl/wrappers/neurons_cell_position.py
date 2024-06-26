@@ -293,7 +293,7 @@ def register(
 ):
     """Register outputs to nexus."""
     cell_composition = get_entity(cell_composition_id, cls=CellComposition)
-e   atlas_release = cell_composition.atlasRelease
+    atlas_release = cell_composition.atlasRelease
 
     circuit = registering.register_partial_circuit(
         name="Cell properties partial circuit",
