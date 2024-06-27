@@ -72,6 +72,8 @@ def build_mtype_taxonomy(mtypes: list[str]) -> pd.DataFrame:
         "SSC": ("INT", "EXC"),
         "HPC": ("PYR", "EXC"),
         "GEN_mtype": ("PYR", "EXC"),
+        "Rt_RC": ("INT", "INH"),
+        "VPL_IN": ("INT", "INH"),
     }
     pattern = r"^(L\d+_)?([\w-]+:?\w)$"
     reg = re.compile(pattern)
