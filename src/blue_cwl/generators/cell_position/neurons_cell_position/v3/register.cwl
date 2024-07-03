@@ -24,10 +24,10 @@ baseCommand: ["blue-cwl", "execute", "neurons-cell-position", "register"]
 
 inputs:
 
-  - id: circuit_id
+  - id: region_id
     type: NexusType
     inputBinding:
-      prefix: --circuit-id
+      prefix: --region-id
 
   - id: cell_composition_id
     type: NexusType
