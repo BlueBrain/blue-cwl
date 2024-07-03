@@ -451,7 +451,7 @@ class AtlasInfo:
         return cls(
             ontology_path=data["ontology_path"],
             annotation_path=data["annotation_path"],
-            hemisphere_path=data.get("annotation_path"),
+            hemisphere_path=data.get("hemisphere_path"),
             ph_catalog=data.get("ph_catalog"),
             cell_orientation_field_path=data.get("cell_orientation_field_path"),
             directory=Path(data["directory"]),
