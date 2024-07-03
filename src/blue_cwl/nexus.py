@@ -9,9 +9,8 @@ from functools import wraps
 
 import jwt
 import requests
-from entity_management import state
+from entity_management import nexus, state
 from entity_management.core import DataDownload, Entity
-from entity_management.nexus import _print_nexus_error, load_by_id
 
 from blue_cwl.exceptions import CWLRegistryError
 from blue_cwl.typing import StrOrPath
@@ -219,7 +218,7 @@ def get_region_acronym(
     token: str | None = None,
 ) -> str:
     """Retrieve the hierarchy acronym from a KG registered region."""
-    return load_by_id(
+    return nexus.load_by_id(
         resource_id=resource_id,
         cross_bucket=False,
         base=base,
@@ -254,9 +253,9 @@ def _refresh_token_on_failure(func):
                 try:
                     return func(*args, **kwargs)
                 except requests.exceptions.HTTPError as e2:
-                    _print_nexus_error(e2)
+                    nexus._print_nexus_error(e2)
                     raise
-            _print_nexus_error(e1)
+            nexus._print_nexus_error(e1)
             raise
 
     return wrapper
