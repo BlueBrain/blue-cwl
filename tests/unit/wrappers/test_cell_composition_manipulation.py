@@ -208,6 +208,8 @@ def load_by_id(
             return _resp(atlas_release_metadata)
         if "updated-cell-composition-id" in resource_id:
             return _resp(base_cell_composition_metadata)
+        if "mock-user-id" in resource_id:
+            return _resp({"preferred_username": "mock-user"})
         raise ValueError(resource_id)
 
     return _load_by_id
@@ -235,13 +237,19 @@ def download_file(file_as_dict):
             return filepath
 
         if url == BASE_SUMMARY_DISTRIBUTION_URL:
-            data = file_as_dict[url]
+            data = file_as_dict(url=url)
             filepath = Path(path, file_name or "summary.json")
             write_json(data=data, filepath=filepath)
             return filepath
 
         if url == NRRD_URL:
             return NRRD_PATH
+
+        if url == CONFIGURATION_DISTRIBUTION_URL:
+            data = file_as_dict(url=url)
+            filepath = Path(path, file_name)
+            write_json(data=data, filepath=filepath)
+            return filepath
 
         raise ValueError(url)
 
@@ -580,6 +588,7 @@ def test_register(
         patch("entity_management.nexus.upload_file", side_effect=upload_file),
         patch("entity_management.nexus.create", side_effect=create),
         patch("blue_cwl.wrappers.cell_composition_manipulation._validate_cell_composition_schemas"),
+        patch("entity_management.state.get_user_id", return_value="mock-user-id"),
     ):
         test_module.register(
             base_cell_composition_id=BASE_CELL_COMPOSITION_ID,

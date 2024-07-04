@@ -15,7 +15,7 @@ from blue_cwl.utils import load_json, load_text, load_yaml, write_yaml, write_js
 DATA_DIR = Path(__file__).parent / "data"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def expected_dir(tmp_path_factory):
     return tmp_path_factory.mktemp("expected")
 
@@ -33,7 +33,7 @@ def test_cli_arguments(command, function):
     check_arg_consistency(command, function)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def region_file(expected_dir):
     """Expected region file."""
     filepath = expected_dir / "region.txt"
@@ -41,7 +41,7 @@ def region_file(expected_dir):
     return filepath
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def atlas_file(
     expected_dir,
     parcellation_ontology_distribution_file,
@@ -71,7 +71,7 @@ def atlas_file(
     return filepath
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def config_file(expected_dir):
     filepath = expected_dir / "config.json"
 
@@ -90,7 +90,7 @@ def config_file(expected_dir):
     return filepath
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def densities_file(expected_dir, me_type_density_distribution_file):
     filepath = expected_dir / "densities.parquet"
     df = pd.DataFrame(
@@ -149,7 +149,7 @@ def test_stage(
     exp_config = load_json(config_file)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mtype_composition_file(expected_dir, me_type_density_distribution_file):
     filepath = expected_dir / "mtype_composition.yml"
     write_yaml(
@@ -168,7 +168,7 @@ def mtype_composition_file(expected_dir, me_type_density_distribution_file):
     return filepath
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mtype_taxonomy_file(expected_dir):
     filepath = expected_dir / "mtype_taxonomy.tsv"
     df = pd.DataFrame(
@@ -207,12 +207,12 @@ def test_transform(
     pdt.assert_frame_equal(res_mtype_taxonomy, exp_mtype_taxonomy)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def nodes_file(region_file):
     return DATA_DIR / "cell_positions_nodes.h5"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def node_sets_file(expected_dir):
     filepath = expected_dir / "node_sets.json"
     write_json(
@@ -239,7 +239,7 @@ def node_sets_file(expected_dir):
     return filepath
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def summary_file(expected_dir):
     filepath = expected_dir / "summary.json"
     write_json(
@@ -277,7 +277,7 @@ def summary_file(expected_dir):
     return filepath
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def circuit_file(expected_dir, nodes_file, node_sets_file):
     filepath = expected_dir / "circuit_config.json"
     write_json(

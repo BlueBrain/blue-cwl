@@ -123,7 +123,6 @@ def test_register_partial_circuit(atlas_release):
         patch("entity_management.nexus.load_by_url", side_effect=load_by_url),
         patch("entity_management.nexus.create", side_effect=create),
         patch("entity_management.state.get_user_id", return_value="mock-user-id"),
-
     ):
         res = test_module.register_partial_circuit(
             name="my-circuit",
@@ -173,7 +172,10 @@ def test_register_cell_composition_summary(atlas_release, circuit):
             patch("entity_management.nexus.upload_file", return_value=file_metadata),
             patch("entity_management.nexus.create", side_effect=create),
             patch("entity_management.state.get_user_id", return_value="mock-user-id"),
-            patch("entity_management.nexus.load_by_id", return_value={"preferred_username": "mock-user"}),
+            patch(
+                "entity_management.nexus.load_by_id",
+                return_value={"preferred_username": "mock-user"},
+            ),
         ):
             res = test_module.register_cell_composition_summary(
                 name="my-summary",
@@ -228,7 +230,10 @@ def test_register_cell_composition_volume(atlas_release, circuit):
             patch("entity_management.nexus.upload_file", return_value=file_metadata),
             patch("entity_management.nexus.create", side_effect=create),
             patch("entity_management.state.get_user_id", return_value="mock-user-id"),
-            patch("entity_management.nexus.load_by_id", return_value={"preferred_username": "mock-user"}),
+            patch(
+                "entity_management.nexus.load_by_id",
+                return_value={"preferred_username": "mock-user"},
+            ),
         ):
             res = test_module.register_cell_composition_volume(
                 name="my-volume",
@@ -306,7 +311,10 @@ def test_register_cell_composition(atlas_release):
             patch("entity_management.nexus.upload_file", side_effect=upload_file),
             patch("entity_management.nexus.create", side_effect=create),
             patch("entity_management.state.get_user_id", return_value="mock-user-id"),
-            patch("entity_management.nexus.load_by_id", return_value={"preferred_username": "mock-user"}),
+            patch(
+                "entity_management.nexus.load_by_id",
+                return_value={"preferred_username": "mock-user"},
+            ),
         ):
             res = test_module.register_cell_composition(
                 name="cell-composition",
@@ -412,7 +420,9 @@ def test_regigster_densities(tmp_path, mixed_densities_file, atlas_release):
         patch("entity_management.nexus.create", side_effect=create),
         patch("entity_management.nexus.upload_file", side_effect=upload_file),
         patch("entity_management.state.get_user_id", return_value="mock-user-id"),
-        patch("entity_management.nexus.load_by_id", return_value={"preferred_username": "mock-user"}),
+        patch(
+            "entity_management.nexus.load_by_id", return_value={"preferred_username": "mock-user"}
+        ),
     ):
         res = test_module.register_densities(
             atlas_release=atlas_release,
