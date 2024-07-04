@@ -5,7 +5,7 @@
 import logging
 from pathlib import Path
 
-from entity_management import nexus
+from entity_management import nexus, state
 from entity_management.atlas import (
     AtlasRelease,
     CellComposition,
@@ -16,7 +16,6 @@ from entity_management.atlas import (
 from entity_management.base import BrainLocation, Derivation, OntologyTerm
 from entity_management.core import Agent, Contribution, DataDownload, Entity, Subject
 from entity_management.simulation import DetailedCircuit
-from entity_management.state import get_user_id
 from entity_management.util import get_entity
 
 from blue_cwl.typing import StrOrPath
@@ -48,7 +47,7 @@ def _get_contribution(
     return [
         Contribution(
             agent=get_entity(
-                resource_id=get_user_id(base=base, org=org),
+                resource_id=state.get_user_id(base=base, org=org),
                 cls=Agent,
                 base=base,
                 org=org,

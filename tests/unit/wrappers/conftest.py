@@ -8,6 +8,7 @@ from blue_cwl.utils import url_without_revision, write_json
 
 DATA_DIR = Path(__file__).parent / "data"
 
+MOCK_USER_ID = "mock-user-id"
 REGION_ID = "region-id"
 
 ATLAS_RELEASE_ID = "atlas-release-id"
@@ -97,6 +98,7 @@ def region_metadata():
         "@id": "mba:997",
         "@type": "Class",
         "notation": "root",
+        "label": "root",
     }
 
 
@@ -340,6 +342,14 @@ def _variant_task_parametrization_metadata(resource_id, file_url):
 
 
 @pytest.fixture(scope="session")
+def user_metadata():
+    return {
+        "@id": MOCK_USER_ID,
+        "preferred_username": "mock-user",
+    }
+
+
+@pytest.fixture(scope="session")
 def load_by_id(
     region_metadata,
     cell_composition_metadata,
@@ -350,11 +360,13 @@ def load_by_id(
     parcellation_ontology_metadata,
     parcellation_volume_metadata,
     hemisphere_volume_metadata,
+    user_metadata,
 ):
     def _load_by_id(resource_id, *args, **kwargs):
         resource_id = url_without_revision(resource_id)
         return {
             REGION_ID: _resp(region_metadata),
+            MOCK_USER_ID: _resp(user_metadata),
             CELL_COMPOSITION_ID: _resp(cell_composition_metadata),
             VOLUME_ID: _resp(volume_metadata),
             NRRD_ID: _resp(me_type_density_metadata),
@@ -422,11 +434,51 @@ def download_file(
 
 
 @pytest.fixture(scope="session")
-def patch_nexus_calls(load_by_id, download_file, file_as_dict, get_unquoted_uri_path):
+def create():
+    def _create(base_url, payload, *args, **kwargs):
+        type_ = payload["@type"]
+        return payload | {"@id": f"{type_.lower()}-id", "_rev": 1}
+
+    return _create
+
+
+def _file_resp(filepath):
+    filename = Path(filepath).name
+    return {
+        "@id": "file-id",
+        "@type": "File",
+        "_bytes": 35052232,
+        "_digest": {
+            "_algorithm": "SHA-256",
+            "_value": "3cb2ab9350f5a69f7e070b061d0f8cd2f4948350bd51dd87f3353262e0c4ef91",
+        },
+        "_filename": filename,
+        "_location": "file:///gpfs/cell_composition_volume_distribution.json",
+        "_mediaType": "application/json",
+        "_rev": 1,
+        "_self": "file-self",
+    }
+
+
+@pytest.fixture(scope="session")
+def upload_file():
+    def _upload_file(name, data, *args, **kwargs):
+        return _file_resp(data.name)
+
+    return _upload_file
+
+
+@pytest.fixture(scope="session")
+def patch_nexus_calls(
+    load_by_id, download_file, file_as_dict, create, upload_file, get_unquoted_uri_path
+):
     with (
         patch("entity_management.nexus.load_by_id", side_effect=load_by_id),
         patch("entity_management.nexus.file_as_dict", side_effect=file_as_dict),
         patch("entity_management.nexus.download_file", side_effect=download_file),
         patch("entity_management.nexus.get_unquoted_uri_path", side_effect=get_unquoted_uri_path),
+        patch("entity_management.nexus.create", side_effect=create),
+        patch("entity_management.nexus.upload_file", side_effect=upload_file),
+        patch("entity_management.state.get_user_id", return_value=MOCK_USER_ID),
     ):
         yield

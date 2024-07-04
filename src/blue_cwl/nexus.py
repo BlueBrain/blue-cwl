@@ -253,9 +253,9 @@ def _refresh_token_on_failure(func):
                 try:
                     return func(*args, **kwargs)
                 except requests.exceptions.HTTPError as e2:
-                    nexus._print_nexus_error(e2)
+                    nexus._print_nexus_error(e2)  # pylint: disable=protected-access
                     raise
-            nexus._print_nexus_error(e1)
+            nexus._print_nexus_error(e1)  # pylint: disable=protected-access
             raise
 
     return wrapper

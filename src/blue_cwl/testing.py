@@ -26,10 +26,8 @@ def patchenv(**envvars):
 
 def check_arg_consistency(cli_command, function):
     """Check that command has the same arguments as the function."""
-
     cmd_args = set(p.name for p in cli_command.params)
     func_args = set(inspect.signature(function).parameters.keys())
-
     assert cmd_args == func_args, (
         "Command arguments are not matching function ones:\n"
         f"Command args : {sorted(cmd_args)}\n"

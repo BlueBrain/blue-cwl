@@ -1,5 +1,6 @@
 import filecmp
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 import voxcell
@@ -259,7 +260,10 @@ def summary_file(expected_dir):
                                     "label": "cADpyr",
                                     "about": "EType",
                                     "composition": {
-                                        "neuron": {"density": 203.80542950402037, "count": 40}
+                                        "neuron": {
+                                            "density": 203.80542950402037,
+                                            "count": 40,
+                                        }
                                     },
                                 }
                             },
@@ -286,7 +290,10 @@ def circuit_file(expected_dir, nodes_file, node_sets_file):
                     {
                         "nodes_file": str(nodes_file),
                         "populations": {
-                            "root__neurons": {"type": "biophysical", "partial": ["cell-properties"]}
+                            "root__neurons": {
+                                "type": "biophysical",
+                                "partial": ["cell-properties"],
+                            }
                         },
                     }
                 ],
@@ -343,7 +350,10 @@ def test_build(
                 {
                     "nodes_file": str(build_dir / "nodes.h5"),
                     "populations": {
-                        "root__neurons": {"type": "biophysical", "partial": ["cell-properties"]}
+                        "root__neurons": {
+                            "type": "biophysical",
+                            "partial": ["cell-properties"],
+                        }
                     },
                 }
             ],
@@ -355,3 +365,33 @@ def test_build(
     res_summary = load_json(build_dir / "cell_composition_summary.json")
     exp_summary = load_json(summary_file)
     assert res_summary == exp_summary
+
+
+def test_register(
+    tmp_path,
+    patch_nexus_calls,
+    region_id,
+    cell_composition_id,
+    circuit_file,
+    summary_file,
+):
+    output_dir = tmp_path
+    output_file = tmp_path / "resource.json"
+
+    test_module.register(
+        region_id=region_id,
+        cell_composition_id=cell_composition_id,
+        circuit_file=circuit_file,
+        summary_file=summary_file,
+        output_dir=output_dir,
+        output_resource_file=output_file,
+    )
+
+    resource = load_json(output_file)
+    assert resource == {"@id": "detailedcircuit-id", "@type": "DetailedCircuit"}
+
+    summary_resource = load_json(output_dir / "summary_resource.json")
+    assert summary_resource == {
+        "@id": "cellcompositionsummary-id",
+        "@type": "CellCompositionSummary",
+    }
