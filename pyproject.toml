@@ -30,7 +30,7 @@ dependencies = [
   "luigi",
   "pydot",
   "matplotlib",
-  "brainbuilder",
+  "brainbuilder>=0.20.1",
 ]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
