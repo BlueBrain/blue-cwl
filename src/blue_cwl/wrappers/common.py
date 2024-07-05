@@ -1,6 +1,7 @@
 """Wrapper common utils."""
 
 import logging
+from collections.abc import Sequence
 from pathlib import Path
 
 import click
@@ -18,7 +19,7 @@ _SUB_DIRECTORIES = ("build", "stage", "transform")
 
 @click.group(name="common")
 def app():
-    """Morphology synthesis of neurons."""
+    """Common utilities for wrappers."""
 
 
 @app.command(name="setup-directories")
@@ -28,7 +29,11 @@ def setup_directories_cli(**kwargs):
     setup_directories(**kwargs)
 
 
-def setup_directories(output_dir: StrOrPath, sub_directories=_SUB_DIRECTORIES) -> dict[str, Path]:
+def setup_directories(
+    *,
+    output_dir: StrOrPath,
+    sub_directories: Sequence[str] = _SUB_DIRECTORIES,
+) -> dict[str, Path]:
     """Setup directory hierarchy for wrapper output."""
     utils.create_dir(output_dir)
     return {dirname: utils.create_dir(Path(output_dir, dirname)) for dirname in sub_directories}

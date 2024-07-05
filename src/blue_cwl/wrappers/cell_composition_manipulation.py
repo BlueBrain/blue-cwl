@@ -78,7 +78,7 @@ def stage(
     )
     _stage_manipulation_config(
         entity_id=configuration_id,
-        output_file=Path(stage_dir, "recipe.parquet"),
+        output_dir=stage_dir,
     )
     _stage_region_selector_config(
         entity_id=brain_region_selector_config_id,
@@ -130,11 +130,22 @@ def _stage_region_selector_config(entity_id: str | None, output_file: StrOrPath)
     L.debug("Region selection written at %s", output_file)
 
 
-def _stage_manipulation_config(entity_id: str, output_file: StrOrPath) -> None:
-    manipulation_recipe = read_density_manipulation_recipe(
-        get_distribution_as_dict(entity_id, cls=CellCompositionConfig)
+def _stage_manipulation_config(entity_id: str, output_dir: StrOrPath) -> None:
+    cell_composition_config = get_entity(entity_id, cls=CellCompositionConfig)
+
+    # stage first original file
+    staging.stage_distribution_file(
+        cell_composition_config,
+        output_dir=output_dir,
+        filename="cell_composition_config.json",
+        encoding_format="application/json",
     )
+    manipulation_recipe = read_density_manipulation_recipe(
+        get_distribution_as_dict(cell_composition_config)
+    )
+    output_file = Path(output_dir, "recipe.parquet")
     manipulation_recipe.to_parquet(path=output_file)
+    L.info("Manipulation config materialized at %s", output_file)
 
 
 @app.command("manipulate-cell-composition")

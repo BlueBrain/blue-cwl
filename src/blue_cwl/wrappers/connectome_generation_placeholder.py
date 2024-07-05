@@ -188,7 +188,7 @@ def transform(
         region_volumes=region_volumes,
     )
 
-    recipe_dir = create_dir(transform_dir, "recipe")
+    recipe_dir = create_dir(Path(transform_dir, "recipe"))
 
     L.debug("Generating connectome recipe...")
     recipe_file = Path(transform_dir, "recipe.json")

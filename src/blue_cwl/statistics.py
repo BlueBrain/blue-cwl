@@ -133,7 +133,7 @@ def density_summary_stats_region(df_region_mtype_etype: pd.DataFrame) -> dict:
         },
         "hasPart": {},
     }
-    groups = df_region_mtype_etype.groupby(["region", "region_url", "region_label"])
+    groups = df_region_mtype_etype.groupby(["region", "region_url", "region_label"], observed=True)
 
     for (region_notation, region_url, region_label), df_mtype_etype in groups:
         ret["hasPart"][region_url] = {

@@ -21,7 +21,7 @@ dependencies = [
   "pandas",
   "voxcell",
   "joblib",
-  "entity-management>=1.3.1",  # METypeDensity entity
+  "entity-management>=1.4.0",
   "pyarrow>=3.0.0",
   "fz-td-recipe>=0.2.0",  # support for json recipe
   "pydantic",
@@ -30,6 +30,7 @@ dependencies = [
   "luigi",
   "pydot",
   "matplotlib",
+  "brainbuilder>=0.20.1",
 ]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
@@ -79,7 +80,7 @@ select = [
     "UP", # pyupgrade
 ]
 ignore = [
-    "S107", "S602", "S603", "S608"
+    "S101", "S107", "S602", "S603", "S608"
 ]
 
 [tool.ruff.lint.pylint]

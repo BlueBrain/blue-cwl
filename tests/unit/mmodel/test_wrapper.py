@@ -2,7 +2,6 @@ from unittest.mock import patch, Mock
 
 
 import filecmp
-import inspect
 import shutil
 from pathlib import Path
 import pytest
@@ -15,23 +14,11 @@ import pandas.testing as pdt
 from blue_cwl.wrappers import mmodel as test_module
 from blue_cwl.utils import load_json, create_dir, write_json
 from blue_cwl.exceptions import CWLWorkflowError
+from blue_cwl.testing import check_arg_consistency
 
 from click.testing import CliRunner
 
 DATA_DIR = Path(__file__).parent / "data"
-
-
-def _check_arg_consistency(cli_command, function):
-    """Check that command has the same arguments as the function."""
-
-    cmd_args = set(p.name for p in cli_command.params)
-    func_args = set(inspect.signature(function).parameters.keys())
-
-    assert cmd_args == func_args, (
-        "Command arguments are not matching function ones:\n"
-        f"Command args : {sorted(cmd_args)}\n"
-        f"Function args: {sorted(func_args)}"
-    )
 
 
 def test_setup_cli(tmp_path):
@@ -47,11 +34,11 @@ def test_setup_cli(tmp_path):
 
 def test_stage_cli():
     """Test that args are passing correctly to the respective function."""
-    _check_arg_consistency(test_module.stage_cli, test_module.stage)
+    check_arg_consistency(test_module.stage_cli, test_module.stage)
 
 
 def test_split_cli():
-    _check_arg_consistency(test_module.split_cli, test_module.split)
+    check_arg_consistency(test_module.split_cli, test_module.split)
 
 
 @pytest.fixture
@@ -300,11 +287,11 @@ def test_split__both_groups(tmp_path, canonical_config, nodes_file_two_regions):
 
 
 def test_transform_cli():
-    _check_arg_consistency(test_module.transform_cli, test_module.transform)
+    check_arg_consistency(test_module.transform_cli, test_module.transform)
 
 
 def test_assign_placeholders_cli():
-    _check_arg_consistency(test_module.assign_placeholders_cli, test_module.assign_placeholders)
+    check_arg_consistency(test_module.assign_placeholders_cli, test_module.assign_placeholders)
 
 
 def test_assign_placeholders(tmp_path, nodes_file_two_regions):
@@ -400,7 +387,7 @@ def test_assign_placeholders(tmp_path, nodes_file_one_region):
 
 
 def test_merge_cli():
-    _check_arg_consistency(test_module.merge_cli, test_module.merge)
+    check_arg_consistency(test_module.merge_cli, test_module.merge)
 
 
 TO_MERGE_COLS = []
@@ -547,7 +534,7 @@ def test_merge__both_empty_raises(tmp_path, empty_nodes_file):
 
 
 def test_register_cli():
-    _check_arg_consistency(test_module.register_cli, test_module.register)
+    check_arg_consistency(test_module.register_cli, test_module.register)
 
 
 @pytest.fixture

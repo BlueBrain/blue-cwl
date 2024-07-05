@@ -42,7 +42,7 @@ def annotation(annotation_file):
     return voxcell.VoxelData.load_nrrd(annotation_file)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def region_volumes(region_map):
     from blue_cwl import brain_regions
 

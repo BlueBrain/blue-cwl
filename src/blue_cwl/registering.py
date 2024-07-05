@@ -5,7 +5,7 @@
 import logging
 from pathlib import Path
 
-from entity_management import nexus
+from entity_management import nexus, state
 from entity_management.atlas import (
     AtlasRelease,
     CellComposition,
@@ -14,8 +14,9 @@ from entity_management.atlas import (
     METypeDensity,
 )
 from entity_management.base import BrainLocation, Derivation, OntologyTerm
-from entity_management.core import DataDownload, Entity, Subject
+from entity_management.core import Agent, Contribution, DataDownload, Entity, Subject
 from entity_management.simulation import DetailedCircuit
+from entity_management.util import get_entity
 
 from blue_cwl.typing import StrOrPath
 from blue_cwl.utils import load_json, write_json
@@ -37,6 +38,26 @@ def _brain_location(brain_region_id: str) -> BrainLocation:
     return BrainLocation(brainRegion=OntologyTerm(url=brain_region_id, label=label))
 
 
+def _get_contribution(
+    base=None,
+    org=None,
+    proj=None,
+    token=None,
+):
+    return [
+        Contribution(
+            agent=get_entity(
+                resource_id=state.get_user_id(base=base, org=org),
+                cls=Agent,
+                base=base,
+                org=org,
+                proj=proj,
+                token=token,
+            ),
+        )
+    ]
+
+
 def register_partial_circuit(
     *,
     name: str,
@@ -45,12 +66,15 @@ def register_partial_circuit(
     sonata_config_path: StrOrPath,
     description: str = "",
     species_id: str | None = None,
+    contribution: Contribution | None = None,
     base: str | None = None,
     org: str | None = None,
     proj: str | None = None,
     token: str | None = None,
 ) -> DetailedCircuit:
     """Register a partial circuit."""
+    contribution = contribution or _get_contribution(base=base, org=org, proj=proj, token=token)
+
     circuit_config_path = DataDownload(url=f"file://{Path(sonata_config_path).resolve()}")
 
     return DetailedCircuit(
@@ -60,6 +84,7 @@ def register_partial_circuit(
         brainLocation=_brain_location(brain_region_id),
         atlasRelease=atlas_release,
         circuitConfigPath=circuit_config_path,
+        contribution=contribution,
     ).publish(include_rev=True, base=base, org=org, proj=proj, use_auth=token)
 
 
@@ -70,12 +95,15 @@ def register_cell_composition_summary(
     distribution_file: StrOrPath,
     atlas_release: AtlasRelease,
     derivation_entity: Entity,
+    contribution: Entity | None = None,
     base=None,
     org=None,
     proj=None,
     token=None,
 ) -> CellCompositionSummary:
     """Create and register a cell composition summary."""
+    contribution = contribution or _get_contribution(base=base, org=org, proj=proj, token=token)
+
     distribution = DataDownload.from_file(
         file_like=str(distribution_file),
         content_type="application/json",
@@ -93,6 +121,7 @@ def register_cell_composition_summary(
         brainLocation=atlas_release.brainLocation,
         distribution=distribution,
         derivation=derivation,
+        contribution=contribution,
         subject=atlas_release.subject,
     )
     return summary.publish(base=base, org=org, proj=proj, use_auth=token)
@@ -105,12 +134,15 @@ def register_cell_composition_volume(
     distribution_file: StrOrPath,
     atlas_release: AtlasRelease,
     derivation_entity: Entity,
+    contribution: Contribution | None = None,
     base=None,
     org=None,
     proj=None,
     token=None,
 ) -> CellCompositionSummary:
     """Create and register a cell composition summary."""
+    contribution = contribution or _get_contribution(base=base, org=org, proj=proj, token=token)
+
     distribution = DataDownload.from_file(
         file_like=str(distribution_file),
         content_type="application/json",
@@ -128,6 +160,7 @@ def register_cell_composition_volume(
         brainLocation=atlas_release.brainLocation,
         distribution=distribution,
         derivation=derivation,
+        contribution=contribution,
         subject=atlas_release.subject,
     )
     return volume.publish(base=base, org=org, proj=proj, use_auth=token)
@@ -138,12 +171,15 @@ def register_densities(
     atlas_release: AtlasRelease,
     distribution_file: StrOrPath,
     output_file: StrOrPath | None = None,
+    contribution: Contribution | None = None,
     base: str | None = None,
     org: str | None = None,
     proj: str | None = None,
     token: str | None = None,
 ) -> dict:
     """Register METypeDensity volumes."""
+    contribution = contribution or _get_contribution(base=base, org=org, proj=proj, token=token)
+
     volumes_dict = load_json(distribution_file)
 
     derivation = Derivation(entity=atlas_release)
@@ -160,6 +196,7 @@ def register_densities(
                         brain_location=brain_location,
                         derivation=derivation,
                         subject=subject,
+                        contribution=contribution,
                         base=base,
                         org=org,
                         proj=proj,
@@ -187,6 +224,7 @@ def _register_me_density(
     atlas_release: AtlasRelease,
     brain_location: BrainLocation,
     derivation: Derivation,
+    contribution: Contribution,
     subject: Subject,
     base=None,
     org=None,
@@ -209,6 +247,7 @@ def _register_me_density(
         derivation=derivation,
         brainLocation=brain_location,
         subject=subject,
+        contribution=contribution,
     )
     return entity.publish(base=base, org=org, proj=proj, use_auth=token)
 
@@ -220,18 +259,22 @@ def register_cell_composition(
     atlas_release: AtlasRelease,
     cell_composition_volume_file: StrOrPath,
     cell_composition_summary_file: StrOrPath,
+    contribution: Contribution | None = None,
     base=None,
     org=None,
     proj=None,
     token=None,
 ):
     """Register CellComposition."""
+    contribution = contribution or _get_contribution(base=base, org=org, proj=proj, token=token)
+
     summary = register_cell_composition_summary(
         name="Cell Composition Summary",
         description="Cell Composition Summary Distribution",
         distribution_file=cell_composition_summary_file,
         atlas_release=atlas_release,
         derivation_entity=atlas_release,
+        contribution=contribution,
         base=base,
         org=org,
         proj=proj,
@@ -243,6 +286,7 @@ def register_cell_composition(
         distribution_file=cell_composition_volume_file,
         atlas_release=atlas_release,
         derivation_entity=atlas_release,
+        contribution=contribution,
         base=base,
         org=org,
         proj=proj,
@@ -257,5 +301,6 @@ def register_cell_composition(
         brainLocation=atlas_release.brainLocation,
         cellCompositionVolume=volume,
         cellCompositionSummary=summary,
+        contribution=contribution,
     )
     return cell_composition.publish(base=base, org=org, proj=proj, use_auth=token, include_rev=True)

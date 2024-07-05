@@ -96,13 +96,23 @@ def cwd(path: StrOrPath):
         os.chdir(original_cwd)
 
 
-def create_dir(path: StrOrPath, clean_if_exists=False) -> Path:
+def create_dir(path: StrOrPath, *, clean_if_exists=False) -> Path:
     """Create directory and parents if it doesn't already exist."""
     path = Path(path)
     if path.exists() and clean_if_exists:
         shutil.rmtree(path)
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def load_text(filepath: StrOrPath) -> str:
+    """Load text from file."""
+    return Path(filepath).read_text(encoding="utf-8")
+
+
+def write_text(filepath: StrOrPath, text: str) -> None:
+    """Write text to file."""
+    Path(filepath).write_text(text, encoding="utf-8")
 
 
 def load_json(filepath: StrOrPath) -> dict:
