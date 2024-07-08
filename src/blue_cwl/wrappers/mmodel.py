@@ -343,8 +343,14 @@ def assign_placeholders(
         on=["region", "mtype"],
     )
 
-    if cells.properties[SONATA_MORPHOLOGY].isnull().any():
-        raise CWLWorkflowError("Null entries encountered in morphology column.")
+    if (null_mask := cells.properties[SONATA_MORPHOLOGY].isnull()).any():
+        raise CWLWorkflowError(
+            "Null entries encountered in morphology column.\n"
+            "A new composition is possibly used but without updating the placeholder config to "
+            "account for new region/mtype entries.\n"
+            "Example for missing region/mtype pairs from placeholder configuration:\n"
+            + str(cells.properties.loc[null_mask, ["region", "mtype"]].drop_duplicates())
+        )
 
     cells.properties[SONATA_MORPHOLOGY_PRODUCER] = MorphologyProducer.PLACEHOLDER
 
