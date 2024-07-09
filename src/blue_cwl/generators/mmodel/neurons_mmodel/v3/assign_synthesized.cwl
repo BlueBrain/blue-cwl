@@ -18,7 +18,7 @@ executor:
     exclusive: true
     time: '12:00:00'
     cpus_per_task: 2
-    ntasks: 20
+    ntasks: 300
     mem: 0
   remote_config:
     host: bbpv1.epfl.ch
