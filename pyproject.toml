@@ -28,8 +28,6 @@ dependencies = [
   "morph-tool",
   "jsonschema",
   "luigi",
-  "pydot",
-  "matplotlib",
   "brainbuilder>=0.20.1",
 ]
 classifiers = [
@@ -45,7 +43,12 @@ classifiers = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+viz = [
+  "pydot",
+  "matplotlib",
+]
 docs = [
+  "blue-cwl[viz]",
   "sphinx-bluebrain-theme",
 ]
 
