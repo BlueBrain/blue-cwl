@@ -1,12 +1,14 @@
 cwlVersion: v1.2
 class: CommandLineTool
 
-id: transform
-label: transform
+id: generate_connectome
+label: generate_connectome
 
 environment:
-  env_type: VENV
-  path: /gpfs/bbp.cscs.ch/project/proj134/scratch/zisis/sub-workflows/venv311
+  env_type: MODULE
+  modules:
+    - archive/2024-06
+    - py-connectome-manipulator/0.0.10
 
 executor:
   type: slurm
@@ -15,7 +17,7 @@ executor:
     account: proj134
     exclusive: true
     time: '16:00:00'
-    nodes: 5
+    nodes: 200
     cpus_per_task: 40
     ntasks_per_node: 1
     mem: 0

@@ -21,7 +21,7 @@ dependencies = [
   "pandas",
   "voxcell",
   "joblib",
-  "entity-management>=1.4.0",
+  "entity-management>=1.4.1",
   "pyarrow>=3.0.0",
   "fz-td-recipe>=0.2.0",  # support for json recipe
   "pydantic",

@@ -510,8 +510,7 @@ def bisect_cell_collection_by_properties(
 
     if isinstance(properties, pd.DataFrame):
         mask = (
-            df[properties.columns].merge(properties, how="outer", indicator=True)["_merge"]
-            == "both"
+            df[properties.columns].merge(properties, how="left", indicator=True)["_merge"] == "both"
         )
     else:
         mask = np.logical_and.reduce(

@@ -14,7 +14,7 @@ executor:
   type: slurm
   slurm_config:
     partition: prod
-    nodes: 3
+    nodes: 100
     ntasks_per_node: 10
     exclusive: true
     time: '8:00:00'

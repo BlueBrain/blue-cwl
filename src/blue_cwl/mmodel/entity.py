@@ -2,7 +2,8 @@
 
 """Entities."""
 
-from entity_management.core import Entity
+from entity_management.base import Derivation
+from entity_management.core import AttrOf, DataDownload, Entity, attributes
 
 from blue_cwl.mmodel import schemas
 from blue_cwl.validation import validate_schema
@@ -19,6 +20,12 @@ class MorphologyAssignmentConfig(Entity):
         return schemas.MModelConfigRaw.from_dict(dataset)
 
 
+@attributes(
+    {
+        "distribution": AttrOf(DataDownload),
+        "derivation": AttrOf(Derivation, default=None),
+    }
+)
 class CanonicalMorphologyModelConfig(Entity):
     """Canonical morphology model config."""
 
@@ -32,6 +39,12 @@ class CanonicalMorphologyModelConfig(Entity):
         return schemas.CanonicalDistributionConfig(data=dataset)
 
 
+@attributes(
+    {
+        "distribution": AttrOf(DataDownload),
+        "derivation": AttrOf(Derivation, default=None),
+    }
+)
 class PlaceholderMorphologyConfig(Entity):
     """Placeholder morphologies config."""
 

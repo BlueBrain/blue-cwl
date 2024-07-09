@@ -77,6 +77,6 @@ graph_dir = create_dir("./generated")
 
 for variant in iter_registered_variants():
     tool = variant.tool_definition
-    name = f"{variant.generator_name}__{variant.variant_name}__{variant.version}.svg"
+    name = f"{variant.generatorName}__{variant.variantName}__{variant.version}.svg"
     if isinstance(tool, cwl.Workflow):
         tool.write_image(filepath=graph_dir / name)
