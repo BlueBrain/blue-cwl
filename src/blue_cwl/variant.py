@@ -40,13 +40,11 @@ class _CompatEntity(Entity):
 
 @attributes(
     {
-        "generator_name": AttrOf(str),
-        "variant_name": AttrOf(str),
+        "name": AttrOf(str),
+        "generatorName": AttrOf(str),
+        "variantName": AttrOf(str),
         "version": AttrOf(str),
-        "name": AttrOf(str, default=None),
-        "distribution": AttrOf(DataDownload, default=None),
-        "allocation_resources": AttrOf(_CompatEntity, default=None),
-        "definitions": AttrOf(_CompatEntity, default=None),
+        "distribution": AttrOf(DataDownload),
     },
     repr=False,
 )
@@ -55,14 +53,14 @@ class Variant(Entity):
 
     def __repr__(self):
         """Return repr string."""
-        return f"Variant({self.generator_name}, {self.variant_name}, {self.version})"
+        return f"Variant({self.generatorName}, {self.variantName}, {self.version})"
 
     @property
     def overview(self) -> str:
         """Return detailed representation."""
         return (
-            f"generator_name: {self.generator_name}\n"
-            f"variant_name  : {self.variant_name}\n"
+            f"generatorName : {self.generatorName}\n"
+            f"variantName   : {self.variantName}\n"
             f"version       : {self.version}\n\n"
             f"content\n-------\n\n{dump_yaml(self.get_content())}"
         )
@@ -130,8 +128,8 @@ class Variant(Entity):
     ) -> "Variant":
         """Create Variant object from variant file definition."""
         return cls(
-            generator_name=generator_name,
-            variant_name=variant_name,
+            generatorName=generator_name,
+            variantName=variant_name,
             version=version,
             distribution=_create_local_variant_distribution(path=filepath),
             name=f"{generator_name}|{variant_name}|{version}",
@@ -176,8 +174,8 @@ class Variant(Entity):
             changes["distribution"] = _create_local_variant_distribution(path=changes.pop("path"))
 
         changes["name"] = (
-            f"{changes.get('generator_name', self.generator_name)}|"
-            f"{changes.get('variant_name', self.variant_name)}|"
+            f"{changes.get('generatorName', self.generatorName)}|"
+            f"{changes.get('variantName', self.variantName)}|"
             f"{changes.get('version', self.version)}"
         )
         return super().evolve(**changes)
@@ -199,8 +197,8 @@ class Variant(Entity):
         # to get the remote variant id, if any, and update it.
         if not variant.get_id():
             resource_id = search_variant_in_nexus(
-                generator_name=self.generator_name,
-                variant_name=self.variant_name,
+                generator_name=self.generatorName,
+                variant_name=self.variantName,
                 version=self.version,
                 base=base,
                 org=org,
@@ -364,8 +362,8 @@ def search_variant_in_nexus(
         WHERE {{
           ?id a bmo:Variant ;
              nxv:deprecated false ;
-             bmo:generator_name '{generator_name}' ;
-             bmo:variant_name '{variant_name}' ;
+             bmo:generatorName '{generator_name}' ;
+             bmo:variantName '{variant_name}' ;
              sch:version '{version}' .
         }}
         LIMIT 1
