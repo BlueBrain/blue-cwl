@@ -133,8 +133,8 @@ def test_variant__repr(variant, request):
 def test_variant__attributes(variant, request):
     variant = request.getfixturevalue(variant)
 
-    assert variant.variant_name == "position"
-    assert variant.generator_name == "testing"
+    assert variant.variantName == "position"
+    assert variant.generatorName == "testing"
     assert variant.version == _VERSION
 
 
@@ -185,10 +185,10 @@ def test_variant__tool_definition(variant, request, monkeypatch, variant_file):
 )
 def test_variant__evolve(variant, request, variant_file):
     variant = request.getfixturevalue(variant)
-    new_variant = variant.evolve(variant_name="foo", path=variant_file)
+    new_variant = variant.evolve(variantName="foo", path=variant_file)
 
-    assert variant.generator_name == "testing"
-    assert variant.variant_name == "position"
+    assert variant.generatorName == "testing"
+    assert variant.variantName == "position"
     assert variant.version == _VERSION
     assert type(variant).__name__ == "Variant"
     assert variant.name == f"testing|position|{_VERSION}"
@@ -198,8 +198,8 @@ def test_variant__evolve(variant, request, variant_file):
     else:
         assert variant.distribution.contentUrl is not None
 
-    assert new_variant.generator_name == "testing"
-    assert new_variant.variant_name == "foo"
+    assert new_variant.generatorName == "testing"
+    assert new_variant.variantName == "foo"
     assert new_variant.version == _VERSION
     assert type(new_variant).__name__ == "Variant"
     assert new_variant.name == f"testing|foo|{_VERSION}"
@@ -219,8 +219,8 @@ def test_variant__publish__remote_variant(variant_from_id, monkeypatch):
         payload = patched.call_args.args[2]
 
         assert payload == {
-            "generator_name": "testing",
-            "variant_name": "position",
+            "generatorName": "testing",
+            "variantName": "position",
             "version": "v0.3.1",
             "name": "testing|position|v0.3.1",
             "distribution": {
@@ -271,8 +271,8 @@ def test_variant__publish__remote_variant__local_distr(variant_from_id, monkeypa
         payload = patched.call_args.args[2]
 
         assert payload == {
-            "generator_name": "testing",
-            "variant_name": "position",
+            "generatorName": "testing",
+            "variantName": "position",
             "version": "v0.3.1",
             "name": "testing|position|v0.3.1",
             "distribution": {
@@ -326,8 +326,8 @@ def test_variant__publish__local_variant(
         payload = patched.call_args.args[1]
 
         assert payload == {
-            "generator_name": "testing",
-            "variant_name": "position",
+            "generatorName": "testing",
+            "variantName": "position",
             "version": "v0.3.1",
             "name": "testing|position|v0.3.1",
             "distribution": {

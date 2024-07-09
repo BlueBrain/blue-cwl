@@ -19,9 +19,9 @@
     "encodingFormat": "application/cwl",
     "name": "definition.cwl"
   },
-  "generator_name": "testing",
+  "generatorName": "testing",
   "name": "testing|position|v0.3.1",
-  "variant_name": "position",
+  "variantName": "position",
   "version": "v0.3.1",
   "_constrainedBy": "https://bluebrain.github.io/nexus/schemas/unconstrained.json",
   "_createdAt": "2024-01-08T15:26:47.165033Z",
