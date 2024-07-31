@@ -684,9 +684,11 @@ def materialize_macro_connectome_config(
 
     Args:
         obj: One of the following:
+
             - Resource nexus id of entity to get distribution from1
             - Dictiorary of the data
             - Entity to get distribution from
+
         output_file: Optional path to write the result to a file. Default is None.
         base: The nexus base endpoint. If None entity-management's runtime base is used.
         org: The nexus organization. If None entity-management's runtime org is used.
@@ -695,6 +697,9 @@ def materialize_macro_connectome_config(
 
     Returns:
         The materialized dictionary of the macro connectome configuration. Example:
+
+        .. code-block:: python
+
             {
                 "initial": {"connection_strength": path/to/initial/arrow/file},
                 "overrides": {"connection_strength": path/to/overrides/arrow/file}
@@ -759,6 +764,9 @@ def materialize_micro_connectome_config(
 
     Returns:
         Materialized dictionary of the micro connectome configuration. Example:
+
+        .. code-block:: python
+
             {
                 "variants": {
                     "var1": {

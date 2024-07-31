@@ -1,10 +1,20 @@
-.. include:: ../../README.rst
-
-
 .. toctree::
    :hidden:
-   :maxdepth: 2
+   :maxdepth: 1
 
    Home <self>
-   registry
    changelog
+
+.. toctree::
+   :caption: Basics
+   :maxdepth: 1
+
+   installation
+   concepts/concepts
+
+.. toctree::
+   :caption: API Reference
+   :maxdepth: 1
+
+   api
+   registry

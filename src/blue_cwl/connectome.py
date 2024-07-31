@@ -140,11 +140,19 @@ def assemble_macro_matrix(macro_config: dict) -> pd.DataFrame:
     where  the 'side'  is the compact form of the source and target hemispheres, e.g. 'LR'.
 
     Args:
-        macro_config: Materialized macro config with the arrow file paths. Example:
-            {
-                "initial": {"connection_strength": path/to/initial/arrow/file},
-                "overrides": {"connection_strength": path/to/overrides/arrow/file}
-            }
+        macro_config: Materialized macro config with the arrow file paths.
+            Example:
+
+            .. code-block:: python
+
+                {
+                    "initial": {
+                        "connection_strength": "path/to/arrow/file"
+                    },
+                    "overrides": {
+                      "connection_strength": "path/to/arrow/file"
+                    }
+                }
 
     Returns:
         DataFrame with the following categorical columns:
@@ -194,17 +202,22 @@ def assemble_micro_matrix(micro_config: dict, variant_name) -> pd.DataFrame:
     """Assemble micro connectome dataframe from the materialized micro config.
 
     Args:
-        micro_config: Materialized macro config with the arrow file paths. Example:
-            {
-                "initial": {
-                    "placeholder__erdos_renyi": path/to/initial/arrow/er_file,
-                    "placeholder__distance_dependent": path/to/initial/arrow/dd_file,
-                },
-                "overrides": {
-                    "placeholder__erdos_renyi": path/to/overrides/arrow/er_file,
-                    "placeholder__distance_dependent": path/to/overrides/arrow/dd_file,
-                },
-            }
+        micro_config: Materialized macro config with the arrow file paths.
+            Example:
+
+            .. code-block:: python
+
+                {
+                    "initial": {
+                        "placeholder__erdos_renyi": "path/to/initial/arrow/er_file",
+                        "placeholder__distance_dependent": "path/to/initial/arrow/dd_file",
+                    },
+                    "overrides": {
+                        "placeholder__erdos_renyi": "path/to/overrides/arrow/er_file",
+                        "placeholder__distance_dependent": "path/to/overrides/arrow/dd_file",
+                    },
+                }
+
         variant_name: Name of the variant algorithm. One of
             - placeholder__erdos_renyi
             - placeholder__distance_dependent
@@ -243,17 +256,22 @@ def resolve_micro_matrices(
     """Load and resolve micro matrices from materialized micro config.
 
     Args:
-        micro_config: Materialized macro config with the arrow file paths. Example:
-            {
-                "initial": {
-                    "placeholder__erdos_renyi": path/to/initial/arrow/er_file,
-                    "placeholder__distance_dependent": path/to/initial/arrow/dd_file,
-                },
-                "overrides": {
-                    "placeholder__erdos_renyi": path/to/overrides/arrow/er_file,
-                    "placeholder__distance_dependent": path/to/overrides/arrow/dd_file,
-                },
-            }
+        micro_config: Materialized macro config with the arrow file paths.
+            Example:
+
+            .. code-block:: python
+
+                {
+                    "initial": {
+                        "placeholder__erdos_renyi": path/to/initial/arrow/er_file,
+                        "placeholder__distance_dependent": path/to/initial/arrow/dd_file,
+                    },
+                    "overrides": {
+                        "placeholder__erdos_renyi": path/to/overrides/arrow/er_file,
+                        "placeholder__distance_dependent": path/to/overrides/arrow/dd_file,
+                    },
+                }
+
         macro_matrix: DataFrame with RangeIndex and the following columns:
             - source_hemisphere (category)
             - target_hemisphere (category)

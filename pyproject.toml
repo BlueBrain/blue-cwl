@@ -49,7 +49,8 @@ viz = [
 ]
 docs = [
   "blue-cwl[viz]",
-  "sphinx-bluebrain-theme",
+  "furo",
+  "sphinx",
 ]
 
 [project.urls]
