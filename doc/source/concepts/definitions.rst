@@ -7,5 +7,7 @@ A Common Workflow Language (CWL) definition describes how to run command line to
 .. toctree::
     :maxdepth: 1
 
+    commandlinetool
+    workflow
     environments
     executors
