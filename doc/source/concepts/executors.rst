@@ -1,3 +1,5 @@
+.. _cwl-executors:
+
 CWL Executors
 =============
 
