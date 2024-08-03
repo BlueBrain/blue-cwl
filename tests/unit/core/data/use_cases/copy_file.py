@@ -12,7 +12,6 @@ def main(input_file, output_file, overwrite):
 
 
 if __name__ == "__main__":
-
     args = sys.argv[1:]
 
     if "--overwrite" in args:

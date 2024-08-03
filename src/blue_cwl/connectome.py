@@ -59,6 +59,8 @@ built with the respective variant. Pathways in variant matrix that are not in th
 are added with default values, whereas pathways not in it are removed.
 """
 
+# ruff: noqa: D214, D417
+
 import logging
 from collections.abc import Callable, Sequence
 from functools import partial
@@ -141,17 +143,14 @@ def assemble_macro_matrix(macro_config: dict) -> pd.DataFrame:
 
     Args:
         macro_config: Materialized macro config with the arrow file paths.
+
             Example:
 
             .. code-block:: python
 
                 {
-                    "initial": {
-                        "connection_strength": "path/to/arrow/file"
-                    },
-                    "overrides": {
-                      "connection_strength": "path/to/arrow/file"
-                    }
+                    "initial": {"connection_strength": "path/to/arrow/file"},
+                    "overrides": {"connection_strength": "path/to/arrow/file"},
                 }
 
     Returns:
@@ -198,11 +197,12 @@ def assemble_macro_matrix(macro_config: dict) -> pd.DataFrame:
 
 
 @utils.log
-def assemble_micro_matrix(micro_config: dict, variant_name) -> pd.DataFrame:
+def assemble_micro_matrix(micro_config: dict, variant_name: str) -> pd.DataFrame:
     """Assemble micro connectome dataframe from the materialized micro config.
 
     Args:
         micro_config: Materialized macro config with the arrow file paths.
+
             Example:
 
             .. code-block:: python
@@ -257,18 +257,19 @@ def resolve_micro_matrices(
 
     Args:
         micro_config: Materialized macro config with the arrow file paths.
+
             Example:
 
             .. code-block:: python
 
                 {
                     "initial": {
-                        "placeholder__erdos_renyi": path/to/initial/arrow/er_file,
-                        "placeholder__distance_dependent": path/to/initial/arrow/dd_file,
+                        "placeholder__erdos_renyi": path / to / initial / arrow / er_file,
+                        "placeholder__distance_dependent": path / to / initial / arrow / dd_file,
                     },
                     "overrides": {
-                        "placeholder__erdos_renyi": path/to/overrides/arrow/er_file,
-                        "placeholder__distance_dependent": path/to/overrides/arrow/dd_file,
+                        "placeholder__erdos_renyi": path / to / overrides / arrow / er_file,
+                        "placeholder__distance_dependent": path / to / overrides / arrow / dd_file,
                     },
                 }
 

@@ -11,18 +11,15 @@ import pytest
 DATA_DIR = Path(__file__).parent / "data"
 CWL_DIR = DATA_DIR / "use_cases"
 
+
 @contextlib.contextmanager
 def definition(definition: str | dict):
-
     with tempfile.NamedTemporaryFile(suffix=".cwl") as tfile:
-
         if isinstance(definition, str):
-
             with open(tfile.name, "w") as file:
                 file.write(definition)
 
         else:
-
             write_yaml(data=definition, filepath=tfile.name)
 
         yield tfile.name
@@ -92,11 +89,10 @@ def test_array_types_tool():
     }
 
     res = tool.make(input_values=input_values)
-    assert res.build_command() == 'touch foo.txt -A a b c d -B=c -B=d -B=e -B=f -C=g,h'
+    assert res.build_command() == "touch foo.txt -A a b c d -B=c -B=d -B=e -B=f -C=g,h"
 
 
 def test_array_types_tool__2():
-
     content = """
         cwlVersion: v1.2
         id: foo
@@ -130,7 +126,6 @@ def test_array_types_tool__2():
 
 
 def test_array_types_tool__3():
-
     content = """
         cwlVersion: v1.2
         id: foo
@@ -162,7 +157,6 @@ def test_array_types_tool__3():
 
 
 def test_array_types_tool__4():
-
     content = """
         cwlVersion: v1.2
         id: foo
@@ -209,8 +203,11 @@ def test_array_types_workflow():
 
     s0, s1 = res.steps
 
-    assert s0.build_command() == 'touch foo.txt -A a b c d -B=c -B=d -B=e -B=f -C=c_foo,c_bar'
-    assert s1.build_command() == 'touch foo.txt -A a b c d -B=foo.txt -B=o -B=e.txt -B=f.txt -C=foo.txt,o'
+    assert s0.build_command() == "touch foo.txt -A a b c d -B=c -B=d -B=e -B=f -C=c_foo,c_bar"
+    assert (
+        s1.build_command()
+        == "touch foo.txt -A a b c d -B=foo.txt -B=o -B=e.txt -B=f.txt -C=foo.txt,o"
+    )
 
 
 def test_copy_file_tool(tmp_path):
@@ -236,7 +233,10 @@ def test_copy_file_tool(tmp_path):
 
     assert process.outputs == {"output_file": File(path=str(output_file))}
 
-    assert process.build_command() == f"python3 {CWL_DIR}/copy_file.py --overwrite {input_file} {output_file}"
+    assert (
+        process.build_command()
+        == f"python3 {CWL_DIR}/copy_file.py --overwrite {input_file} {output_file}"
+    )
     process.run()
 
     assert input_file.read_text() == output_file.read_text()

@@ -701,8 +701,8 @@ def materialize_macro_connectome_config(
         .. code-block:: python
 
             {
-                "initial": {"connection_strength": path/to/initial/arrow/file},
-                "overrides": {"connection_strength": path/to/overrides/arrow/file}
+                "initial": {"connection_strength": path / to / initial / arrow / file},
+                "overrides": {"connection_strength": path / to / overrides / arrow / file},
             }
 
     Note: overrides key is mandatory but can be empty.
@@ -768,24 +768,15 @@ def materialize_micro_connectome_config(
         .. code-block:: python
 
             {
-                "variants": {
-                    "var1": {
-                        "params": {
-                            "weight": {
-                                "default": 1.0
-                            }
-                        }
-                    }
-                },
+                "variants": {"var1": {"params": {"weight": {"default": 1.0}}}},
                 "initial": {
-                    "variants": path/to/variants/arrow/file,
-                    "var1": path/to/var1-parameters/arrow/file,
+                    "variants": path / to / variants / arrow / file,
+                    "var1": path / to / var1 - parameters / arrow / file,
                 },
                 "overrides": {
-                    "variants": path/to/variants-overrides/arrow/file,
-                    "var1": path/to/var1-parameters-overrides/arrow/file,
+                    "variants": path / to / variants - overrides / arrow / file,
+                    "var1": path / to / var1 - parameters - overrides / arrow / file,
                 },
-
             }
 
     Note: overrides key is mandatory but can be empty or include subset of keys in 'initial'.
