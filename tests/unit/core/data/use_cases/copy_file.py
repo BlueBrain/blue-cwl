@@ -1,13 +1,9 @@
 import sys
 import shutil
-import click
+import argparse
 from pathlib import Path
 
 
-@click.command()
-@click.argument("input_file")
-@click.argument("output_file")
-@click.option("--overwrite", is_flag=True)
 def main(input_file, output_file, overwrite):
     if not overwrite and Path(output_file).exists():
         raise RuntimeError("Output file exists.")
@@ -16,4 +12,15 @@ def main(input_file, output_file, overwrite):
 
 
 if __name__ == "__main__":
-    main()
+
+    args = sys.argv[1:]
+
+    if "--overwrite" in args:
+        args.remove("--overwrite")
+        overwrite = True
+    else:
+        overwrite = False
+
+    input_file, output_file = args
+
+    main(input_file, output_file, overwrite)

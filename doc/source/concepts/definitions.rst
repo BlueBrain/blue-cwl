@@ -11,3 +11,4 @@ A Common Workflow Language (CWL) definition describes how to run command line to
     workflow
     environments
     executors
+    supported_features
