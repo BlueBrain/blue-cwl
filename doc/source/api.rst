@@ -23,5 +23,4 @@ API Documentation
     blue_cwl.recipes
     blue_cwl.statistics
     blue_cwl.density_manipulation
-    blue_cwl.model
     blue_cwl.variant
