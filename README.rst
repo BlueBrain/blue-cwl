@@ -3,6 +3,11 @@ blue-cwl
 
 Common Workflow Language tool/workflow definitions, wrappers, and API
 
+Documentation
+=============
+
+* `latest <https://blue-cwl.readthedocs.io/en/latest/>`_
+
 Installation
 ============
 
