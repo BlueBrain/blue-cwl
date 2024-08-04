@@ -31,8 +31,8 @@ from pyarrow.pandas_compat import get_logical_type, get_logical_type_map
 
 from blue_cwl.constants import DEFAULT_CIRCUIT_BUILD_PARAMETERS
 from blue_cwl.core import cwl
+from blue_cwl.core.common import CustomBaseModel
 from blue_cwl.exceptions import CWLWorkflowError
-from blue_cwl.model import CustomBaseModel
 from blue_cwl.typing import StrOrPath
 
 if TYPE_CHECKING:

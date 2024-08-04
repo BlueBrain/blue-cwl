@@ -34,6 +34,10 @@ class CustomBaseModel(BaseModel):
 
     def to_string(self, **kwargs) -> str:
         """Serialize the object to JSON."""
+        return self.to_json(**kwargs)
+
+    def to_json(self, **kwargs) -> str:
+        """Serialize the object to JSON."""
         return self.model_dump_json(**kwargs)
 
     @classmethod
