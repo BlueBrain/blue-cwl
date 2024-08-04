@@ -7,12 +7,12 @@ import json
 from enum import Enum
 from pathlib import Path
 
+from blue_cwl.core.common import CustomBaseModel
 from blue_cwl.mmodel.config import split_config
 from blue_cwl.mmodel.staging import (
     materialize_canonical_config,
     materialize_placeholders_config,
 )
-from blue_cwl.model import CustomBaseModel
 from blue_cwl.nexus import get_distribution_as_dict
 from blue_cwl.staging import get_entry_id
 
