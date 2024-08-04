@@ -6,7 +6,6 @@ from unittest.mock import patch, Mock
 from blue_cwl import registering as test_module
 from blue_cwl.testing import patchenv
 from blue_cwl.utils import write_json, load_json
-from kgforge.core import Resource
 
 from entity_management import nexus
 from entity_management.atlas import AtlasBrainRegion, AtlasRelease
@@ -336,12 +335,14 @@ def test_register_cell_composition(atlas_release):
 
         volume = res.cellCompositionVolume
 
-        assert volume.atlasRelease == atlas_release
+        assert volume.atlasRelease.get_id() == atlas_release.get_id()
+        assert volume.atlasRelease.get_rev() == atlas_release.get_rev()
         assert volume.brainLocation == atlas_release.brainLocation
         assert volume.distribution.name == "volume_file.json"
 
         summary = res.cellCompositionSummary
-        assert summary.atlasRelease == atlas_release
+        assert summary.atlasRelease.get_id() == atlas_release.get_id()
+        assert summary.atlasRelease.get_rev() == atlas_release.get_rev()
         assert summary.brainLocation == atlas_release.brainLocation
         assert summary.distribution.name == "summary_file.json"
 

@@ -1,8 +1,8 @@
 
 .. _registry:
 
-Registry
-========
+Variant Definitions Registry
+============================
 
 cell_composition|cell_composition_manipulation|v3
 *************************************************

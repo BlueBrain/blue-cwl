@@ -1,14 +1,28 @@
 import tempfile
+import contextlib
 from pathlib import Path
 from blue_cwl.core import parse_cwl_file
 from blue_cwl.core.cwl_types import Directory, CWLType, File, NexusResource
-from blue_cwl.utils import cwd
+from blue_cwl.utils import cwd, write_yaml
 from blue_cwl.core import cwl
 
 import pytest
 
 DATA_DIR = Path(__file__).parent / "data"
 CWL_DIR = DATA_DIR / "use_cases"
+
+
+@contextlib.contextmanager
+def definition(definition: str | dict):
+    with tempfile.NamedTemporaryFile(suffix=".cwl") as tfile:
+        if isinstance(definition, str):
+            with open(tfile.name, "w") as file:
+                file.write(definition)
+
+        else:
+            write_yaml(data=definition, filepath=tfile.name)
+
+        yield tfile.name
 
 
 def test_tool_write():
@@ -75,7 +89,105 @@ def test_array_types_tool():
     }
 
     res = tool.make(input_values=input_values)
-    res.build_command() == "touch foo.txt -A a b c d -C=c,d,e,f"
+    assert res.build_command() == "touch foo.txt -A a b c d -B=c -B=d -B=e -B=f -C=g,h"
+
+
+def test_array_types_tool__2():
+    content = """
+        cwlVersion: v1.2
+        id: foo
+        class: CommandLineTool
+        inputs:
+          files:
+            type: File[]
+            inputBinding:
+              prefix: -A
+              position: 1
+              separate: true
+        outputs:
+          output_file:
+            type: File
+            outputBinding:
+              glob: foo.txt
+        baseCommand: touch foo.txt
+    """
+
+    with definition(content) as path:
+        tool = parse_cwl_file(path)
+
+        input_values = {
+            "files": ["a", "b", "c", "d"],
+        }
+
+        # following the original implementation, when separate=True there is no separation at thi
+        # level
+        res = tool.make(input_values=input_values)
+        assert res.build_command() == "touch foo.txt -A a b c d"
+
+
+def test_array_types_tool__3():
+    content = """
+        cwlVersion: v1.2
+        id: foo
+        class: CommandLineTool
+        inputs:
+          files:
+            type: File[]
+            inputBinding:
+              prefix: -A
+              position: 1
+              itemSeparator: ","
+        outputs:
+          output_file:
+            type: File
+            outputBinding:
+              glob: foo.txt
+        baseCommand: touch foo.txt
+    """
+
+    with definition(content) as path:
+        tool = parse_cwl_file(path)
+
+        input_values = {
+            "files": ["a", "b", "c", "d"],
+        }
+
+        res = tool.make(input_values=input_values)
+        assert res.build_command() == "touch foo.txt -A a,b,c,d"
+
+
+def test_array_types_tool__4():
+    content = """
+        cwlVersion: v1.2
+        id: foo
+        class: CommandLineTool
+        inputs:
+          files:
+            type:
+              type: array
+              items: File
+              inputBinding:
+                prefix: -B=
+                separate: false
+            inputBinding:
+              position: 2
+        outputs:
+          output_file:
+            type: File
+            outputBinding:
+              glob: foo.txt
+        baseCommand: touch foo.txt
+    """
+
+    with definition(content) as path:
+        tool = parse_cwl_file(path)
+
+        input_values = {
+            "files": ["a", "b", "c", "d"],
+        }
+
+        res = tool.make(input_values=input_values)
+        assert res.build_command() == "touch foo.txt -B=a -B=b -B=c -B=d"
 
 
 def test_array_types_workflow():
@@ -91,8 +203,11 @@ def test_array_types_workflow():
 
     s0, s1 = res.steps
 
-    s0.build_command() == "touch foo.txt -A a b c d -B=c -B=d -B=e -B=f -C=c_foo,c_bar"
-    s1.build_command() == "touch foo.txt -A a b c d -B=foo.txt_file.txt -B=o -B=e -B=f -C=foo.txt,o"
+    assert s0.build_command() == "touch foo.txt -A a b c d -B=c -B=d -B=e -B=f -C=c_foo,c_bar"
+    assert (
+        s1.build_command()
+        == "touch foo.txt -A a b c d -B=foo.txt -B=o -B=e.txt -B=f.txt -C=foo.txt,o"
+    )
 
 
 def test_copy_file_tool(tmp_path):
@@ -118,7 +233,10 @@ def test_copy_file_tool(tmp_path):
 
     assert process.outputs == {"output_file": File(path=str(output_file))}
 
-    process.build_command() == f"python3 {CWL_DIR}/copy_file.py --overwrite {input_file} {output_file}"
+    assert (
+        process.build_command()
+        == f"python3 {CWL_DIR}/copy_file.py --overwrite {input_file} {output_file}"
+    )
     process.run()
 
     assert input_file.read_text() == output_file.read_text()
@@ -129,7 +247,7 @@ def test_copy_file_tool(tmp_path):
         "overwrite": False,
     }
     process = tool.make(input_values=input_values)
-    process.build_command() == f"python3 {CWL_DIR}/copy_file.py {input_file} {output_file}"
+    assert process.build_command() == f"python3 {CWL_DIR}/copy_file.py {input_file} {output_file}"
 
     # cannot overwrite the output file
     with pytest.raises(RuntimeError):
@@ -140,7 +258,7 @@ def test_copy_file_tool(tmp_path):
         "input_file": str(input_file),
         "output_file": str(output_file),
     }
-    process.build_command() == f"python3 {CWL_DIR}/copy_file.py {input_file} {output_file}"
+    assert process.build_command() == f"python3 {CWL_DIR}/copy_file.py {input_file} {output_file}"
 
     # cannot overwrite the output file
     with pytest.raises(RuntimeError):

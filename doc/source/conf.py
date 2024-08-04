@@ -33,10 +33,14 @@ release = version
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = []
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    'sphinx.ext.napoleon',  # for Google and NumPy style docstrings
+]
 
 # Add any paths that contain templates here, relative to this directory.
-# templates_path = ['_templates']
+templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -49,23 +53,38 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx-bluebrain-theme"
+html_theme = "furo"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
 
+#html_theme_options = {
+#    "repo_url": "https://github.com/BlueBrain/blue-cwl",
+#    "repo_name": "BlueBrain/blue-cwl",
+#    "metadata_distribution": "blue_cwl",
+#}
 html_theme_options = {
-    "repo_url": "https://github.com/BlueBrain/blue-cwl",
-    "repo_name": "BlueBrain/blue-cwl",
-    "metadata_distribution": "blue_cwl",
+    "light_css_variables": {
+        "color-brand-primary": "red",
+        "color-brand-content": "#CC3333",
+        "color-admonition-background": "orange",
+    },
 }
+
+pygments_dark_style = "monokai"
 
 html_title = "blue-cwl"
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False
+
+autosummary_generate = True
+autoclass_content = 'both'
+autodoc_default_options = {
+    'members': True,
+}
 
 import os
 from pathlib import Path
