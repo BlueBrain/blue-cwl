@@ -92,7 +92,7 @@ class File(_Path):
 
     @property
     def contents(self):
-        """Return contents of file."""
+        """Return first 64KB from file."""
         return Path(self.path).open(buffering=FILE_BUFFER_SIZE, encoding="utf-8").read()
 
     @property
@@ -105,7 +105,7 @@ class File(_Path):
         """Return the sha1 checksum of the file."""
         with open(self.path, "rb") as f:
             sha1 = hashlib.sha1()  # noqa: S324
-            while chunk := f.read(65536):
+            while chunk := f.read(FILE_BUFFER_SIZE):
                 sha1.update(chunk)
         return sha1.hexdigest()
 
