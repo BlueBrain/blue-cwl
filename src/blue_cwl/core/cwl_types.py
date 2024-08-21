@@ -3,11 +3,19 @@
 """Types module."""
 
 import enum
+import hashlib
 import os
+from pathlib import Path
 from typing import Literal
+
+from entity_management.util import unquote_uri_path
 
 from blue_cwl.core.common import CustomBaseModel
 from blue_cwl.core.exceptions import CWLError
+
+# according to the CWL spec only the first 64KB are loaded to contents
+# https://www.commonwl.org/v1.0/CommandLineTool.html#File
+FILE_BUFFER_SIZE = 64 * 1024
 
 CWLType = Literal[
     "null",
@@ -35,10 +43,11 @@ class CWLWorkflowType(enum.Enum):
     STEP = enum.auto()
 
 
-class _FileLike(CustomBaseModel):
+class _Path(CustomBaseModel):
+    """Path class."""
+
     path: str | None = None
     location: str | None = None
-    basename: str | None = None
 
     def __init__(self, **data):
         """Initialize a FileLike object."""
@@ -53,19 +62,55 @@ class _FileLike(CustomBaseModel):
             data["location"] = f"file://{os.path.abspath(path)}"
 
         if location and not path:
-            data["path"] = str(location)[7:]
-
-        if data.get("basename", None) is None:
-            data["basename"] = os.path.basename(data["path"])
+            path = data["path"] = unquote_uri_path(location)
 
         super().__init__(**data)
 
+    @property
+    def basename(self):
+        """Return the base name of the file path."""
+        return Path(self.path).name
 
-class File(_FileLike):
+
+class File(_Path):
     """File class."""
 
+    @property
+    def dirname(self):
+        """Return the path to the directory containing the file."""
+        return str(Path(self.path).parent)
 
-class Directory(_FileLike):
+    @property
+    def nameroot(self):
+        """Return the base name without extension."""
+        return Path(self.path).stem
+
+    @property
+    def nameext(self):
+        """Return the extension of the base name."""
+        return Path(self.path).suffix
+
+    @property
+    def contents(self):
+        """Return contents of file."""
+        return Path(self.path).open(buffering=FILE_BUFFER_SIZE, encoding="utf-8").read()
+
+    @property
+    def size(self):
+        """Return the size of the file."""
+        return Path(self.path).stat().st_size
+
+    @property
+    def checksum(self):
+        """Return the sha1 checksum of the file."""
+        with open(self.path, "rb") as f:
+            sha1 = hashlib.sha1()  # noqa: S324
+            while chunk := f.read(65536):
+                sha1.update(chunk)
+        return sha1.hexdigest()
+
+
+class Directory(_Path):
     """Directory class."""
 
 
