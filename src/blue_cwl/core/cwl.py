@@ -75,6 +75,8 @@ class CommandOutputBinding(CustomBaseModel):
     """
 
     glob: str | None = None
+    loadContents: bool | None = False
+    outputEval: str | None = None
 
 
 class CommandOutputParameter(CustomBaseModel):
