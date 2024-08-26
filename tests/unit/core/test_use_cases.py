@@ -25,43 +25,60 @@ def definition(definition: str | dict):
         yield tfile.name
 
 
-def test_tool_write():
+def test_echo_tool():
+    filepath = CWL_DIR / "echo.cwl"
+    input_values = {"input": "foo"}
+    res = parse_cwl_file(filepath).make(input_values).run()
+    res["out"] == "foo"
+
+
+def test_tool_write(tmp_path):
     filepath = CWL_DIR / "write.cwl"
     input_values = {"message": "Lorem-Ipsum"}
 
     tool = parse_cwl_file(filepath)
 
-    with tempfile.TemporaryDirectory() as tdir:
-        with cwd(tdir):
-            res = tool.make(input_values=input_values)
+    with cwd(tmp_path):
+        process = tool.make(input_values=input_values)
 
-            assert res.inputs == {"message": "Lorem-Ipsum"}
-
-            assert res.outputs == {
-                "example_file": File(path="Lorem-Ipsum_file-output.txt"),
-            }
-
-            assert res.base_command == [str(CWL_DIR / "write.py"), "Lorem-Ipsum"]
-
-            assert res.build_command() == f"{CWL_DIR}/write.py Lorem-Ipsum"
-
-            res.run()
-            assert str(Path(tdir, "file-output.txt").read_text()) == "Lorem-Ipsum"
+        assert process.inputs == {"message": "Lorem-Ipsum"}
+        assert process.base_command == [str(CWL_DIR / "write.py"), "Lorem-Ipsum"]
+        assert process.build_command() == f"{CWL_DIR}/write.py Lorem-Ipsum"
+        res = process.run()
+        assert res == {"example_file": File(path="file-output.txt")}
+        assert (tmp_path / "file-output.txt").read_text() == "Lorem-Ipsum"
 
 
-def test_parameter_references__tool_outputs():
-    input_values = {"indir": Directory(path="foo/bar")}
+def test_parameter_references__tool_outputs(tmp_path):
+    indir = tmp_path / "indir"
+    indir.mkdir()
+
+    r1 = indir / "file1.txt"
+    r1.touch()
+
+    r2 = indir / "file2.txt"
+    r2.touch()
+
+    r3 = indir / "subdir"
+    r3.mkdir()
+
+    outdir = tmp_path / "outdir"
+
+    input_values = {"indir": Directory(path=indir), "outdir": str(outdir)}
 
     tool = parse_cwl_file(DATA_DIR / "use_cases" / "file_param_ref.cwl")
 
-    res = tool.make(input_values=input_values)
+    process = tool.make(input_values=input_values)
 
-    assert res.build_command() == "cp -r foo/bar"
+    assert process.inputs == input_values
+    assert process.build_command() == f"cp -r {indir} {outdir}"
 
-    assert res.outputs == {
-        "r1": File(path="bar/file.txt"),
-        "r2": File(path="foo/bar/file.txt"),
-        "r3": Directory(path="foo/bar/subdir"),
+    res = process.run()
+
+    assert res == {
+        "r1": File(path=outdir / r1.name),
+        "r2": File(path=outdir / r2.name),
+        "r3": Directory(path=outdir / r3.name),
     }
 
 
@@ -75,8 +92,8 @@ def test_essential_parameters():
         "example_file": "whale.txt",
         "example_float": 3.2,
     }
-    res = tool.make(input_values=input_values)
-    assert res.build_command() == "echo -f -i42 -d3.2 --file=whale.txt --example-string hello"
+    process = tool.make(input_values=input_values)
+    assert process.build_command() == "echo -f -i42 -d3.2 --file=whale.txt --example-string hello"
 
 
 def test_array_types_tool():
@@ -88,8 +105,8 @@ def test_array_types_tool():
         "filesC": ["g", "h"],
     }
 
-    res = tool.make(input_values=input_values)
-    assert res.build_command() == "touch foo.txt -A a b c d -B=c -B=d -B=e -B=f -C=g,h"
+    process = tool.make(input_values=input_values)
+    assert process.build_command() == "touch foo.txt -A a b c d -B=c -B=d -B=e -B=f -C=g,h"
 
 
 def test_array_types_tool__2():
@@ -121,8 +138,8 @@ def test_array_types_tool__2():
 
         # following the original implementation, when separate=True there is no separation at thi
         # level
-        res = tool.make(input_values=input_values)
-        assert res.build_command() == "touch foo.txt -A a b c d"
+        process = tool.make(input_values=input_values)
+        assert process.build_command() == "touch foo.txt -A a b c d"
 
 
 def test_array_types_tool__3():
@@ -152,8 +169,8 @@ def test_array_types_tool__3():
             "files": ["a", "b", "c", "d"],
         }
 
-        res = tool.make(input_values=input_values)
-        assert res.build_command() == "touch foo.txt -A a,b,c,d"
+        process = tool.make(input_values=input_values)
+        assert process.build_command() == "touch foo.txt -A a,b,c,d"
 
 
 def test_array_types_tool__4():
@@ -186,8 +203,8 @@ def test_array_types_tool__4():
             "files": ["a", "b", "c", "d"],
         }
 
-        res = tool.make(input_values=input_values)
-        assert res.build_command() == "touch foo.txt -B=a -B=b -B=c -B=d"
+        process = tool.make(input_values=input_values)
+        assert process.build_command() == "touch foo.txt -B=a -B=b -B=c -B=d"
 
 
 def test_array_types_workflow():
@@ -231,13 +248,12 @@ def test_copy_file_tool(tmp_path):
         "overwrite": True,
     }
 
-    assert process.outputs == {"output_file": File(path=str(output_file))}
-
     assert (
         process.build_command()
         == f"python3 {CWL_DIR}/copy_file.py --overwrite {input_file} {output_file}"
     )
-    process.run()
+    outputs = process.run()
+    assert outputs == {"output_file": File(path=str(output_file))}
 
     assert input_file.read_text() == output_file.read_text()
 
@@ -352,10 +368,6 @@ def test_generator_tool():
         "cell_composition": NexusResource(id="my-composition-id"),
         "variant_config": NexusResource(id="my-config-id"),
         "output_dir": Directory(path="my-output-dir"),
-    }
-
-    assert process.outputs == {
-        "partial_circuit": NexusResource(path="partial-circuit.json"),
     }
 
     assert process.base_command == [

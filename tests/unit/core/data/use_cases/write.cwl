@@ -13,4 +13,4 @@ outputs:
   example_file:
     type: File
     outputBinding:
-      glob: $(inputs.message)_file-output.txt
+      glob: file-output.txt
