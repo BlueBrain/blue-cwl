@@ -2,6 +2,7 @@
 
 """Executable Process creation module."""
 
+import glob
 import logging
 from typing import TYPE_CHECKING, Any
 
@@ -23,7 +24,7 @@ class CommandLineToolProcess(CustomBaseModel):
     """Executable CommanLineTool process."""
 
     inputs: dict[str, Any]
-    outputs: dict[str, Any]
+    outputs: dict[str, Any] | None = None
     base_command: list[str]
     environment: dict | None = None
     executor: Executor
@@ -50,7 +51,7 @@ class CommandLineToolProcess(CustomBaseModel):
         redirect_to: str | None = None,
         masked_vars: list[str] | None = None,
         **kwargs,
-    ) -> None:
+    ) -> dict[str, OutputValueObject]:
         """Execute input command.
 
         Args:
@@ -62,6 +63,7 @@ class CommandLineToolProcess(CustomBaseModel):
         self.executor.run(
             command=command, redirect_to=redirect_to, masked_vars=masked_vars, **kwargs
         )
+        return _concretize_tool_outputs(self.outputs, self.inputs)
 
     def run(
         self,
@@ -70,7 +72,7 @@ class CommandLineToolProcess(CustomBaseModel):
         redirect_to: str | None = None,
         masked_vars: list[str] | None = None,
         **kwargs,
-    ) -> None:
+    ) -> dict[str, OutputValueObject]:
         """Execute the process.
 
         Args:
@@ -82,7 +84,7 @@ class CommandLineToolProcess(CustomBaseModel):
         str_command = self.build_command(
             env_vars=env_vars,
         )
-        self.run_command(
+        return self.run_command(
             command=str_command,
             redirect_to=redirect_to,
             masked_vars=masked_vars,
@@ -121,10 +123,10 @@ def build_command_line_tool_process(
         raise CWLError(f"CommandLineTool'{tool.id}' inputs concretization failed.\n") from e
     L.debug("Concretized CommandLineTool inputs: %s", concretized_inputs)
 
-    concretized_outputs: dict[str, OutputValueObject] = _concretize_tool_outputs(
-        tool.outputs, concretized_inputs
-    )
-    L.debug("Concretized CommandLineTool outputs: %s", concretized_outputs)
+    # concretized_outputs: dict[str, OutputValueObject] = _concretize_tool_outputs(
+    #    tool.outputs, concretized_inputs
+    # )
+    # L.debug("Concretized CommandLineTool outputs: %s", concretized_outputs)
 
     concretized_command: list = _concretize_tool_command(tool, concretized_inputs)
     L.debug("Concretized CommandLineTool command: %s", concretized_command)
@@ -135,7 +137,7 @@ def build_command_line_tool_process(
     process = CommandLineToolProcess.from_dict(
         {
             "inputs": concretized_inputs,
-            "outputs": concretized_outputs,
+            "outputs": tool.outputs,
             "base_command": concretized_command,
             "environment": tool.environment,
             "executor": executor,
@@ -172,37 +174,39 @@ def _concretize_tool_outputs(
 ) -> dict[str, OutputValueObject]:
     concretized_outputs: dict[str, OutputValueObject] = {}
     for name, output in outputs.items():
+        out_binding = output.outputBinding
+
+        path_or_expression = resolve_parameter_references(
+            expression=out_binding.glob,
+            inputs=input_values,
+            context=None,
+            runtime=None,
+        )
+
+        paths = glob.glob(path_or_expression)
+
+        if not paths:
+            raise CWLError(
+                f"Glob pathname '{path_or_expression}' did not match any existing paths."
+            )
+
+        path = paths[0]
+
         match output.type:
             case "File":
-                out_binding = output.outputBinding
-                path = resolve_parameter_references(
-                    expression=out_binding.glob,
-                    inputs=input_values,
-                    context=None,
-                    runtime=None,
-                )
                 concretized_outputs[name] = File(path=path)
             case "Directory":
-                out_binding = output.outputBinding
-                path = resolve_parameter_references(
-                    expression=out_binding.glob,
-                    inputs=input_values,
-                    context=None,
-                    runtime=None,
-                )
                 concretized_outputs[name] = Directory(path=path)
 
             case "NexusType":
-                out_binding = output.outputBinding
-                path = resolve_parameter_references(
-                    expression=out_binding.glob,
-                    inputs=input_values,
-                    context=None,
-                    runtime=None,
-                )
                 concretized_outputs[name] = NexusResource(path=path)
+
+            case str():
+                assert out_binding.outputEval is not None
+                assert out_binding.loadContents is True
+                concretized_outputs[name] = File(path=path).contents
             case _:
-                raise NotImplementedError()
+                raise NotImplementedError((name, output))
     return concretized_outputs
 
 
